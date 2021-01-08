@@ -3,3 +3,5 @@ __pycache__/
 .venv/
 
 .story/
+coinmarketcap.db
+coinmarketcapdb

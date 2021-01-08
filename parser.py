@@ -1,5 +1,5 @@
-# 
 import logging
+import sqlite3
 from typing import List
 
 import bs4
@@ -16,6 +16,8 @@ class Client:
     def __init__(self):
         self.session = requests.session()
         self.session.headers = {**config.headers}
+        self.connection = sqlite3.connect(config.database_name)
+        self.cursor = self.connection.cursor()
 
     def load_page(self, url: str) -> str:
         r: requests.models.Response = self.session.get(url, timeout=5)
@@ -38,27 +40,43 @@ class Client:
 
     def get_dataframe(self, two_dimensional_list: List[List[str]]) -> pd.DataFrame:
         df = pd.DataFrame(two_dimensional_list, columns=[
-            'Name_TICKER', 'Price', '24h', '7d', 'Market_cap', 'Volume', 'Circulating_supply'
+            'name_ticker', 'price', 'day', 'week', 'market_cap', 'volume', 'circulating_supply'
         ])
         # replace: bincoin1BTC -> bincoinBTC
-        df['Name_TICKER'].replace(['\d', ' '], '', regex=True, inplace=True)
+        df['name_ticker'].replace(['\d', ' '], '', regex=True, inplace=True)
         return df
 
-    def save_result(self):
-        pass
+    def save_to_sql(self, df: pd.DataFrame) -> None:
+        database_name = config.database_name.split('.')[0]
+        try:
+            with self.connection as conn:
+                logger.info('Successfully connected to SQLite')
+                df.to_sql(database_name, conn)
+        except sqlite3.Error as error:
+            logger.error('Error with connection to sqlite', error)
+        finally:
+            if self.connection:
+                self.connection.close()
+            logger.info('The SQLite connection is closed')
 
-    def run(self):
+    def run(self) -> None:
         url = 'https://coinmarketcap.com/'
         html: str = self.load_page(url)
         two_dimensional_list = self.parse_page(html)
         df = self.get_dataframe(two_dimensional_list)
-        print(df[:30])
-        logger.debug('Done!')
-
-        self.save_result()
+        
+        logger.debug(f'DataFrame:\n{df}')
+        self.save_to_sql(df)
 
 
 if __name__ == '__main__':
     parser = Client()
     parser.run()
+
+    logger.debug('\nTest sql select')
+    conn = sqlite3.connect(config.database_name)
+    sql_query = f"select * from {config.database_name.split('.')[0]} limit 4"
+    logger.debug(pd.read_sql(sql_query, conn))
+    conn.commit()
+    conn.close()
     
