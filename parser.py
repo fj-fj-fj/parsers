@@ -66,6 +66,7 @@ class Client:
         try:
             with self.connection as conn:
                 logger.info('Successfully connected to SQLite')
+                self.cursor.execute(f'DROP TABLE IF EXISTS {database_name};')
                 df.to_sql(database_name, conn)
         except sqlite3.Error as error:
             logger.error('Error with connection to sqlite', error)
@@ -88,10 +89,9 @@ if __name__ == '__main__':
     parser = Client()
     parser.run()
 
-    logger.debug('\nTest sql select')
+    logger.debug('Test sql select')
     conn = sqlite3.connect(config.database_name)
-    sql_query = f"select * from {config.database_name.split('.')[0]} limit 4"
+    sql_query = f"SELECT * FROM {config.database_name.split('.')[0]} LIMIT 4"
     logger.debug(pd.read_sql(sql_query, conn))
-    conn.commit()
     conn.close()
     
