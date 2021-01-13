@@ -5,3 +5,4 @@ __pycache__/
 .story/
 coinmarketcap.db
 coinmarketcapdb
+misc.py 
