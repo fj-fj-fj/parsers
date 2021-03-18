@@ -2,6 +2,7 @@
 # Вытащить из таблицы все данные по монетам из первой сотни
 # Очистить данные и сгрузить в DataFrame
 # Сохранить в базу данных
+# NOTE: Как и в Django, максимальная длина строки увеличена
 import logging
 import sqlite3
 from typing import List
@@ -16,8 +17,11 @@ import config
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('parser')
 
+
 class Client:
+
     """Parse the Coinmarketcap first page"""
+
     def __init__(self):
         """Initialize session, DB connection, cursor and add HTTP-headers"""
         self.session: requests.sessions.Session = requests.session()
@@ -32,10 +36,11 @@ class Client:
         return r.text
 
     def parse_page(self, html: str) -> List[List[str]]:
-        """Parse HTML.
-           
-           Get the name and ticker, price, volume and
-           other info about the first hundred coins.
+        """
+        Parse HTML.
+
+        Get the name and ticker, price, volume and
+        other info about the first hundred coins.
         """
         list_of_lists = []
         soup = bs4.BeautifulSoup(html, 'lxml')
@@ -43,7 +48,7 @@ class Client:
 
         for tr in table.tbody.find_all('tr'):
             list_of_lists.append([td.get_text() for td in tr.find_all('td') if td.text])
-        
+
         # ОЧИСТИТЬ ДАННЫЕ: удалить лишний столбец первой 10ки монет:
         for sublist in range(10):
             list_of_lists[sublist].pop(0)
@@ -54,7 +59,13 @@ class Client:
     def get_dataframe(self, two_dimensional_list: List[List[str]]) -> pd.DataFrame:
         """Get DataFrame from 2D array"""
         df = pd.DataFrame(two_dimensional_list, columns=[
-            'name_ticker', 'price', 'day', 'week', 'market_cap', 'volume', 'circulating_supply'
+            'name_ticker',
+            'price',
+            'day',
+            'week',
+            'market_cap',
+            'volume',
+            'circulating_supply'
         ])
         # replace: bincoin1BTC -> bincoinBTC
         df['name_ticker'].replace(['\d', ' '], '', regex=True, inplace=True)
@@ -80,7 +91,7 @@ class Client:
         html: str = self.load_page(url)
         two_dimensional_list = self.parse_page(html)
         df = self.get_dataframe(two_dimensional_list)
-        
+
         logger.debug(f'DataFrame:\n{df}')
         self.save_to_sql(df)
 
@@ -94,4 +105,3 @@ if __name__ == '__main__':
     sql_query = f"SELECT * FROM {config.database_name.split('.')[0]} LIMIT 4"
     logger.debug(pd.read_sql(sql_query, conn))
     conn.close()
-    

@@ -25,6 +25,7 @@ session = sessionmaker(bind=engine)()
 
 Base = declarative_base()
 
+
 class CoinsTable(Base):
     __tablename__ = 'coinmarketcap'
 
@@ -42,6 +43,7 @@ class CoinsTable(Base):
 
     def __repr__(self):
         return '<CoinsTable({}, {}, {}, {})>'.format(*self.__dict__.values())
+
 
 Base.metadata.create_all(engine)
 

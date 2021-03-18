@@ -1,10 +1,11 @@
 from misc import uname, passwd
 
-
 COINMARKETCAP_URL = 'http://coinmarketcap.com'
 
 headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+            AppleWebKit/537.36 (KHTML, like Gecko) \
+            Chrome/84.0.4147.135 Safari/537.36',
             'Accept-Lanquage': 'ru',
 }
 
@@ -21,4 +22,3 @@ POSTGRES = {
     'port': 5432,
     'database': "coinmarketcap"
 }
- 

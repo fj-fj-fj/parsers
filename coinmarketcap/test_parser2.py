@@ -1,14 +1,17 @@
 # 1. Test query 'SELECT * FROM coinmarketcap;'
 # 2. pretty output in terminal
-
+# NOTE: Как и в Django, максимальная длина строки увеличена
 class Test:
-    """Output color query in the terminal.
-    
+    """
+    Output color query in the terminal.
+
     Before referring to the database,
     transfer the session and table before.
 
-    :session: sqlalchemy.orm.session.Session
-    :table: sqlalchemy.ext.declarative.api.DeclarativeMeta
+    :session:
+        sqlalchemy.orm.session.Session
+    :table:
+        sqlalchemy.ext.declarative.api.DeclarativeMeta
 
     """
     RESET = '\33[0m'
@@ -22,7 +25,7 @@ class Test:
 
     SESSION = None
     TABLE = None
-    
+
     @staticmethod
     def _body():
         """Print body (id, name, ticker, price, source)"""
@@ -33,7 +36,7 @@ class Test:
             print(f' {Test.GRAY}{Test.BOLD}{q.ticker.ljust(6)}{Test.RESET}', end='\t')
             print(f'{Test.VIOLET}{str(q.price).center(8)}', end='\t')
             print(f'{Test.CYAN}{q.source.ljust(50)}{Test.RESET}')
-            
+
     @staticmethod
     def _head():
         """Print title (index, name, ticker, price, url)"""
