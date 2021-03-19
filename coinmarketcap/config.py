@@ -1,8 +1,9 @@
 try:
     from misc import uname, passwd
 except (ModuleNotFoundError, ImportError) as e:
-    print(repr(e),
-         '\nSet password and uname to coinmarketcap/config/POSTGRES config')
+    print(repr(e), '\nSet password and name in POSTGRES config')
+    uname = input('Enter name database: ')
+    passwd = input('Enter password database: ')
 
 COINMARKETCAP_URL = 'http://coinmarketcap.com'
 
