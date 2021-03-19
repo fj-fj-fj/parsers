@@ -1,4 +1,8 @@
-from misc import uname, passwd
+try:
+    from misc import uname, passwd
+except (ModuleNotFoundError, ImportError) as e:
+    print(repr(e),
+         '\nSet password and uname to coinmarketcap/config/POSTGRES config')
 
 COINMARKETCAP_URL = 'http://coinmarketcap.com'
 
