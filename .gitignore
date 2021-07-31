@@ -7,4 +7,4 @@ coinmarketcap.db
 coinmarketcapdb
 misc.py
 data/
-parsed_data/
+**parsed_data**
