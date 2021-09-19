@@ -1,4 +1,4 @@
-PARSER = ./discontinued_tech/parser.py
+PARSER = ./parser.py
 
 parse:
 	python3 -i $(PARSER)
