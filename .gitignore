@@ -3,9 +3,14 @@ __pycache__/
 .venv/
 
 .story/
+misc.py
+
 coinmarketcap.db
 coinmarketcapdb
-misc.py
+
 **parsed_data**
 **data**
+
 *.log
+nohup.out
+.python_history
