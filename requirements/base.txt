@@ -3,9 +3,12 @@ certifi==2020.12.5
 chardet==4.0.0
 fake-useragent==0.1.11
 idna==2.10
-lxml==4.6.2
-numpy==1.19.5
-pandas==1.2.0
+
+# NOTES: use an earlier version of dependency resolver (see ./NOTES.md)
+lxml --use-deprecated=legacy-resolver
+numpy --use-deprecated=legacy-resolver
+pandas --use-deprecated=legacy-resolver
+
 psycopg2-binary==2.8.6
 python-dateutil==2.8.1
 pytz==2020.5
