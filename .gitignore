@@ -6,5 +6,6 @@ __pycache__/
 coinmarketcap.db
 coinmarketcapdb
 misc.py
-data/
 **parsed_data**
+**data**
+*.log
