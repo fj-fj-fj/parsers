@@ -1,19 +1,24 @@
 beautifulsoup4==4.9.3
-certifi==2020.12.5
-chardet==4.0.0
+  # - soupsieve [required: >1.2, installed: 2.1]
+click==8.0.1
 fake-useragent==0.1.11
-idna==2.10
-
-# NOTES: use an earlier version of dependency resolver (see ./NOTES.md)
-lxml --use-deprecated=legacy-resolver
-numpy --use-deprecated=legacy-resolver
-pandas --use-deprecated=legacy-resolver
-
+lxml==4.6.3 --use-deprecated=legacy-resolver
+numpy==1.21.2 --use-deprecated=legacy-resolver
+pandas==1.3.3 --use-deprecated=legacy-resolve
+  # - numpy [required: >=1.17.3, installed: 1.21.2]
+  # - python-dateutil [required: >=2.7.3, installed: 2.8.1]
+  #   - six [required: >=1.5, installed: 1.15.0]
+  # - pytz [required: >=2017.3, installed: 2020.5]
+pep517==0.11.0
+   - tomli [required: Any, installed: 1.2.1]
+pipdeptree==2.1.0
+   - pip [required: >=6.0.0, installed: 21.2.4]
 psycopg2-binary==2.8.6
-python-dateutil==2.8.1
-pytz==2020.5
 requests==2.25.1
-six==1.15.0
-soupsieve==2.1
+  # - certifi [required: >=2017.4.17, installed: 2020.12.5]
+  # - chardet [required: >=3.0.2,<5, installed: 4.0.0]
+  # - idna [required: >=2.5,<3, installed: 2.10]
+  # - urllib3 [required: >=1.21.1,<1.27, installed: 1.26.2]
+setuptools==57.4.0
 SQLAlchemy==1.3.22
-urllib3==1.26.2
+wheel==0.37.0

@@ -1,9 +1,9 @@
 flake8==3.9.2
-isort==5.8.0
-mccabe==0.6.1
-mypy==0.812
-mypy-extensions==0.4.3
-pycodestyle==2.7.0
-pyflakes==2.3.1
-typed-ast==1.4.3
-typing-extensions==3.10.0.0
+  # - mccabe [required: >=0.6.0,<0.7.0, installed: 0.6.1]
+  # - pycodestyle [required: >=2.7.0,<2.8.0, installed: 2.7.0]
+  # - pyflakes [required: >=2.3.0,<2.4.0, installed: 2.3.1]
+isort==5.9.3
+mypy==0.910
+  # - mypy-extensions [required: >=0.4.3,<0.5.0, installed: 0.4.3]
+  # - toml [required: Any, installed: 0.10.2]
+  # - typing-extensions [required: >=3.7.4, installed: 3.10.0.2]
