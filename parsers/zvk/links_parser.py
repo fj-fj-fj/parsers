@@ -2,7 +2,7 @@ import logging
 import os
 from contextlib import suppress
 from time import sleep
-from typing import Optional
+from typing import Iterator, Optional
 
 from fake_useragent import UserAgent
 from selenium import webdriver
@@ -19,20 +19,20 @@ from urllib3.exceptions import MaxRetryError
 
 from driver import chrome
 
-# paths system
-PARSED_DATA_DIR = f'{os.getcwd()}/parsers/zvk/data/'
-PARSED_DATA_FILE = '_parsed_data_default'
+BASE_URL = 'https://zvk.ru'
+BASE_PARSED_DATA_DIR = f'{os.getcwd()}/parsers/zvk/data/'
 ALL_PARSED_FILE = '_all_parsed'
 
-# paths source
-_base_url = 'https://zvk.ru'
-_orgtekhnika = f'{_base_url}/catalog/orgtekhnika'
-URL = f'{_orgtekhnika}/printery-etiketok/'
+current_parsed_dir = 'dynamically_assigned_name_of_current_category'
+parsed_data_file = 'dynamically_assigned_name_of_current_subcategory'
 
-del _base_url, _orgtekhnika
+categories_names: Iterator[str] | None
+subcategories_names: Iterator[str] | None
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger('ZVK')
+
+FORMAT = "%(filename)s:%(lineno)s::%(funcName)s: %(message)s"
+logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 for name in ('urllib3', 'selenium'):
     logging.getLogger(name).setLevel(level=logging.WARNING)
 
@@ -58,8 +58,54 @@ def close(driver: Optional[webdriver.Chrome]):
 
 
 def set_file_name(url: str):
-    global PARSED_DATA_FILE
-    PARSED_DATA_FILE = os.path.basename(os.path.normpath(url))
+    global parsed_data_file
+    parsed_data_file = os.path.basename(os.path.normpath(url))
+
+
+def set_directory(name: str):
+    global current_parsed_dir
+    current_parsed_dir = f'{BASE_PARSED_DATA_DIR}{name}/'
+
+
+def make_dirs(names: list[str]):
+    global categories_names
+    categories_names = iter(names)
+    for name in names:
+        os.makedirs(f'{BASE_PARSED_DATA_DIR}{name}/', exist_ok=True)
+        logger.debug(f' - mkdir data/{name}/')
+
+
+def scrape_aside_panel(driver: webdriver.Chrome) -> dict[str, list[str]]:
+    categories: list[WebElement] = _scrape_menu(driver)
+    tails: list[str] = _cut_tail_from(categories)
+    make_dirs(tails)
+
+    urls_by_categories: dict[str, list[str]] = {}
+
+    for category in categories:
+        subcategories: list[WebElement] = _scrape_submenu(category)
+
+        with suppress(StopIteration):
+            category_name: str = next(categories_names)  # type: ignore
+            hrefs: list[str] = [a.get_attribute('href') for a in subcategories]
+            urls_by_categories[category_name] = hrefs
+
+    return urls_by_categories
+
+
+def _scrape_menu(driver: webdriver.Chrome) -> list[WebElement]:
+    pattern = '//aside//a[@class="menu-list__title"]'
+    return (d := driver.find_elements_by_xpath(pattern))[:int(len(d)/2)]
+    # NOTE: Tag <a> contains 2 submenu and function returns x2 items
+
+
+def _scrape_submenu(category: WebElement) -> list[WebElement]:
+    pattern = '..//ul/*/*/a'
+    return category.find_elements_by_xpath(pattern)
+
+
+def _cut_tail_from(links: list[WebElement]) -> list[str]:
+    return [a.get_attribute('href').rsplit('/', 2)[1] for a in links]
 
 
 def _wait_database_response(seconds: float = 6):
@@ -99,7 +145,7 @@ def fetch_url_with_all_elements_in(category: WebElement, sec: float = 3) -> str:
 def _click_all_elements_in(category: WebElement, action: str):
     pattern = '..//div[@class="bx-filter-parameters-box-title"]'
     title = category.find_element_by_xpath(pattern)
-    logging.debug(f"'{title.text}': {action} all elements...")
+    logger.debug(f" '{title.text}': {action} all elements...")
     for label in category.find_elements_by_xpath('div//label'):
         with suppress(E1, E2):
             _smooth_click(label)
@@ -107,28 +153,25 @@ def _click_all_elements_in(category: WebElement, action: str):
 
 
 def make_links(row_url: str) -> list[str]:
-    logging.debug(f'{row_url=}\n')  # insert `\n` before new `iteration`
+    logger.debug(f' {row_url=}\n')  # insert `\n` before new `iteration`
     url, params = row_url.split('is-')
-    return [_construct_(url, element) for element in params.split('-or-')]
+    return [_construct(url, element) for element in params.split('-or-')]
 
 
-def _construct_(url: str, params: str) -> str:
+def _construct(url: str, params: str) -> str:
     return ''.join(f"{url}{params}{'' if '/' in params else '/'}\n")
 
 
 def save_to(
-    file_cur_data: str,
+    local_flle: str,
     data: list[str],
-    file_cur_data_loc: str = PARSED_DATA_DIR,
-    file_all_data: str = ALL_PARSED_FILE,
-    file_all_data_loc: str = PARSED_DATA_DIR,
+    common_flle: str = ALL_PARSED_FILE,
 ):
-    os.makedirs(file_cur_data_loc, exist_ok=True)
-    os.makedirs(file_all_data_loc, exist_ok=True)
-
+    current_parsed_data = f'{current_parsed_dir}{local_flle}'
+    full_parsed_data = f'{BASE_PARSED_DATA_DIR}{common_flle}'
     with (
-        open(file_cur_data_loc + file_cur_data, 'a') as f_local,
-        open(file_all_data_loc + file_all_data, 'a+') as f_common,
+        open(current_parsed_data, 'a') as f_local,
+        open(full_parsed_data, 'a+') as f_common,
     ):
         with suppress(TypeError):  # skip if NoneType
             f_local.writelines(data)
@@ -140,35 +183,49 @@ def save_to(
 
             f_common.writelines(data)
 
-        logging.debug(f'data into {f_local.name} saved.')
-        logging.debug(f'data into {f_common.name} added.\n')
+        logger.debug(f'\t - {f_local.name} saved -')
+        logger.debug(f'\t - {f_common.name} added -\n')
 
 
 def _parse(driver: webdriver.Chrome):
     set_file_name(driver.current_url)
 
     current_iteration = 1  # skip 0th category with slider
-    while current_iteration < len((categories := driver.find_elements_by_class_name('bx-filter-block'))):
+    while current_iteration < len((
+        categories := driver.find_elements_by_class_name('bx-filter-block')
+    )):
         category = categories[current_iteration]
-        logging.debug(f"{category.text.replace(f'{chr(10)}', '-')}")
+        logger.debug(f" {category.text.replace(f'{chr(10)}', '-')}")
 
         if not category.text:
             break  # e.g., last category is empty
 
         if slider_exists_in(category):
             current_iteration += 1
-            continue
+            continue  # skip all diapazons
 
         show_all_elements_in(category)
         fetched = fetch_url_with_all_elements_in(category)
         urls = make_links(row_url=fetched)
-        save_to(PARSED_DATA_FILE, urls)
+        save_to(parsed_data_file, urls)
         current_iteration += 1
 
 
 def main(driver: webdriver.Chrome):
-    _parse(driver)
-    logging.debug(' * Done! *')
+    for category, links in scrape_aside_panel(driver).items():
+        logger.info(f'{category}:')
+        set_directory(category)
+        for url in links:
+            logger.info(f'\t{url}')
+            driver.get(url=url)
+            try:
+                _parse(driver)
+            except Exception as E:
+                print(repr(E))
+        else:
+            logger.info(f'\v - All urls in "{category}" parsed done! -\n')
+    else:
+        logger.info(' -*- ALL CATEGORIES PARSED DONE! -*-')
 
 
 from config.REPL.helpers import *
@@ -182,15 +239,15 @@ except WebDriverException as e:
     XLAUNCH_AS_POSSIBLE_PROBLEM = f'{e!r}\vCheck `XLaunch` health!\v'
 else:
     try:
-        driver.get(url=URL)
+        driver.get(url=BASE_URL)
     except MaxRetryError as failed_new_connection:
-        logging.exception(failed_new_connection)
+        logger.exception(failed_new_connection)
     try:
         main(driver)
     except Exception as unknoun_shit:
-        logging.exception(unknoun_shit)
+        logger.exception(f'{unknoun_shit=!r}')
 finally:
     try:
-        os.environ.get('PYTHONINSPECT', close(driver))  # type: ignore
+        os.environ.get('PYTHONINSPECT', close(dirver))  # type: ignore
     except NameError:
-        logging.exception(XLAUNCH_AS_POSSIBLE_PROBLEM)  # type: ignore
+        logger.exception(XLAUNCH_AS_POSSIBLE_PROBLEM)  # type: ignore
