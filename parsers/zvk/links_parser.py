@@ -6,7 +6,7 @@ import logging
 import os
 from contextlib import suppress
 from time import sleep
-from typing import Iterator, Optional
+from typing import Iterator
 
 from fake_useragent import UserAgent
 from selenium import webdriver
@@ -37,7 +37,6 @@ current_parsed_dir = 'dynamically_assigned_name_of_current_category'
 parsed_data_file = 'dynamically_assigned_name_of_current_subcategory'
 
 categories_names: Iterator[str] | None
-subcategories_names: Iterator[str] | None
 #endregion Variables
 
 
@@ -45,8 +44,10 @@ subcategories_names: Iterator[str] | None
 FORMAT = "%(filename)s:%(lineno)s::%(funcName)s: %(message)s"
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
 for name in ('urllib3', 'selenium'):
     logging.getLogger(name).setLevel(level=logging.WARNING)
+
 
 options = webdriver.ChromeOptions()
 options.add_argument(f'user-agent={UserAgent().chrome}')
@@ -120,8 +121,8 @@ def initialyze_driver() -> webdriver.Chrome:
     )
 
 
-def close(driver: Optional[webdriver.Chrome]):
-    driver and driver.quit()
+def close(driver: webdriver.Chrome | None = None):
+    driver is None or driver.quit()
 #endregion Driver
 
 
@@ -240,23 +241,20 @@ def main(driver: webdriver.Chrome):
                 _parse(driver)
             except Exception as E:
                 print(repr(E))
-        else:
-            logger.info(f'\v - All urls in "{category}" parsed done! -\n')
-    else:
-        logger.info(' -*- ALL CATEGORIES PARSED DONE! -*-')
+        logger.info(f'\v - All urls in "{category}" parsed done! -\n')
+    logger.info(' -*- ALL CATEGORIES PARSED DONE! -*-')
 #endregion Parser
 #endregion Functions
 
 #region __main__
 from config.REPL.helpers import *
 
-set_interactive_mode()
 register_python_history_file()
 
 try:
-    driver: Optional[webdriver.Chrome] = initialyze_driver()
+    driver: webdriver.Chrome | None = initialyze_driver()
 except WebDriverException as e:
-    XLAUNCH_AS_POSSIBLE_PROBLEM = f'{e!r}\vCheck `XLaunch` health!\v'
+    logger.exception(f'{e!r}\vCheck `XLaunch` health!\v')
 else:
     try:
         driver.get(url=BASE_URL)
@@ -265,10 +263,8 @@ else:
     try:
         main(driver)
     except Exception as unknoun_shit:
+        set_interactive_mode()
         logger.exception(f'{unknoun_shit=!r}')
 finally:
-    try:
-        os.environ.get('PYTHONINSPECT', close(dirver))  # type: ignore
-    except NameError:
-        logger.exception(XLAUNCH_AS_POSSIBLE_PROBLEM)  # type: ignore
+    os.environ.get('PYTHONINSPECT') or close(driver)  # type: ignore
 #endregion __main__
