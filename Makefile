@@ -34,8 +34,15 @@ xlaunch:
 
 include ./parsers/zvk/Makefile
 
-zparse:
-	@time -v -o "$(PARSER_DIR)/.parsers.log" ./.venv/bin/python3 . zvk
+PARSER_DIR := $(PWD)/parsers/zvk
+README := $(PARSER_DIR)/README.md
+TIME_LOG := $(PARSER_DIR)/.time.log
+DATA := $(PARSER_DIR)/data
 
-test:
-	sudo make check_status_codes
+zparse:
+	@time -v -o "$(TIME_LOG)" ./.venv/bin/python3 . zvk
+
+readme:
+
+# require `sudo`
+check_status_codes:
