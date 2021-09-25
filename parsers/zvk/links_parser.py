@@ -4,6 +4,7 @@
 #region Imports
 import logging
 import os
+import re
 from contextlib import suppress
 from time import sleep
 from typing import Iterator
@@ -28,25 +29,38 @@ from driver import chrome
 
 #region Constants
 BASE_URL = 'https://zvk.ru'
-BASE_PARSED_DATA_DIR = f'{os.getcwd()}/parsers/zvk/data/'
+ZVK_DIR = f'{os.getcwd()}/parsers/zvk'
+BASE_PARSED_DATA_DIR = f'{ZVK_DIR}/data/'
+FACET_INDEX_LOG = f'{ZVK_DIR}/facet_index.log'
+DEBUG_LOG = f'{ZVK_DIR}/.debug.log'
 ALL_PARSED_FILE = '_all_parsed'
 #endregion Constants
 
-
-current_parsed_dir = 'dynamically_assigned_name_of_current_category'
-parsed_data_file = 'dynamically_assigned_name_of_current_subcategory'
+current_parsed_dir = 'dynamically assigned name of current category'
+parsed_data_file = 'dynamically assigned name of current subcategory'
 
 categories_names: Iterator[str] | None
 #endregion Variables
 
 
 #region Configurations
-FORMAT = "%(filename)s:%(lineno)s::%(funcName)s: %(message)s"
-logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-for name in ('urllib3', 'selenium'):
-    logging.getLogger(name).setLevel(level=logging.WARNING)
+logger.setLevel(logging.DEBUG)
+stream_formatter = "[%(filename)s.%(funcName)s:%(lineno)s] %(message)s"
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(logging.Formatter(stream_formatter))
+file_formatter_debug = stream_formatter
+file_handler_debug = logging.FileHandler(DEBUG_LOG, mode='w')
+file_handler_debug.setLevel(logging.DEBUG)
+file_handler_debug.setFormatter(logging.Formatter(file_formatter_debug))
+file_formatter_info = ""  # {"propetry_name": "selected_count", ...}\n
+file_handler_info = logging.FileHandler(FACET_INDEX_LOG, mode='w')
+file_handler_info.setLevel(logging.INFO)
+file_handler_info.setFormatter(logging.Formatter(file_formatter_info))
+logger.addHandler(console_handler)
+logger.addHandler(file_handler_debug)
+logger.addHandler(file_handler_info)
 
 
 options = webdriver.ChromeOptions()
@@ -84,6 +98,11 @@ def make_links(row_url: str) -> list[str]:
 
 def _construct(url: str, params: str) -> str:
     return ''.join(f"{url}{params}{'' if '/' in params else '/'}\n")
+
+
+def _dict_facet_index_by(category_items: str) -> dict[str, str]:
+    clean_data = re.sub('[()]', '', category_items).split('\n')
+    return dict(zip(clean_data[::2], clean_data[1::2]))
 
 
 def save_to(
@@ -207,14 +226,11 @@ def _click_all_elements_in(category: WebElement, action: str):
 
 
 def _parse(driver: webdriver.Chrome):
-    set_file_name(driver.current_url)
-
     current_iteration = 1  # skip 0th category with slider
     while current_iteration < len((
         categories := driver.find_elements_by_class_name('bx-filter-block')
     )):
         category = categories[current_iteration]
-        logger.debug(f" {category.text.replace(f'{chr(10)}', '-')}")
 
         if not category.text:
             break  # e.g., last category is empty
@@ -224,6 +240,7 @@ def _parse(driver: webdriver.Chrome):
             continue  # skip all diapazons
 
         show_all_elements_in(category)
+        logger.info(f'{_dict_facet_index_by(category.text)}')
         fetched = fetch_url_with_all_elements_in(category)
         urls = make_links(row_url=fetched)
         save_to(parsed_data_file, urls)
@@ -232,17 +249,18 @@ def _parse(driver: webdriver.Chrome):
 
 def main(driver: webdriver.Chrome):
     for category, links in scrape_aside_panel(driver).items():
-        logger.info(f'{category}:')
+        logger.debug(f'{category}:')
         set_directory(category)
         for url in links:
-            logger.info(f'\t{url}')
+            logger.debug(f'\t{url}')
             driver.get(url=url)
+            set_file_name(driver.current_url)
             try:
                 _parse(driver)
             except Exception as E:
                 print(repr(E))
-        logger.info(f'\v - All urls in "{category}" parsed done! -\n')
-    logger.info(' -*- ALL CATEGORIES PARSED DONE! -*-')
+        logger.debug(f'\v - All urls in "{category}" parsed done! -\n')
+    logger.debug(' -*- ALL CATEGORIES PARSED DONE! -*-')
 #endregion Parser
 #endregion Functions
 
