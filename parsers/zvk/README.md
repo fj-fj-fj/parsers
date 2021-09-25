@@ -1,6 +1,4 @@
 ```sh
-$ tree parsers/zvk/data/
-
 parsers/zvk/data/
 ├── _all_parsed
 ├── elektronika
@@ -69,23 +67,23 @@ parsers/zvk/data/
 #
 ```sh
 	Command being timed: "./.venv/bin/python3 . zvk"
-	User time (seconds): 134.60
-	System time (seconds): 100.58
-	Percent of CPU this job got: 4%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:37:02
+	User time (seconds): 123.61
+	System time (seconds): 83.02
+	Percent of CPU this job got: 3%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:38:12
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 66280
+	Maximum resident set size (kbytes): 60876
 	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 2872
-	Minor (reclaiming a frame) page faults: 2239677
-	Voluntary context switches: 1607510
-	Involuntary context switches: 2206
+	Major (requiring I/O) page faults: 10356
+	Minor (reclaiming a frame) page faults: 2249426
+	Voluntary context switches: 1133232
+	Involuntary context switches: 2221
 	Swaps: 0
-	File system inputs: 382704
-	File system outputs: 165616
+	File system inputs: 1225624
+	File system outputs: 158768
 	Socket messages sent: 0
 	Socket messages received: 0
 	Signals delivered: 0
