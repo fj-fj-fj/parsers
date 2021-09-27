@@ -1,3 +1,22 @@
+r"""
+This script combines all unique links with two parameters
+from two other with multiple parameters links.
+
+Example:
+    >>> generate([ # doctest: +NORMALIZE_WHITESPACE
+    ... 'http://site.com/ONE-is-foo-or-bar/',
+    ... 'http://site.com/TWO-is-spam-or-egg/',
+    ... ])
+    ['http://site.com/ONE-is-foo/TWO-is-spam/\n', 'http://site.com/ONE-is-foo/TWO-is-egg/\n',
+    'http://site.com/ONE-is-bar/TWO-is-spam/\n', 'http://site.com/ONE-is-bar/TWO-is-egg/\n']
+
+generate()
+    _generate_combinations()
+        _decompose()
+            _split()
+            _get_params()
+    _combine()
+"""
 import itertools
 
 

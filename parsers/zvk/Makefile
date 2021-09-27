@@ -22,3 +22,7 @@ readme:
 	echo '```sh' >> $(README) && \
 	cat $(TIME_LOG) >> $(README) && \
 	echo '```' >> $(README)
+
+
+test:
+	python3 -m doctest -v "$(PARSER_DIR)/_test_combinatorics.py"
