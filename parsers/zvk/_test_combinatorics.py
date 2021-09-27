@@ -93,9 +93,9 @@ if __name__ == '__main__':
 
 
     count = lambda url: len(url.split('-or-'))
-    COUNT_BRENDS, COUNT_TSVETNOST_PECHATI = count(brand_url), count(tsvetnost_pechati_url)
+    COUNT_BRANDS, COUNT_TSVETNOST_PECHATI = count(brand_url), count(tsvetnost_pechati_url)
 
-    assert results.__len__() == COUNT_BRENDS * COUNT_TSVETNOST_PECHATI
+    assert results.__len__() == COUNT_BRANDS * COUNT_TSVETNOST_PECHATI
     assert results == [
         'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-brother/tsvetnost_pechati-is-tsvetnoy/\n',
         'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-brother/tsvetnost_pechati-is-cherno_belyy/\n',
