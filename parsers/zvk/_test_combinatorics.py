@@ -8,40 +8,36 @@ def _split(url: str) -> tuple[str, list[str]]:
     return (property_name, property_types)
 
 
-def _decompose(urls: list[str]) -> list[tuple[str, list[str]]]:
-    return [_split(url) for url in urls]
+def _get_params(decomposed_url: tuple[str, list[str]]) -> list[str]:
+    property_name, items = decomposed_url
+    return [f'{property_name}-is-{item}/' for item in items]
 
 
-def _combine(items_by_propery_name, start = 2, stop = 2):
-    # (list[tuple[str, list[str]]], int, int) -> list[str]
+def _decompose(urls: list[str]) -> list[str]:
+    return [p for pool in (_get_params(_split(u)) for u in urls) for p in pool]
+
+
+def _combine(formed_get_params: list[str], start = 2, stop = 2) -> list[str]:
     params_combinations: list[str] = []
-    pool: list[str] = []
-    category, category_2 = items_by_propery_name
+    pool: list[str] = formed_get_params
     len_sec = itertools.count(start)
 
-    property_name, items = category
-    for item in items:
-        pool += [f'{property_name}-is-{item}/']
+    iteration = next(len_sec)
+    while iteration <= stop:
+        for param, param_2 in itertools.combinations(pool, start):
+            property_name_param = param.split('is')[0]
+            property_name_param_2 = param_2.split('is')[0]
+            if property_name_param == property_name_param_2:
+                continue
+            params_combinations += [f'{param}{param_2}']
+        iteration += 1
 
-        property_name_2, items_2 = category_2
-        for item_2 in items_2:
-            pool += [f'{property_name_2}-is-{item_2}/']
-
-        iteration = next(len_sec)
-        while iteration <= stop:
-            for param, param_2 in itertools.combinations(pool, start):
-                property_name_param = param.split('is')[0]
-                property_name_param_2 = param_2.split('is')[0]
-                if property_name_param == property_name_param_2:
-                    continue
-                params_combinations += [f'{param}{param_2}']
-            iteration += 1
     return params_combinations
 
 
 def _generate_combinations(urls: list[str]) -> list[str]:
-    property_types_by_name = _decompose(urls)
-    return _combine(property_types_by_name)
+    formed_get_params = _decompose(urls)
+    return _combine(formed_get_params)
 
 
 def generate(urls: list[str]) -> list[str]:
@@ -49,32 +45,61 @@ def generate(urls: list[str]) -> list[str]:
     return [f'{base_url}/{params}\n' for params in _generate_combinations(urls)]
 
 
-brand_url = (
-    'https://zvk.ru/'
-    'catalog/orgtekhnika/printery/'
-    'filter/brand-is-'
-    'brother'
-    '-or-canon'
-    '-or-epson'
-    '-or-hp'
-    '-or-konica-minolta'
-    '-or-kyocera'
-    '-or-lexmark'
-    '-or-oki'
-    '-or-pantum'
-    '-or-ricoh'
-    '-or-sharp'
-    '-or-xerox/'
-)
-tsvetnost_pechati_url = (
-    'https://zvk.ru/catalog/orgtekhnika/printery/'
-    'filter/tsvetnost_pechati-is-'
-    'tsvetnoy'
-    '-or-cherno_belyy/'
-)
+if __name__ == '__main__':
+    brand_url = (
+        'https://zvk.ru/'
+        'catalog/orgtekhnika/printery/'
+        'filter/brand-is-'
+        'brother'
+        '-or-canon'
+        '-or-epson'
+        '-or-hp'
+        '-or-konica-minolta'
+        '-or-kyocera'
+        '-or-lexmark'
+        '-or-oki'
+        '-or-pantum'
+        '-or-ricoh'
+        '-or-sharp'
+        '-or-xerox/'
+    )
+    tsvetnost_pechati_url = (
+        'https://zvk.ru/catalog/orgtekhnika/printery/'
+        'filter/tsvetnost_pechati-is-'
+        'tsvetnoy'
+        '-or-cherno_belyy/'
+    )
 
-results = generate(urls=[brand_url, tsvetnost_pechati_url])
+    results = generate(urls=[brand_url, tsvetnost_pechati_url])
 
-assert 'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-brother/tsvetnost_pechati-is-tsvetnoy/\n' in results
-assert 'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-brother/tsvetnost_pechati-is-cherno_belyy/\n' in results
-assert results.__len__() == 2
+
+    count = lambda url: len(url.split('-or-'))
+    COUNT_BRENDS, COUNT_TSVETNOST_PECHATI = count(brand_url), count(tsvetnost_pechati_url)
+
+    assert results.__len__() == COUNT_BRENDS * COUNT_TSVETNOST_PECHATI
+    assert results == [
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-brother/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-brother/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-canon/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-canon/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-epson/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-epson/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-hp/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-hp/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-konica-minolta/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-konica-minolta/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-kyocera/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-kyocera/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-lexmark/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-lexmark/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-oki/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-oki/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-pantum/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-pantum/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-ricoh/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-ricoh/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-sharp/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-sharp/tsvetnost_pechati-is-cherno_belyy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-xerox/tsvetnost_pechati-is-tsvetnoy/\n',
+        'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-xerox/tsvetnost_pechati-is-cherno_belyy/\n'
+    ]
