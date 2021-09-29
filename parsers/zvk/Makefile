@@ -26,3 +26,11 @@ readme:
 
 test:
 	python3 -m doctest -v "$(PARSER_DIR)/_test_combinatorics.py"
+
+
+generate_urls:
+	./.venv/bin/python3 "$(PARSER_DIR)/url_generator.py"
+
+
+clean_up:
+	find "$(PARSER_DIR)" -name '*_2' -exec rm -f {} +

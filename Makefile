@@ -44,5 +44,8 @@ zparse:
 
 readme:
 
-# require `sudo`
-check_status_codes:
+check_status_codes: # `sudo make check_status_codes`
+
+generate_urls:
+
+clean_up:
