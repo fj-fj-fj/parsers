@@ -33,4 +33,14 @@ generate_urls:
 
 
 clean_up:
-	find "$(PARSER_DIR)" -name '*_2' -exec rm -f {} +
+	find "$(PARSER_DIR)" -name '*_[0-9]' -exec rm -f {} +
+
+
+wc1:
+	@wc -l `find $(DATA) -type f -iname "*" ! -iname "*_[0-9]" ! -iname "_all_parsed*"` | tail -1
+	@wc -l `find $(DATA) -name "_all_parsed"`
+wc2:
+	@wc -l `find $(DATA) -type f -iname "*_2" ! -iname "_all_parsed_2"` | tail -1
+	@wc -l `find $(DATA) -name "_all_parsed_2"`
+wc9:
+	@wc -l `find $(DATA) -type f -iname "*" ! -iname "_all_parsed*"` | tail -1

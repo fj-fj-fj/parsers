@@ -8,6 +8,10 @@ versions:
 	@"$(PWD)/driver/chrome/chromedriver" --version
 	@printf 'Selenium '; python3 -c "print(__import__('selenium').__version__)"
 
+
+cloc:
+	cloc --exclude-list-file=.clocignore .
+
 # ------------------------------------ XSERVER ------------------------------------
 
 check_xserver_process_exist:
@@ -49,3 +53,7 @@ check_status_codes: # `sudo make check_status_codes`
 generate_urls:
 
 clean_up:
+
+wc1:
+wc2:
+wc9:
