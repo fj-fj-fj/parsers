@@ -5,6 +5,12 @@ import combinatorics
 
 PATH = Path('parsers/zvk/data')
 
+ALL_PARSED_FILE = '_all_parsed_{}'
+
+EXCLUDE_FILES = {
+    '_all_parsed',
+}
+
 needed_properties = {
     'brand',
     'proizviditel',
@@ -27,7 +33,7 @@ def _stem(line: str, sep = 'filter/', idx = -1, sep2 = '-', idx2 = 0) -> str:
 
 
 def read(file, stems = needed_properties):
-    # (Path, set[str]) -> dict[str, str[str]] | None
+    # (Path, set[str]) -> dict[str, dict[str, set[str]]] | None
     with open(file) as f:
         lines, fname =  f.readlines(), f.name #_stem(f.name, sep='zvk', sep2='None')
 
@@ -43,7 +49,7 @@ def read(file, stems = needed_properties):
 
 def readfiles(path = PATH):
     for p in walk(path):
-        if p.is_file():
+        if p.is_file() and p.name not in EXCLUDE_FILES:
             yield read(p)
 
 
@@ -54,31 +60,50 @@ def make_long_url(category: str, parts: set[str]) -> str:
     return f"{base_url}/{category}-is-{'-or-'.join(url_params)}/"
 
 
-def save(file, data: list[str], path: Path = PATH, mode='w'):
-    filename = file.name
-    path = file.parent
-    filepath = path/f'{filename}_2'
-    with filepath.open(mode) as f:
+def save(
+    file: Path,
+    data: list[str],
+    mode: str = 'a',
+    prefix_file: int = 1,
+    common_file = ALL_PARSED_FILE,
+):
+    # save into local files
+    file_name = f'{file.name}_{prefix_file}'
+    file_path = file.parent/file_name
+    with file_path.open(mode) as f:
+        f.writelines(data)
+
+    # save into common file
+    all_parsed_name = common_file.format(prefix_file)
+    file_path = file.parent.parent/all_parsed_name
+    with file_path.open(mode) as f:
         f.writelines(data)
 
 
-def generate_multiple_params_urls(count_urls):
+def generate_multiple_params_urls(count_urls: int = 2):
     for categories_by_file in readfiles():
         if categories_by_file is not None:
-            for file, categoties in categories_by_file.items():
+            for file, categories in categories_by_file.items():
                 print(f'{file=}')
-                generation_order = []
-                for index, (stem, value) in enumerate(categoties.items(), 1):
+
+                long_urls = []
+                for stem, value in categories.items():
                     url = make_long_url(stem, value)
                     print(f'\t{stem=},\n\t\t{url=}')
-                    generation_order += [url]
-                    if index == count_urls:
-                        result = combinatorics.generate(generation_order)
-                        save(Path(file), result)
+                    long_urls += [url]
+
+                combinations = combinatorics._combine(
+                    long_urls,
+                    stop=count_urls,
+                    _internal=False,
+                )
+                for combination in combinations:
+                    result = combinatorics.generate(combination)
+                    save(Path(file), result, prefix_file=count_urls)
 
 
-def main(count_urls: int = 2):
-    generate_multiple_params_urls(count_urls)
+def main():
+    generate_multiple_params_urls()
 
 
 if __name__ == '__main__':
