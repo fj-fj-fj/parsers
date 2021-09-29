@@ -1,7 +1,4 @@
 r"""
-This script combines all unique links with two parameters
-from two other with multiple parameters links.
-
 Example:
     >>> generate([ # doctest: +NORMALIZE_WHITESPACE
     ... 'http://site.com/ONE-is-foo-or-bar/',
@@ -13,11 +10,11 @@ Example:
 generate()
     _generate_combinations()
         _decompose()
-            _split()
-            _get_params()
-    _combine()
+            _get_params(_split())
+        _combine()
 """
 import itertools
+from typing import Literal
 
 
 def _split(url: str) -> tuple[str, list[str]]:
@@ -36,9 +33,11 @@ def _decompose(urls: list[str]) -> list[str]:
     return [p for pool in (_get_params(_split(u)) for u in urls) for p in pool]
 
 
-def _combine(formed_get_params: list[str], start = 2, stop = 2) -> list[str]:
-    params_combinations: list[str] = []
-    pool: list[str] = formed_get_params
+def _combine(elements, start = 2, stop = 2, _internal = True):
+    # (list[str], int, int, bool) -> list[str] | list[tuple[str] | None]
+    # params: _internal: `_combine()` imports in other module
+    combinations = []
+    pool: list[str] = elements
     len_sec = itertools.count(start)
 
     iteration = next(len_sec)
@@ -48,13 +47,15 @@ def _combine(formed_get_params: list[str], start = 2, stop = 2) -> list[str]:
             property_name_param_2 = param_2.split('is')[0]
             if property_name_param == property_name_param_2:
                 continue
-            params_combinations += [f'{param}{param_2}']
+            comb_item = f'{param}{param_2}' if _internal else (param, param_2)
+            combinations += [comb_item]
         iteration += 1
 
-    return params_combinations
+    return combinations
 
 
-def _generate_combinations(urls: list[str]) -> list[str]:
+def _generate_combinations(urls):
+    # (list[str | None] | list[tuple[str] | None]) -> list[str]
     formed_get_params = _decompose(urls)
     return _combine(formed_get_params)
 
