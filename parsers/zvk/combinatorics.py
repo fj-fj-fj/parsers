@@ -12,6 +12,7 @@ generate()
         _decompose()
             _get_params(_split())
         _combine()
+
 """
 import itertools
 
@@ -32,21 +33,26 @@ def _decompose(urls: list[str]) -> list[str]:
     return [p for pool in (_get_params(_split(u)) for u in urls) for p in pool]
 
 
-def _combine(elements, start = 2, stop = 2, _internal = True):
-    # (list[str], int, int, bool) -> list[str] | list[tuple[str] | None]
+def _combine(elements, returned_len_subsequences = 2, _internal = True):
+    # (list[str], int, bool) -> list[str] | list[Optional[tuple[str]]]
+    if not _internal:
+        # `_combine()` was called in other module,
+        # save `returned_len_subsequences` as second parameter for `itertools.combinations`
+        _combine.__len = returned_len_subsequences
+    # get `_combine.__len` if saved, default otherwise
+    len_subsequences = getattr(_combine, '__len', returned_len_subsequences)
+    len_sec = itertools.count(len_subsequences)  # type: ignore
+
     combinations = []
     pool: list[str] = elements
-    len_sec = itertools.count(start)
 
     iteration = next(len_sec)
-    while iteration <= stop:
-        for param, param_2 in itertools.combinations(pool, start):
-            property_name_param = param.split('is')[0]
-            property_name_param_2 = param_2.split('is')[0]
-            if property_name_param == property_name_param_2:
+    while iteration <= len_subsequences:
+        for params in itertools.combinations(pool, len_subsequences):  # type: ignore
+            if len(set([el.split('is')[0] for el in params])) < len(params):
                 continue
             # _internal = False if `_combine()` exports in other module
-            comb_item = f'{param}{param_2}' if _internal else (param, param_2)
+            comb_item = f''.join(params) if _internal else params
             combinations += [comb_item]
         iteration += 1
 
