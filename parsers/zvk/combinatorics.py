@@ -14,7 +14,6 @@ generate()
         _combine()
 """
 import itertools
-from typing import Literal
 
 
 def _split(url: str) -> tuple[str, list[str]]:
@@ -35,7 +34,6 @@ def _decompose(urls: list[str]) -> list[str]:
 
 def _combine(elements, start = 2, stop = 2, _internal = True):
     # (list[str], int, int, bool) -> list[str] | list[tuple[str] | None]
-    # params: _internal: `_combine()` imports in other module
     combinations = []
     pool: list[str] = elements
     len_sec = itertools.count(start)
@@ -47,6 +45,7 @@ def _combine(elements, start = 2, stop = 2, _internal = True):
             property_name_param_2 = param_2.split('is')[0]
             if property_name_param == property_name_param_2:
                 continue
+            # _internal = False if `_combine()` exports in other module
             comb_item = f'{param}{param_2}' if _internal else (param, param_2)
             combinations += [comb_item]
         iteration += 1
@@ -66,6 +65,7 @@ def generate(urls: list[str]) -> list[str]:
 
 
 if __name__ == '__main__':
+#region Test
     brand_url = (
         'https://zvk.ru/'
         'catalog/orgtekhnika/printery/'
@@ -123,3 +123,4 @@ if __name__ == '__main__':
         'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-xerox/tsvetnost_pechati-is-tsvetnoy/\n',
         'https://zvk.ru/catalog/orgtekhnika/printery/filter/brand-is-xerox/tsvetnost_pechati-is-cherno_belyy/\n'
     ]
+#endregion Test
