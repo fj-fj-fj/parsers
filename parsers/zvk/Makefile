@@ -32,6 +32,11 @@ generate_urls:
 	./.venv/bin/python3 "$(PARSER_DIR)/url_generator.py"
 
 
+see_multi_params_files:
+	python3 -c "from pathlib import Path;\
+	print(*[fn.name for fn in Path('$(DATA)').glob('**/*') if fn.is_file() and fn.match('*_[0-9]')], sep='\n')"
+
+
 clean_up:
 	find "$(PARSER_DIR)" -name '*_[0-9]' -exec rm -f {} +
 
@@ -42,5 +47,8 @@ wc1:
 wc2:
 	@wc -l `find $(DATA) -type f -iname "*_2" ! -iname "_all_parsed_2"` | tail -1
 	@wc -l `find $(DATA) -name "_all_parsed_2"`
+wc3:
+	@wc -l `find $(DATA) -type f -iname "*_3" ! -iname "_all_parsed_3"` | tail -1
+	@wc -l `find $(DATA) -name "_all_parsed_3"`
 wc9:
 	@wc -l `find $(DATA) -type f -iname "*" ! -iname "_all_parsed*"` | tail -1
