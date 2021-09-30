@@ -49,7 +49,11 @@ def read(file, stems = needed_properties):
 
 def readfiles(path = PATH):
     for p in walk(path):
-        if p.is_file() and p.name not in EXCLUDE_FILES:
+        if all([
+            p.is_file(),
+            not p.match('*_[0-9]'),
+            p.name not in EXCLUDE_FILES,
+        ]):
             yield read(p)
 
 
@@ -80,7 +84,7 @@ def save(
         f.writelines(data)
 
 
-def generate_multiple_params_urls(count_urls: int = 2):
+def generate_multiple_params_urls(count_urls: int):
     for categories_by_file in readfiles():
         if categories_by_file is not None:
             for file, categories in categories_by_file.items():
@@ -93,8 +97,8 @@ def generate_multiple_params_urls(count_urls: int = 2):
                     long_urls += [url]
 
                 combinations = combinatorics._combine(
-                    long_urls,
-                    stop=count_urls,
+                    elements=long_urls,
+                    returned_len_subsequences=count_urls,
                     _internal=False,
                 )
                 for combination in combinations:
@@ -102,9 +106,11 @@ def generate_multiple_params_urls(count_urls: int = 2):
                     save(Path(file), result, prefix_file=count_urls)
 
 
-def main():
-    generate_multiple_params_urls()
+def main(**count_urls):
+    generate_multiple_params_urls(**count_urls)
 
 
 if __name__ == '__main__':
-    main()
+    main(count_urls=2)
+    main(count_urls=3)
+    main(count_urls=4)
