@@ -60,3 +60,29 @@ wc1:
 wc2:
 wc3:
 wc9:
+
+
+# --------------- wiki ---------------
+
+include ./parsers/wiki/Makefile
+
+PYTHON := ./.venv/bin/python3
+
+PARSER_DIR := $(PWD)/parsers/wiki
+PARSER := "$(PARSER_DIR)/parse_wikipedia.py"
+
+TAIL_F := $(PARSER_DIR)/tail_f_logs.sh
+TIME_LOG := $(PARSER_DIR)/.time.log
+
+DATA := $(PARSER_DIR)/data
+ANIMALS_LIST := $(DATA)/animals_list
+
+wparse:
+
+tail-f:
+
+wt:
+	nohup make wparse > "$(PARSER_DIR)/nohup.out" 2>&1 &
+	sleep 2; make --ignore-errors tail-f
+
+count_animals:

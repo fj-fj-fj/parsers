@@ -14,5 +14,7 @@ match parser:
         from parsers.discontinued_tech import *
     case 'zvk':
         from parsers.zvk.links_parser import *
+    case 'wiki':
+        from parsers.wiki.parse_wikipedia import *
     case _:
         print(f"NameError: name '{parser}' is not defined")
