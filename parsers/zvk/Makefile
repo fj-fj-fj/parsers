@@ -13,6 +13,10 @@ check_status_codes:
 	bash "$(PARSER_DIR)/status_code_checker.sh"
 
 
+check_correct_params:
+	bash "$(PARSER_DIR)/correct_params_checker.sh" | tee $(PARSER_DIR)/check_correct_params.log
+
+
 readme:
 	@echo '```sh' > $(README) && \
 	echo 'parsers/zvk/data/' >> $(README) && \
