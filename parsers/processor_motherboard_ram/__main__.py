@@ -1,55 +1,62 @@
+#! /usr/bin/env python
+# -*- coding: UTF-8 -*-
 import csv
 import os
 import random
 import time
+from contextlib import suppress
+from multiprocessing import Pool
 
 import requests
 from bs4 import BeautifulSoup
-from contextlib import suppress
 from fake_useragent import UserAgent
 
-URL_BASE = 'https://www.citilink.ru'
 
-
-def parse(url: str, category: str):
+def parse(url: str):
     page: str = load_page(url)
+    category = url[:-1].rsplit('/', 1)[-1]
     parse_page(page, category)
 
 
 def load_page(url: str, sleep: int = 0, ua: str = UserAgent().chrome) -> str:
     def timeout(status_code: int) -> int:
-        return {503: 3, 429: random.uniform(200, 500)}[status_code]
+        return {
+            503: random.uniform(2, 5),
+            429: int(r.headers.get('Retry-After', random.uniform(100, 1000))),
+        }[status_code]
 
     time.sleep(sleep)
     print(f'GET: {url}')
     r = requests.get(url, headers={'user-agent': ua})
     print('Status code: ', r.status_code)
+    if r.status_code == 429:
+        print(f'Too many redirect! Retry-After: {r.headers.get("Retry-After")}')
     time.sleep(random.uniform(2., 4.))
     return r.text if r.ok else load_page(url, timeout(r.status_code))
 
 
-def beautiful_soup(func, parser: str = 'lxml'):
+def beautifulsoup_parser(func, parser: str = 'lxml'):
     def wrapper(page, *args, **kwargs):
         soup = BeautifulSoup(page, parser)
         return func(soup, *args, **kwargs)
     return wrapper
 
 
-@beautiful_soup
-def parse_page(page: str, category: str) -> list:
+@beautifulsoup_parser
+def parse_page(page: str, category: str):
     for a in page.find_all('a', {'class': 'ProductCardHorizontal__title'}):
         print('---', a.text.strip(), sep='\n')
         url_item_propertis = f'{URL_BASE}{a.get("href")}/properties'
+        time.sleep(random.uniform(7., 13.))
         page = load_page(url_item_propertis)
         data = parse_item(page)
         save(data, category)
 
 
-@beautiful_soup
+@beautifulsoup_parser
 def parse_item(page: str) -> list:
     item = page.h1.text.strip().replace('Характеристики ', '')
     data, data_names, data_values = [], ['Наименование'], [item]
-    # print(item, '-' * len(item), sep='\n')
 
     for div in page.find_all('div', {'class': 'SpecificationsFull'}):
         with suppress(AttributeError):
@@ -67,7 +74,6 @@ def parse_item(page: str) -> list:
                 time.sleep(random.ranuniformdint(1., 3.))
     data.append(data_names)
     data.append(data_values)
-    time.sleep(random.uniform(2., 4.))
     return data
 
 
@@ -76,15 +82,22 @@ def save(data: list, category: str):
     print(f'Data saving to {file=}...')
     with open(file, 'a') as f:
         writer = csv.writer(f)
-        is_empty = os.stat(file).st_size == 0
+        is_empty: bool = os.stat(file).st_size == 0
         writer.writerows(data if is_empty else data[1:])
     print('Saved successfull!\n')
 
 
 if __name__ == '__main__':
-    for category in ('materinskie-platy', 'processory', 'moduli-pamyati'):
-        url = f'{URL_BASE}/catalog/{category}/'
-        print('\nProgram starting ...')
-        print(f'Parse category: {category}\n')
-        parse(url, category)
-        print('\nProgram finished!')
+    print('\nProgram starting ...')
+
+    URL_BASE = 'https://www.citilink.ru'
+    urls = [
+        f'{URL_BASE}/catalog/materinskie-platy/',
+        f'{URL_BASE}/catalog/processory/',
+        f'{URL_BASE}/catalog/moduli-pamyati/',
+    ]
+
+    with Pool(len(urls)) as pool:
+        pool.map(parse, urls)
+
+    print('\nProgram finished!')
