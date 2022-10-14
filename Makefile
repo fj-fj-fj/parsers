@@ -12,6 +12,10 @@ versions:
 cloc:
 	cloc --exclude-list-file=.clocignore .
 
+
+list:
+	@grep '^[^#[:space:]].*:' Makefile
+
 # ------------------------------------ XSERVER ------------------------------------
 
 check_xserver_process_exist:
@@ -38,10 +42,18 @@ xlaunch:
 
 include ./parsers/zvk/Makefile
 
-PARSER_DIR := $(PWD)/parsers/zvk
-README := $(PARSER_DIR)/README.md
-TIME_LOG := $(PARSER_DIR)/.time.log
-DATA := $(PARSER_DIR)/data
+ZVK_TARGET := $(filter $(firstword $(MAKECMDGOALS)), zparse readme check_status_codes check_correct_params generate_urls see_multi_params_files clean_up wc1 wc2 wc3 wc9)
+# ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),\
+# 	zparse readme check_status_codes check_correct_params generate_urls see_multi_params_files clean_up wc1 wc2 wc3 wc9))
+# ifdef $(ZVK_TARGET)
+ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),check_correct_params))
+	PYTHON := ./.venv/bin/python3
+
+	PARSER_DIR := $(PWD)/parsers/zvk
+	DATA := $(PARSER_DIR)/data
+	README := $(PARSER_DIR)/README.md
+	TIME_LOG := $(PARSER_DIR)/.time.log
+endif
 
 zparse:
 	@time -v -o "$(TIME_LOG)" ./.venv/bin/python3 . zvk
@@ -49,6 +61,7 @@ zparse:
 readme:
 
 check_status_codes: # `sudo make check_status_codes`
+check_correct_params: # `sudo make check_status_codes`
 
 generate_urls:
 
@@ -66,16 +79,20 @@ wc9:
 
 include ./parsers/wiki/Makefile
 
-PYTHON := ./.venv/bin/python3
+# ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),wparse))
+WIKI_TARGET := $(filter $(firstword $(MAKECMDGOALS)),wparse tail-f wt count_animals)
+ifdef $(WIKI_TARGET)
+	PYTHON := ./.venv/bin/python3
 
-PARSER_DIR := $(PWD)/parsers/wiki
-PARSER := "$(PARSER_DIR)/parse_wikipedia.py"
+	PARSER_DIR := $(PWD)/parsers/wiki
+	PARSER := "$(PARSER_DIR)/parse_wikipedia.py"
 
-TAIL_F := $(PARSER_DIR)/tail_f_logs.sh
-TIME_LOG := $(PARSER_DIR)/.time.log
+	TAIL_F := $(PARSER_DIR)/tail_f_logs.sh
+	TIME_LOG := $(PARSER_DIR)/.time.log
 
-DATA := $(PARSER_DIR)/data
-ANIMALS_LIST := $(DATA)/animals_list
+	DATA := $(PARSER_DIR)/data
+	ANIMALS_LIST := $(DATA)/animals_list
+endif
 
 wparse:
 
