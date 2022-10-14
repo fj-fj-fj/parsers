@@ -1,2 +1,1 @@
-# sudo apt install libxml2-dev libxslt-dev to install lxml
 -r ./requirements/base.txt

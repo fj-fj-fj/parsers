@@ -1,12 +1,6 @@
 # Python equivalent of a .bashrc
 
 # .pythonrc runs every time i start the REPL to
-# define my functions and set up my environment.
-# Python checks for a special environment variable,
-# called `PYTHONSTARTUP`, and if that variable is
-# set to a path, it runs the file at that path.
-
-# I added this line to my .envrc file:
 # export PYTHONSTARTUP="$(pwd)"/.pythonrc
 
 # enable tab completion
