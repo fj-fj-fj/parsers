@@ -3,6 +3,7 @@ __pycache__/
 *.log
 **data**
 **html**
+**log**
 **parsed_data**
 **tmp**
 .envrc
