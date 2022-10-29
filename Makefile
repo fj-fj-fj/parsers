@@ -40,16 +40,13 @@ PYTHON := $(BIN_DIR)/python3
 
 # -------------- proxy ----------------
 
-PROXY_DIR := $(PWD)/request/proxy
-px: PARSER := $(PROXY_DIR)/parser.py
-checkpx: PARSER := $(PROXY_DIR)/checker.py
+px: PARSER := $(PWD)/request/__init__.py
 px: parse
-checkpx: parse
 
 # -------------------------------------
 
 parse:
-	@time -vo $(shell dirname $(PARSER))/log/.time.log "$(PYTHON)" -i "$(PARSER)"
+	@time -vo $(shell dirname $(PARSER))/.time.log "$(PYTHON)" -i "$(PARSER)"
 
 
 include ./parsers/zvk/Makefile

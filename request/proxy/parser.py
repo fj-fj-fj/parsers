@@ -1,35 +1,33 @@
-#!/usr/bin/env python
+"""Proxy parsing module"""
+# This module cannot be running.
+# To get proxies manually use ../__init__.py with -i
+
+__all__ = 'parse', 'parse_proxies'
+
 import requests
 from bs4 import BeautifulSoup
 
-try:
-    from request.proxy.constants import const
-    from utils import save
-except ModuleNotFoundError:
-    __import__('patch').update_syspath(__file__)
-    from request.proxy.constants import const
-    from utils import save
-
-__all__ = 'parse', 'parse_proxies'
+from proxy.constants import const
+from utils import save
 
 
 def parse(**kw):
     """Parse proxies with print parsed"""
-    response = parse_proxies(**kw)
-    print(f'{response=}')
+    response = parse_proxies(log=True, **kw)
+    return f'{response=}'
 
 
-def parse_proxies(**kw) -> list:
+def parse_proxies(log=False, **kw) -> list:
     """Parse proxies from `constants.const.URL`"""
     url, fpx, fresp, parser = set_default(**kw).values()
 
     response = requests.get(url).text
-    save(data=response, file=fresp)
+    save(data=response, file=fresp, log=log)
 
     table = BeautifulSoup(response, parser).find('table')
     tr_gen = (tr.find('td') for tr in table.find_all('tr'))
     proxies = [td.text for td in tr_gen if td]
-    save(data='\n'.join(proxies), file=fpx)
+    save(data='\n'.join(proxies), file=fpx, log=log)
 
     return proxies
 
