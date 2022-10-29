@@ -3,21 +3,18 @@ MAKEFLAGS += --no-print-directory
 endif
 
 
-versions:
+versions: # Chrome, Chromedriver, Selenium
 	@/usr/bin/google-chrome --version
 	@"$(PWD)/driver/chrome/chromedriver" --version
 	@printf 'Selenium '; python3 -c "print(__import__('selenium').__version__)"
 
-
 cloc:
-	cloc --exclude-list-file=.clocignore .
-
+	$@ --exclude-list-file=.clocignore .
 
 list:
 	@grep '^[^#[:space:]].*:' Makefile
 
 # ------------------------------------ XSERVER ------------------------------------
-
 check_xserver_process_exist:
 	@powershell.exe get-process vcxsrv -ErrorAction SilentlyContinue \
 	&& echo "success!" || { echo "failure!"; exit 1; }
@@ -32,13 +29,27 @@ run_xlaunch:
 	@nohup python3 -c "__import__('subprocess').call([$(XLAUNCH), $(PARAMS)])" > $(NOHUP) 2>&1 &
 	@sleep 1; ps -o cmd | tail -4 | head -1
 
-
 xlaunch:
 	make check_xserver_process_exist || make run_xlaunch
+# ----------------------------------------------------------------------------------
+
+PYTHON := ./.venv/bin/python3
 
 # ------------------------------------ PARSERS ------------------------------------
 
-# ---------------- zvk ----------------
+# -------------- proxy ----------------
+
+PROXY_DIR := $(PWD)/request/proxy
+px: PARSER := $(PROXY_DIR)/parser.py
+checkpx: PARSER := $(PROXY_DIR)/checker.py
+px: parse
+checkpx: parse
+
+# -------------------------------------
+
+parse:
+	@time -vo $(shell dirname $(PARSER))/log/.time.log "$(PYTHON)" -i "$(PARSER)"
+
 
 include ./parsers/zvk/Makefile
 
