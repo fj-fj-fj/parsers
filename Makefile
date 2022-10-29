@@ -33,7 +33,8 @@ xlaunch:
 	make check_xserver_process_exist || make run_xlaunch
 # ----------------------------------------------------------------------------------
 
-PYTHON := ./.venv/bin/python3
+BIN_DIR := ./.venv/bin
+PYTHON := $(BIN_DIR)/python3
 
 # ------------------------------------ PARSERS ------------------------------------
 
@@ -114,3 +115,14 @@ wt:
 	sleep 2; make --ignore-errors tail-f
 
 count_animals:
+
+# ------------------------------------ LINTING -----------------------------------
+
+flake8:
+	@$(BIN_DIR)/$@
+
+mypy:
+	@$(BIN_DIR)/$@
+
+check:
+	make flake8 mypy
