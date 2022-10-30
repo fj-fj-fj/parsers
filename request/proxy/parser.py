@@ -7,7 +7,7 @@ __all__ = 'parse', 'parse_proxies'
 import requests
 from bs4 import BeautifulSoup
 
-from proxy.constants import const
+from request.proxy.constants import const
 from utils import save
 
 
@@ -24,9 +24,14 @@ def parse_proxies(log=False, **kw) -> list:
     response = requests.get(url).text
     save(data=response, file=fresp, log=log)
 
+    proxies = []
     table = BeautifulSoup(response, parser).find('table')
-    tr_gen = (tr.find('td') for tr in table.find_all('tr'))
-    proxies = [td.text for td in tr_gen if td]
+    for tr in table.find_all('tr'):
+        ip = tr.select_one(const.SELECT_IP)
+        port = tr.select_one(const.SELECT_PORT)
+        if ip and port:
+            proxies.append(f'{ip.text}:{port.text}')
+
     save(data='\n'.join(proxies), file=fpx, log=log)
 
     return proxies

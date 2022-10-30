@@ -8,4 +8,7 @@ const = SimpleNamespace(
     FILE_RESPONSE='request/proxy/log/response.html',
 
     URL='https://free-proxy-list.net/',
+
+    SELECT_IP='td:nth-of-type(1)',
+    SELECT_PORT='td:nth-of-type(2)',
 )
