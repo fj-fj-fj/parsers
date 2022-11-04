@@ -1,40 +1,62 @@
-"""This module contains proxy checker"""
+"""This module contains proxy checkers"""
 
 __all__ = 'check', 'check_proxies'
 
 import requests
 from itertools import cycle
+from typing import Literal
 
-from request.proxy.constants import const as px_const
+from request.constants import CONSTANTS as const
 from request.useragent import gen_user_agents
-from request.useragent.constants import const as ua_const
-from utils import selfcheck_for_interactive_mode
+from utils import set_random_timeout
+
+_Timeout = float | tuple[float, float] | None
 
 
-def check(proxy, uagent, timeout=3, rbool=False) -> bool | str:
-    """GET `ua_const.CHECK_PROXY_URL` to check proxy"""
+def check(proxy: str, uagent: str, timeout: _Timeout = None) -> bool:
+    """Request <url> to check proxy"""
     try:
-        print(requests.get(ua_const.CHECK_PROXY_URL,
-            params=ua_const.CHECK_PROXY_URL_PARAMS,
+        respone = requests.get(
+            url=const.URL.CHECK_PROXY_URL,
+            params=const.URL.CHECK_PROXY_URL_PARAMS,
             headers={'user-agent': uagent},
             timeout=timeout,
             proxies={'https': 'https://' + proxy},
-        ))
-        success_msg = f'+ {proxy} (ok)'
-        return True if rbool else success_msg
-    except Exception as e:
-        error_msg = f'- {proxy} ({e})'
-        return False if rbool else error_msg
+        )
+        print(f'+ {proxy} {respone}')
+        return True
+    except requests.RequestException as re:
+        print(f'- {proxy} {re!r}')
+    return False
 
 
-def check_proxies(frows=-1, file=px_const.FILE_PARSED_PROXIES, rbool=False):
-    """Read proxies file (full or frows) and check each.
-    rbool (return bool, not str) is passed to check()
-    """
-    with open(file) as proxies_file:
-        user_agents = cycle(gen_user_agents())
-        for i, proxy in enumerate(proxies_file.readlines()):
+def check_proxies(
+    frows=-1,
+    timeout=True,
+    trandom=True,  # random timeout
+    file_proxies=const.FILE.PARSED_PROXIES,
+    file_valid_proxies=const.FILE.VALID_PROXIES,
+    file_invalid_proxies=const.FILE.INVALID_PROXIES,
+    write_mode: Literal['a', 'w']='w',
+):
+    """Read proxies file (full or frows) and sort (valid/invalid files) each"""
+
+    def set_timeout() -> _Timeout:
+        """Set timeout as floats (default or random) or None"""
+        return timeout and set_random_timeout() if trandom else const.TIMEOUT or None
+
+    user_agents = cycle(gen_user_agents())
+
+    with (
+        open(file_proxies) as proxies,
+        open(file_valid_proxies, write_mode) as valid,
+        open(file_invalid_proxies, write_mode) as invalid,
+    ):
+        for i, proxy in enumerate(proxies.readlines()):
             if i == frows: return
 
-            proxy, uagent = proxy.strip(), next(user_agents)
-            print(check(proxy=proxy, uagent=uagent, rbool=rbool))
+            proxy, uagent, timeout = proxy.strip(), next(user_agents), set_timeout()
+            if check(proxy=proxy, uagent=uagent, timeout=timeout):
+                valid.write(proxy + '\n')
+            else:
+                invalid.write(proxy + '\n')
