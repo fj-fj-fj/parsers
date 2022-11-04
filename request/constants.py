@@ -19,7 +19,8 @@ _FileSimpleNamespace = SimpleNamespace(
 
 
 _MagicNumbersSimpleNamespace = SimpleNamespace(
-    default_timeout=namedtuple('default_timeout',
+    default_timeout=namedtuple(
+        'default_timeout',
         field_names=['CONNECTION_TIMEOUT', 'READ_TIMEOUT'],
         defaults=[5.05, 27.77],
     ),

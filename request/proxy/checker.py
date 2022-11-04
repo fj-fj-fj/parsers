@@ -4,13 +4,13 @@ __all__ = 'check', 'check_proxies'
 
 import requests
 from itertools import cycle
-from typing import Literal
+from typing import Literal, TypeVar
 
 from request.constants import CONSTANTS as const
 from request.useragent import gen_user_agents
 from utils import set_random_timeout
 
-_Timeout = float | tuple[float, float] | None
+_Timeout = TypeVar('_Timeout', float, tuple[float, float], None)
 
 
 def check(proxy: str, uagent: str, timeout: _Timeout = None) -> bool:
@@ -37,13 +37,13 @@ def check_proxies(
     file_proxies=const.FILE.PARSED_PROXIES,
     file_valid_proxies=const.FILE.VALID_PROXIES,
     file_invalid_proxies=const.FILE.INVALID_PROXIES,
-    write_mode: Literal['a', 'w']='w',
+    write_mode: Literal['a', 'w'] = 'w',
 ):
     """Read proxies file (full or frows) and sort (valid/invalid files) each"""
 
-    def set_timeout() -> _Timeout:
+    def set_timeout():
         """Set timeout as floats (default or random) or None"""
-        return timeout and set_random_timeout() if trandom else const.TIMEOUT or None
+        return timeout and set_random_timeout() if trandom else const.TIMEOUT or None  # noqa: E501
 
     user_agents = cycle(gen_user_agents())
 
@@ -53,9 +53,10 @@ def check_proxies(
         open(file_invalid_proxies, write_mode) as invalid,
     ):
         for i, proxy in enumerate(proxies.readlines()):
-            if i == frows: return
+            if i == frows:
+                return
 
-            proxy, uagent, timeout = proxy.strip(), next(user_agents), set_timeout()
+            proxy, uagent, timeout = proxy.strip(), next(user_agents), set_timeout()  # noqa: E501
             if check(proxy=proxy, uagent=uagent, timeout=timeout):
                 valid.write(proxy + '\n')
             else:

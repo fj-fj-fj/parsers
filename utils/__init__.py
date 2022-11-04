@@ -1,4 +1,4 @@
-def save(data: str, file: str, mode: str='w', log: bool=False):
+def save(data: str, file: str, mode: str = 'w', log: bool = False):
     if log:
         print(f'Saving data to {file}...')
     with open(file, mode) as f:
@@ -7,7 +7,7 @@ def save(data: str, file: str, mode: str='w', log: bool=False):
         print('  Saved successfully!')
 
 
-def set_random_timeout(mnum: int=10) -> tuple[float, float]:
+def set_random_timeout(mnum: int = 10) -> tuple[float, float]:
     """Return tuple with floats (random() * mnum)"""
     from random import random, uniform
 
