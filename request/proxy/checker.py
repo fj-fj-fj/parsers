@@ -37,7 +37,7 @@ def check_proxies(
     file_valid_proxies=const.FILE.VALID_PROXIES,
     file_invalid_proxies=const.FILE.INVALID_PROXIES,
     write_mode: Literal['a', 'w'] = 'w',
-):
+) -> None:
     """Read proxies file (full or frows) and sort (valid/invalid files) each"""
 
     def set_timeout():

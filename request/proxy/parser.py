@@ -9,7 +9,7 @@ from request.constants import CONSTANTS as const
 from utils import save_to_file
 
 
-def parse(**kw):
+def parse(**kw) -> str:
     """Parse proxies with and return parsed"""
     response = parse_proxies(log=True, **kw)
     return f'{response=}'

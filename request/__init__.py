@@ -10,9 +10,12 @@ while True:
 
 
 if __name__ == '__main__':
+    from inspect import signature
     from types import FunctionType
 
-    print('This module contains:')
+    print('[!] This module contains:\n')
     for obj in locals().copy().values():
-        if isinstance(obj, FunctionType):
-            print(f' {obj.__name__}()'.ljust(20) + f'- {obj.__doc__}')
+        if isinstance(obj, FunctionType) and obj != signature:
+            func_signature = f'def {obj.__name__}{signature(obj)}:\n'
+            func_docstring = f'\t"""{obj.__doc__}"""\n'
+            print(func_signature, func_docstring)
