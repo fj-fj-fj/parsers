@@ -1,12 +1,18 @@
 """This package contains user-agent tools"""
 
-__all__ = 'gen_user_agents',
+__all__ = 'gen_useragents_cycle',
 
-from typing import Generator
+from itertools import cycle
+from typing import Iterator
 
-from request.useragent.constants import const
 
+def gen_useragents_cycle(file: str | None = None) -> Iterator[str]:
+    """Return itertools.cycle(useragents `file` or 'Chrome 106.0 Win10')"""
+    if file is None:
+        return cycle([
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, например Gecko) "
+            "Chrome/106.0.0.0 Safari/537.36"])
 
-def gen_user_agents(file=const.USER_AGENTS_FILE) -> Generator[str, None, None]:
-    with open(file) as user_agent_file:
-        return (ua for ua in user_agent_file.readlines())
+    with open(file) as useragents:
+        return cycle(useragents.readlines())

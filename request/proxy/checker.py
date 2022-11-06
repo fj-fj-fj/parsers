@@ -3,11 +3,10 @@
 __all__ = 'check', 'check_proxies'
 
 import requests
-from itertools import cycle
 from typing import Literal, TypeVar
 
 from request.constants import CONSTANTS as const
-from request.useragent import gen_user_agents
+from request.useragent import gen_useragents_cycle
 from utils import set_random_timeout
 
 _Timeout = TypeVar('_Timeout', float, tuple[float, float], None)
@@ -45,7 +44,7 @@ def check_proxies(
         """Set timeout as floats (default or random) or None"""
         return timeout and set_random_timeout() if trandom else const.TIMEOUT or None  # noqa: E501
 
-    user_agents = cycle(gen_user_agents())
+    user_agents = gen_useragents_cycle(file=const.FILE.USER_AGENTS)
 
     with (
         open(file_proxies) as proxies,
