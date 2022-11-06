@@ -1,45 +1,45 @@
 """Proxy parsing module"""
-# This module cannot be running.
-# To get proxies manually use ../__init__.py with -i
 
 __all__ = 'parse', 'parse_proxies'
 
 import requests
 from bs4 import BeautifulSoup
 
-from request.proxy.constants import const
-from utils import save
+from request.constants import CONSTANTS as const
+from utils import save_to_file
 
 
 def parse(**kw):
-    """Parse proxies with print parsed"""
+    """Parse proxies with and return parsed"""
     response = parse_proxies(log=True, **kw)
     return f'{response=}'
 
 
-def parse_proxies(log=False, **kw) -> list:
-    """Parse proxies from `constants.const.URL`"""
-    url, fpx, fresp, parser = set_default(**kw).values()
-
-    response = requests.get(url).text
-    save(data=response, file=fresp, log=log)
+def parse_proxies(log=False, **kw) -> list[str]:
+    """Parse proxies from <url>"""
+    url, fpx, fresp, parser = set_defaults(**kw).values()
+    html = get(url).text
+    save_to_file(data=html, file=fresp, log=log)
 
     proxies = []
-    table = BeautifulSoup(response, parser).find('table')
+    table = BeautifulSoup(html, parser).find('table')
     for tr in table.find_all('tr'):
-        ip = tr.select_one(const.SELECT_IP)
-        port = tr.select_one(const.SELECT_PORT)
+        ip = tr.select_one(const.SPIDER.SELECT_IP)
+        port = tr.select_one(const.SPIDER.SELECT_PORT)
         if ip and port:
             proxies.append(f'{ip.text}:{port.text}')
 
-    save(data='\n'.join(proxies), file=fpx, log=log)
-
+    save_to_file(data='\n'.join(proxies), file=fpx, log=log)
     return proxies
 
 
-def set_default(**kw):
-    kw.setdefault('url', const.URL)
-    kw.setdefault('fpx', const.FILE_PARSED_PROXIES)
-    kw.setdefault('fresp', const.FILE_RESPONSE)
+def set_defaults(**kw):
+    kw.setdefault('url', const.URL.FPL_PROXY_URL)
+    kw.setdefault('fpx', const.FILE.PARSED_PROXIES)
+    kw.setdefault('fresp', const.FILE.RESPONSE_PROXY)
     kw.setdefault('parser', 'lxml')
     return kw
+
+
+def get(url: str) -> requests.Response:
+    return requests.get(url)
