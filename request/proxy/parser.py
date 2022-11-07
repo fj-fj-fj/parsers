@@ -2,11 +2,10 @@
 
 __all__ = 'parse', 'parse_proxies'
 
-import requests
-from bs4 import BeautifulSoup
-
 from exceptions import raise_notfound
 from request.constants import CONSTANTS as const
+from utils import get
+from utils import make_soup
 from utils import save_to_file
 
 
@@ -23,9 +22,9 @@ def parse_proxies(log=False, **kw) -> list[str]:
     save_to_file(data=html, file=fresp, log=log)
 
     proxies = []
-    table = BeautifulSoup(html, parser).find('tablefoo')
+    table = make_soup(html, parser).find('table')
     try:
-        rows = table.find_all('tr')
+        rows = table.find_all('tr')  # pyright: ignore [reportOptionalMemberAccess]
     except AttributeError as ae:
         raise raise_notfound('table') from ae
     else:
@@ -45,7 +44,3 @@ def set_defaults(**kw):
     kw.setdefault('fresp', const.FILE.RESPONSE_PROXY)
     kw.setdefault('parser', 'lxml')
     return kw
-
-
-def get(url: str) -> requests.Response:
-    return requests.get(url)

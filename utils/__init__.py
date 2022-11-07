@@ -1,4 +1,16 @@
-def save(data: str, file: str, mode: str = 'w', log: bool = False):
+import requests as _requests
+from bs4 import BeautifulSoup as _BeautifulSoup
+
+
+def get(url: str) -> _requests.Response:
+    return _requests.get(url)
+
+
+def make_soup(html: str, parser: str) -> _BeautifulSoup:
+    return _BeautifulSoup(html, parser)
+
+
+def save_to_file(data: str, file: str, mode: str = 'w', log: bool = False):
     if log:
         print(f'Saving data to {file}...')
     with open(file, mode) as f:
@@ -23,7 +35,7 @@ def set_random_timeout(mnum: int = 10) -> tuple[float, float]:
         connection_timeout = uniform(connect_time_min, connect_time_max)
         read_timeout = uniform(read_time_min, read_time_max)
 
-    return connection_timeout, read_timeout
+    return connection_timeout, read_timeout  # pyright: ignore [reportUnboundVariable]
 
 
 class classproperty(property):

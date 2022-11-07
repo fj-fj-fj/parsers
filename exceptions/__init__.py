@@ -1,6 +1,7 @@
 """This package contains errors and warnings"""
 
-from typing import Type, TypeVar
+from typing import Type as _Type
+from typing import TypeVar as _TypeVar
 
 
 class BaseExceptionShell(Exception):
@@ -19,21 +20,22 @@ class ElementNotFoundException(BaseParserException):
     """Base shell for not-found-tags"""
 
 
-_Self = TypeVar('_Self', bound='NotFoundCreator')
+_Self = _TypeVar('_Self', bound='NotFoundCreator')
 
 
 class NotFoundCreator:
 
     @classmethod
-    def create(cls: Type[_Self], exception_name: str):
+    def create(cls: _Type[_Self], exception_name: str):
         """Create/return <exception_name>NotFoundError"""
-        return cls._create_new_exception(f'{exception_name}NotFoundError')
+        return cls._create_new_exception(f'{exception_name.capitalize()}NotFoundError')
 
     @staticmethod
-    def _create_new_exception(name,
-        superclasses = (ElementNotFoundException,),
+    def _create_new_exception(
+        name,
+        superclasses=(ElementNotFoundException,),
         **attributedict,
-    ) -> ElementNotFoundException:
+    ) -> type:
         """Use type() to create exception with default base"""
         return type(name, superclasses, attributedict)
 
@@ -48,9 +50,9 @@ def notfound_factory(exception_name) -> ElementNotFoundException:
     return NotFoundCreator().create(exception_name)
 
 
-def print_exceptions_mro(_names=('__main__', 'exceptions')) -> None:
-    """Print exeptions of this package as class name: mro=[...]"""
-    output = "\n'exceprions' package contains:\n"
+def print_exceptions_mro(_names=('__main__', 'exceptions')):
+    """Print exeptions of this package (as class name: mro=[...])"""
+    output = "\n'exceptions' package contains:\n"
     output += '-' * len(output)
     for name, obj in globals().copy().items():
         if isinstance(obj, type) and obj.__module__ in _names:
