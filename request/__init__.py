@@ -19,3 +19,7 @@ if __name__ == '__main__':
             func_signature = f'def {obj.__name__}{signature(obj)}:\n'
             func_docstring = f'\t"""{obj.__doc__}"""\n'
             print(func_signature, func_docstring)
+
+    print('[*] Shortcuts:')
+    for func in exec, print:
+        func('ch = check; chp = check_proxies; p = parse; pp = parse_proxies')  # type: ignore [operator]
