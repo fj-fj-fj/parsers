@@ -1,0 +1,29 @@
+// https://github.com/Microsoft/pyright/blob/main/docs/configuration.md
+{
+  "include": [
+    // "src"
+],
+
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.git"
+],
+
+  "ignore": [
+    "src/experimental"
+],
+
+  "defineConstant": {
+    "DEBUG": true
+},
+
+  "reportGeneralTypeIssues": false,
+  "stubPath": "stubs",
+  "venv": ".venv",
+  "verboseOutput": true,
+
+// "3.10.0rc2" does not match the pattern of "^3\.[0-9]+$".
+  "pythonVersion": "3.10",
+  "pythonPlatform": "Linux",
+}
