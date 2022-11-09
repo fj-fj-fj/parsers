@@ -8,7 +8,12 @@ from types import SimpleNamespace
 from utils import classproperty
 
 
-_FileSimpleNamespace = SimpleNamespace(
+_CLINamespace = SimpleNamespace(
+    PARSE='--parse',
+)
+
+
+_FileNamespace = SimpleNamespace(
     RESPONSE_PROXY='request/proxy/log/response.html',
     PARSED_PROXIES='request/proxy/parsed_data/proxies',
     VALID_PROXIES='request/proxy/parsed_data/valid',
@@ -18,7 +23,7 @@ _FileSimpleNamespace = SimpleNamespace(
 )
 
 
-_MagicNumbersSimpleNamespace = SimpleNamespace(
+_MagicNumbersNamespace = SimpleNamespace(
     default_timeout=namedtuple(
         'default_timeout',
         field_names=['CONNECTION_TIMEOUT', 'READ_TIMEOUT'],
@@ -26,14 +31,16 @@ _MagicNumbersSimpleNamespace = SimpleNamespace(
     ),
 )
 
-_SpiderSimpleNamespace = SimpleNamespace(
+_SpiderNamespace = SimpleNamespace(
+    PARSER='lxml',
+
     # FOR: https://free-proxy-list.net/
     SELECT_IP='td:nth-of-type(1)',
     SELECT_PORT='td:nth-of-type(2)',
 )
 
 
-_URLSimpleNamespace = SimpleNamespace(
+_URLNamespace = SimpleNamespace(
     FPL_PROXY_URL='https://free-proxy-list.net/',
 
     CHECK_PROXY_URL='https://api.ipify.org/',
@@ -50,20 +57,24 @@ class CONSTANTS:
 
     """
     @classproperty
+    def CLI(cls):
+        return _CLINamespace
+
+    @classproperty
     def FILE(cls):
-        return _FileSimpleNamespace
+        return _FileNamespace
 
     @classproperty
     def URL(cls):
-        return _URLSimpleNamespace
+        return _URLNamespace
 
     @classproperty
     def SPIDER(cls):
-        return _SpiderSimpleNamespace
+        return _SpiderNamespace
 
     @classproperty
     def MAGIC_NUMBERS(cls):
-        return _MagicNumbersSimpleNamespace
+        return _MagicNumbersNamespace
 
     @classproperty
     def TIMEOUT(cls):
