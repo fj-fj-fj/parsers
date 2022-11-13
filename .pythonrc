@@ -8,4 +8,4 @@ import rlcompleter, readline
 readline.parse_and_bind("tab: complete")
 
 # import my custom utils
-from config.REPL.helpers import *
+from src.config.REPL.helpers import tail, top
