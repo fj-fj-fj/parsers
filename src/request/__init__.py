@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+"""Package 'request' that contais proxy parsers and checkers."""
+
 while True:
     try:
-        from request.proxy.checker import check
-        from request.proxy.checker import check_proxies
-        from request.proxy.parser import parse
-        from request.proxy.parser import parse_proxies
+        from request.proxy.checker import check          # noqa:  F401
+        from request.proxy.checker import check_proxies  # noqa:  F401
+        from request.proxy.parser import parse           # noqa:  F401
+        from request.proxy.parser import parse_proxies   # noqa:  F401
         break
     except ModuleNotFoundError:
         __import__('patch').update_syspath(__file__)

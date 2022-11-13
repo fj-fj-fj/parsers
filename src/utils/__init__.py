@@ -12,11 +12,11 @@ def make_soup(html: str, parser: str) -> _BeautifulSoup:
 
 def save_to_file(data: str, file: str, mode: str = 'w', log: bool = False):
     if log:
-        print(f'Saving data to {file}...')
+        print(f'saving data to {file}...')
     with open(file, mode) as f:
         f.write(data)
     if log:
-        print('  Saved successfully!')
+        print('- saved successfully!')
 
 
 def set_random_timeout(mnum: int = 10) -> tuple[float, float]:

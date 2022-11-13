@@ -1,54 +1,57 @@
-"""Contains constants."""
+#!/usr/bin/env python
+"""Module 'constants' that contains request constants."""
 
-__all__ = 'CONSTANTS',
+__all__ = 'ConstantStorage',
 
-from collections import namedtuple
-from types import SimpleNamespace
+from enum import Enum
+from typing import Literal
+from typing import NamedTuple
+
+if is_script := __name__ == '__main__':
+    from sys import path; from os.path import dirname  # noqa: E702
+    path.append(dirname(dirname(__file__)))
 
 from utils import classproperty
 
-
-_CLINamespace = SimpleNamespace(
-    PARSE='--parse',
-)
+PWD = __file__.rsplit('/', 1)[0]
 
 
-_FileNamespace = SimpleNamespace(
-    RESPONSE_PROXY='request/proxy/log/response.html',
-    PARSED_PROXIES='request/proxy/parsed_data/proxies',
-    VALID_PROXIES='request/proxy/parsed_data/valid',
-    INVALID_PROXIES='request/proxy/parsed_data/invalid',
-
-    USER_AGENTS='request/useragent/user_agents.txt',
-)
+class CommandLineInterface(Enum):
+    PARSE = '--parse'
+    VERBOSE = '--verbose'
 
 
-_MagicNumbersNamespace = SimpleNamespace(
-    default_timeout=namedtuple(
-        'default_timeout',
-        field_names=['CONNECTION_TIMEOUT', 'READ_TIMEOUT'],
-        defaults=[5.05, 27.77],
-    ),
-)
+class Files(NamedTuple):
+    # proxy files
+    PROXY_RESPONSE: str = f'{PWD}/proxy/log/response.html'
+    PARSED_PROXIES: str = f'{PWD}/proxy/parsed_data/proxies'
+    VALID_PROXIES: str = f'{PWD}/proxy/parsed_data/valid'
+    INVALID_PROXIES: str = f'{PWD}/proxy/parsed_data/invalid'
+    # useragent files
+    USER_AGENTS: str = f'{PWD}/useragent/user_agents.txt'
 
-_SpiderNamespace = SimpleNamespace(
-    PARSER='lxml',
 
+class MagicNumbers(NamedTuple):
+    DEFAULT_CONNECTION_TIMEOUT: float = 5.05
+    DEFAULT_READ_TIMEOUT: float = 27.67
+
+
+class ParsingConstants(NamedTuple):
+    PARSER: str = 'lxml'
     # FOR: https://free-proxy-list.net/
-    SELECT_IP='td:nth-of-type(1)',
-    SELECT_PORT='td:nth-of-type(2)',
-)
+    SELECT_IP: str = 'td:nth-of-type(1)'
+    SELECT_PORT: str = 'td:nth-of-type(2)'
 
 
-_URLNamespace = SimpleNamespace(
-    FPL_PROXY_URL='https://free-proxy-list.net/',
+class UniformResourceLocator(NamedTuple):
+    # proxies
+    FPL_PROXY_URL: str = 'https://free-proxy-list.net/'
+    # checking
+    CHECK_PROXY_URL: str = 'https://api.ipify.org/'
+    CHECK_PROXY_URL_PARAMS: dict[str, str] = {'format': 'json'}
 
-    CHECK_PROXY_URL='https://api.ipify.org/',
-    CHECK_PROXY_URL_PARAMS={'format': 'json'},
-)
 
-
-class CONSTANTS:
+class ConstantStorage:
     """
     Contains classmethod-properties (files, URLs, xpath, etc).
 
@@ -57,37 +60,49 @@ class CONSTANTS:
 
     """
     @classproperty
-    def CLI(cls):
-        return _CLINamespace
+    def CLI(cls): return CommandLineInterface    # noqa: E704
 
     @classproperty
-    def FILE(cls):
-        return _FileNamespace
+    def FILE(cls): return Files                  # noqa: E704
 
     @classproperty
-    def URL(cls):
-        return _URLNamespace
+    def URL(cls): return UniformResourceLocator  # noqa: E704
 
     @classproperty
-    def SPIDER(cls):
-        return _SpiderNamespace
+    def PARSE(cls): return ParsingConstants      # noqa: E704
 
     @classproperty
-    def MAGIC_NUMBERS(cls):
-        return _MagicNumbersNamespace
+    def MAGIC_NUMBERS(cls): return MagicNumbers  # noqa: E704
 
     @classproperty
-    def TIMEOUT(cls):
-        """Return default timeout as namedtuple[float, float]"""
-        return CONSTANTS.MAGIC_NUMBERS.default_timeout()
-
-    @classproperty
-    def dir_public(cls) -> str:
-        """Return public namespaces"""
-        return ', '.join(ns for ns in dir(cls) if ns.isupper())
+    def TIMEOUTS(cls) -> tuple[float, float]:
+        """Return default timeouts."""
+        mn = ConstantStorage.MAGIC_NUMBERS
+        return mn.DEFAULT_CONNECTION_TIMEOUT, mn.DEFAULT_READ_TIMEOUT
 
     @classmethod
-    def dir(cls, namespace) -> str:
-        """Return public CONSTANTS.<namespace>.constants"""
+    def _dir(cls, namespace: str) -> str:
+        """Return public ConstantStorage.<namespace>.constants"""
         namespace = dir(vars(cls)[namespace.upper()].fget(cls))
         return ', '.join(const for const in namespace if const.isupper())
+
+    @classmethod
+    def _dir_public(cls, what: Literal['all', 'ns'] = 'all') -> str:
+        """Return all public constants or thier namespases only."""
+        return {
+            'all': ''.join(f"{ns}: {cls._dir(ns)}\n" for ns in dir(cls) if ns.isupper()),
+            'ns': ', '.join(ns for ns in dir(cls) if ns.isupper()),
+        }.get(what, "ParameterError: `what` is Literal['all', 'ns'].")
+
+
+def info():
+    """Display detail imformation about this module."""
+    msg = f'{__doc__}\n\n'
+    msg += '<ConstantStorage> contains (namespase: constants):\n'
+    msg += f'{ConstantStorage._dir_public()}'
+    print(msg)
+
+
+if is_script:
+    info()
+    c = ConstantStorage  # if -i

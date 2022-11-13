@@ -1,19 +1,18 @@
-"""This module contains proxy checkers"""
+"""Module 'checker' that contains proxy checkers."""
 
 __all__ = 'check', 'check_proxies'
 
 import requests
-from typing import Literal, TypeVar
+from typing import Literal
 
-from request.constants import CONSTANTS as const
+from request._types import TimeoutType
+from request.constants import ConstantStorage as const
 from request.useragent import gen_useragents_cycle
 from utils import set_random_timeout
 
-_Timeout = TypeVar('_Timeout', float, tuple[float, float], None)
 
-
-def check(proxy: str, uagent: str, timeout: _Timeout = None) -> bool:
-    """Request <url> to check proxy"""
+def check(proxy: str, uagent: str, timeout: TimeoutType = None) -> bool:
+    """Check proxy and return checked as True/False."""
     try:
         respone = requests.get(
             url=const.URL.CHECK_PROXY_URL,
@@ -38,11 +37,11 @@ def check_proxies(
     file_invalid_proxies=const.FILE.INVALID_PROXIES,
     write_mode: Literal['a', 'w'] = 'w',
 ) -> None:
-    """Read proxies file (full or frows) and sort (valid/invalid files) each"""
+    """Read proxies file (full or frows), sort (valid/invalid files) each."""
 
     def set_timeout():
-        """Set timeout as floats (default or random) or None"""
-        return timeout and set_random_timeout() if trandom else const.TIMEOUT or None  # noqa: E501
+        """Set timeout as floats (default or random) or None."""
+        return timeout and set_random_timeout() if trandom else const.TIMEOUTS or None
 
     user_agents = gen_useragents_cycle(file=const.FILE.USER_AGENTS)
 
@@ -55,7 +54,7 @@ def check_proxies(
             if i == frows:
                 return
 
-            proxy, uagent, timeout = proxy.strip(), next(user_agents), set_timeout()  # noqa: E501
+            proxy, uagent, timeout = proxy.strip(), next(user_agents), set_timeout()
             if check(proxy=proxy, uagent=uagent, timeout=timeout):
                 valid.write(proxy + '\n')
             else:

@@ -1,64 +1,56 @@
-"""This package contains errors and warnings"""
+#!/usr/bin/env python
+"""Package 'exceptions' that contains errors and warnings."""
 
-from typing import Type as _Type
-from typing import TypeVar as _TypeVar
+__all__ = 'ElementNotFoundError', 'info', 'raise_notfound'
 
 
 class BaseExceptionShell(Exception):
-    """Base shell for all exceptions"""
+    """Base shell for all exceptions."""
 
 
-class BaseRequestException(BaseExceptionShell):
-    """Base shell for all requesting exceptions"""
-
-
-class BaseParserException(BaseExceptionShell):
-    """Base shell for all parsing exceptions"""
-
-
-class ElementNotFoundException(BaseParserException):
-    """Base shell for not-found-tags"""
-
-
-_Self = _TypeVar('_Self', bound='NotFoundCreator')
-
-
-class NotFoundCreator:
-
-    @classmethod
-    def create(cls: _Type[_Self], exception_name: str):
-        """Create/return <exception_name>NotFoundError"""
-        return cls._create_new_exception(f'{exception_name.capitalize()}NotFoundError')
-
-    @staticmethod
-    def _create_new_exception(
-        name,
-        superclasses=(ElementNotFoundException,),
-        **attributedict,
-    ) -> type:
-        """Use type() to create exception with default base"""
-        return type(name, superclasses, attributedict)
+class ElementNotFoundError(BaseExceptionShell):
+    """Parsed object has no element."""
 
 
 def raise_notfound(tag: str):
-    """Raise <tag>NotFoundError"""
-    raise notfound_factory(exception_name=tag)
+    """Raise <tag>NotFoundError."""
+    raise _notfound_factory(tag)
 
 
-def notfound_factory(exception_name) -> ElementNotFoundException:
-    """Create/return <exception_name>NotFoundError using NotFoundCreator"""
-    return NotFoundCreator().create(exception_name)
+def _notfound_factory(prefix, bases=(ElementNotFoundError,)) -> ElementNotFoundError:
+    """Return created <prefix>NotFoundError."""
+    class NotFoundCreator:
+
+        @classmethod
+        def create(cls, exception_prefix):
+            return cls._create_exception(exception_prefix)
+
+        @staticmethod
+        def _create_exception(prefix, bases=bases, **attributedict):
+            msg = f"Parsed object has no tag '{prefix}'"
+            fullname = f'{prefix.capitalize()}NotFoundError'
+            attributedict['__init__'] = lambda self: bases[0].__init__(self, msg)
+            attributedict['__repr__'] = lambda self: repr(msg)
+            return type(fullname, bases, attributedict)
+
+    return NotFoundCreator().create(prefix)
 
 
-def print_exceptions_mro(_names=('__main__', 'exceptions')):
-    """Print exeptions of this package (as class name: mro=[...])"""
-    output = "\n'exceptions' package contains:\n"
+def info():
+    """Display imformation about this module and exceptions."""
+    print(__doc__, _get_exception_classes_info(), sep='\n')
+
+
+def _get_exception_classes_info(_names=('__main__', 'exceptions')) -> str:
+    output = '\nexception classes:\n'
     output += '-' * len(output)
     for name, obj in globals().copy().items():
         if isinstance(obj, type) and obj.__module__ in _names:
-            output += f'\n{name}:\n\tmro={[o.__name__ for o in obj.mro()]}'
-    print(output)
+            output += f'\n{name}:\n'
+            output += f"\t'''{obj.__doc__}'''\n"
+            output += f'\tmro={[o.__name__ for o in obj.mro()]}'
+    return output
 
 
 if __name__ == '__main__':
-    print(print_exceptions_mro())
+    info()

@@ -1,4 +1,4 @@
-"""to parse with `make` directly"""
+"""Module 'patch' for running this package directly."""
 
 
 def update_syspath(file: str):
