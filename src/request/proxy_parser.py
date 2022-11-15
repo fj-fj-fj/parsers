@@ -57,12 +57,12 @@ def _set_default_values(cfg: Configuration) -> Configuration:
     return cfg
 
 
-def parse(func=parse_proxies, configs: Configuration = None, output=True):
+def parse(func=parse_proxies, configs: Configuration = None, output=True) -> None:
     """Parse proxies with `func` and display parsed with pydoc.pager"""
     from pydoc import pager
     pager('\n'.join(func(configs, output=output)))
 
 
-# ./src/request/proxy/parser.py --parse
+# $PROJECT_DIR/src/request/proxy/parser.py --parse
 if is_script and const.CLI.PARSE in sys.argv:
     parse()

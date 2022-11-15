@@ -4,6 +4,7 @@
 __all__ = 'ConstantStorage',
 
 from enum import Enum
+from os import getenv
 from typing import Literal
 from typing import NamedTuple
 
@@ -13,7 +14,8 @@ if is_script := __name__ == '__main__':
 
 from utils import classproperty
 
-PWD = __file__.rsplit('/', 1)[0]
+PROJECT_DIR = getenv('PROJECT_DIR', '../..')
+PROXY_DATA = F'{PROJECT_DIR}/data/proxy'
 
 
 class CommandLineInterface(Enum):
@@ -22,13 +24,13 @@ class CommandLineInterface(Enum):
 
 
 class Files(NamedTuple):
-    # proxy files
-    PROXY_RESPONSE: str = f'{PWD}/proxy/log/response.html'
-    PARSED_PROXIES: str = f'{PWD}/proxy/parsed_data/proxies'
-    VALID_PROXIES: str = f'{PWD}/proxy/parsed_data/valid'
-    INVALID_PROXIES: str = f'{PWD}/proxy/parsed_data/invalid'
-    # useragent files
-    USER_AGENTS: str = f'{PWD}/useragent/user_agents.txt'
+    # proxy
+    PROXY_RESPONSE: str = F'{PROXY_DATA}/response.html'
+    PARSED_PROXIES: str = F'{PROXY_DATA}/proxies'
+    VALID_PROXIES: str = F'{PROXY_DATA}/valid'
+    INVALID_PROXIES: str = F'{PROXY_DATA}/invalid'
+    # useragent
+    USER_AGENTS: str = F'{PROJECT_DIR}/src/config/user_agents.txt'
 
 
 class MagicNumbers(NamedTuple):
@@ -60,19 +62,19 @@ class ConstantStorage:
 
     """
     @classproperty
-    def CLI(cls): return CommandLineInterface    # noqa: E704
+    def CLI(cls): return CommandLineInterface()    # noqa: E704
 
     @classproperty
-    def FILE(cls): return Files                  # noqa: E704
+    def FILE(cls): return Files()                  # noqa: E704
 
     @classproperty
-    def URL(cls): return UniformResourceLocator  # noqa: E704
+    def URL(cls): return UniformResourceLocator()  # noqa: E704
 
     @classproperty
-    def PARSE(cls): return ParsingConstants      # noqa: E704
+    def PARSE(cls): return ParsingConstants()      # noqa: E704
 
     @classproperty
-    def MAGIC_NUMBERS(cls): return MagicNumbers  # noqa: E704
+    def MAGIC_NUMBERS(cls): return MagicNumbers()  # noqa: E704
 
     @classproperty
     def TIMEOUTS(cls) -> tuple[float, float]:
