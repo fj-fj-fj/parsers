@@ -1,26 +1,30 @@
 #!/usr/bin/env python
-"""Package 'exceptions' that contains errors and warnings."""
+"""Module 'exceptions' that contains errors and warnings."""
+from typing import NoReturn
 
-__all__ = 'ElementNotFoundError', 'info', 'raise_notfound'
-
-
-class BaseExceptionShell(Exception):
-    """Base shell for all exceptions."""
+__all__ = 'ElementNotFoundError', 'raise_notfound'
 
 
-class ElementNotFoundError(BaseExceptionShell):
-    """Parsed object has no element."""
+class BaseError(Exception):
+    """Base shell for all errors."""
 
 
-def raise_notfound(tag: str):
+class ElementNotFoundError(BaseError):
+    """Has no HTML element."""
+
+
+class ParameterValueError(BaseError):
+    """Got an unexpected argument value."""
+
+
+def raise_notfound(tag: str) -> NoReturn:
     """Raise <tag>NotFoundError."""
     raise _notfound_factory(tag)
 
 
 def _notfound_factory(prefix, bases=(ElementNotFoundError,)) -> ElementNotFoundError:
     """Return created <prefix>NotFoundError."""
-    class NotFoundCreator:
-
+    class NotFound:
         @classmethod
         def create(cls, exception_prefix):
             return cls._create_exception(exception_prefix)
@@ -33,24 +37,17 @@ def _notfound_factory(prefix, bases=(ElementNotFoundError,)) -> ElementNotFoundE
             attributedict['__repr__'] = lambda self: repr(msg)
             return type(fullname, bases, attributedict)
 
-    return NotFoundCreator().create(prefix)
-
-
-def info():
-    """Display imformation about this module and exceptions."""
-    print(__doc__, _get_exception_classes_info(), sep='\n')
-
-
-def _get_exception_classes_info(_names=('__main__', 'exceptions')) -> str:
-    output = '\nexception classes:\n'
-    output += '-' * len(output)
-    for name, obj in globals().copy().items():
-        if isinstance(obj, type) and obj.__module__ in _names:
-            output += f'\n{name}:\n'
-            output += f"\t'''{obj.__doc__}'''\n"
-            output += f'\tmro={[o.__name__ for o in obj.mro()]}'
-    return output
+    return NotFound().create(prefix)
 
 
 if __name__ == '__main__':
-    info()
+    # Display imformation about 'exceptions' module
+    # names, docstrings, mro
+    information = '\nexception classes:\n'
+    information += '-' * len(information)
+    for name, obj in globals().copy().items():
+        if isinstance(obj, type):
+            information += f'\n{name}:\n'
+            information += f"\t'''{obj.__doc__}'''\n"
+            information += f'\tmro={[o.__name__ for o in obj.mro()]}'
+    print(__doc__, information, sep='\n')
