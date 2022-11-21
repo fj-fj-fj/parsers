@@ -1,0 +1,5 @@
+# python's modules dependencies
+
+# lxml
+libxml2-dev
+libxslt-dev
