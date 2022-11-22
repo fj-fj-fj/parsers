@@ -3,6 +3,8 @@
 
 __all__ = 'parse', 'parse_proxies'
 
+import requests
+
 if is_script := __name__ == '__main__':
     import sys; from os.path import dirname  # noqa: E401, E702
     # Append $PROJECT_DIR to use imports below
@@ -11,17 +13,16 @@ if is_script := __name__ == '__main__':
 from datatypes import HTML
 from datatypes import ProxyList
 from exceptions import raise_notfound
-from kwargs import Configuration
-from parsers.utils import make_soup
 from constants import ConstantStorage
-from request.utils import get
+from parsers.utils import make_soup
+from settings import Configuration
 from storage.files import save_to_file
 
 
 def parse_proxies(cfg: Configuration = Configuration(), output=False) -> ProxyList:
     """Make request on cfg.url, parse response, return parsed proxies."""
     cfg = _setdefault_configs(cfg or Configuration())
-    source_page = get(cfg.url).text
+    source_page = requests.get(cfg.url).text
     save_to_file(data=source_page, file=cfg.file_response, log=output)
     proxies = _parse_table(source_page, cfg.parser)
     save_to_file(data='\n'.join(proxies), file=cfg.file_parsed, log=output)

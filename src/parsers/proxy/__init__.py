@@ -1,36 +1,31 @@
 #!/usr/bin/env python
-"""Package 'request' that contais proxy parsers and checkers."""
-# Parsing proxy examples:
-# 1) Proxy().parse()
-# 2) Request().proxy.parse()
-# 3) parse()
-# 4) p()
+"""Package 'proxy' that contais proxy parsers and checkers."""
 
-while True:
-    try:
-        from request.proxy_checker import check
-        from request.proxy_checker import check_proxies
-        from request.proxy_parser import parse
-        from request.proxy_parser import parse_proxies
-        from request.interfaces import AbstractProxy
-        from request.interfaces import AbstractRequest
-        break
-    except ModuleNotFoundError:
-        __import__('_patch').update_syspath(__file__)
+from typing import Callable
+
+if is_script := __name__ == '__main__':
+    __import__('_patch').update_syspath(__file__)
+
+from interfaces import AbstractProxy
+from interfaces import AbstractRequest
+from parsers.proxy.checker import check
+from parsers.proxy.checker import check_proxies
+from parsers.proxy.parser import parse
+from parsers.proxy.parser import parse_proxies
 
 
 class ProxyCheckerMixin:
 
     def __init__(self) -> None:
-        self.check_proxies = check_proxies
-        self.check = check
+        self.check_proxies: Callable = check_proxies
+        self.check: Callable = check
 
 
 class ProxyParserMixin:
 
     def __init__(self) -> None:
-        self.parse_proxies = parse_proxies
-        self.parse = parse
+        self.parse_proxies: Callable = parse_proxies
+        self.parse: Callable = parse
 
 
 class Proxy(AbstractProxy, ProxyCheckerMixin, ProxyParserMixin):
@@ -45,7 +40,7 @@ class Request(AbstractRequest):
         self.proxy = Proxy()
 
 
-# $PROJECT_DIR/src/request/__init__.py
+# $PROJECT_DIR/src/parsers/proxy/__init__.py
 if __name__ == '__main__':
     from inspect import signature
     from types import FunctionType
@@ -59,7 +54,7 @@ if __name__ == '__main__':
             print(func_signature, func_docstring)
         # if item is a project class
         elif isinstance(obj, type) and obj.__name__ != 'function':
-            print(f'class {obj.__name__}')
+            print(f'class {obj.__name__}:\n\t"""{obj.__doc__}"""\n')
 
     print('[*] Shortcuts:')
     for func in exec, print:

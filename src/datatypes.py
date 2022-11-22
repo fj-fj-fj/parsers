@@ -1,21 +1,22 @@
 """Module 'datatypes' that contains data structures and types."""
-from typing import Literal
-from typing import TypeAlias
+from typing import Literal as _Literal
+from typing import TypeAlias as _TypeAlias
+from typing import Union as _Union
 
-# config
-NamespaceLiteral = Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']
+JsonStr: _TypeAlias = str
+HTML: _TypeAlias = str
+Data: _TypeAlias = bytes | HTML | JsonStr | list[str]
 
-# request
-ProxyType = str
-ProxyList = list[ProxyType]
-TimeoutType: TypeAlias = float | tuple[float, ...] | None
+NamespaceLiteral = _Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']  # noqa: F821
 
-# saving data
-JsonStr: TypeAlias = str
-HTML: TypeAlias = str
-Data: TypeAlias = bytes | HTML | JsonStr | list[str]
+ProxyType: _TypeAlias = str
+ProxyList: _TypeAlias = list[ProxyType]
 
-# decorators
+# error: Type application has too many types (1 expected)  [misc]
+# TimeoutType: _TypeAlias = float | tuple[float, float] | None
+TimeoutType: _TypeAlias = _Union[float, tuple[float, float], None]
+
+
 class classproperty(property):
     """Decorator @staticmethod & @property"""
 

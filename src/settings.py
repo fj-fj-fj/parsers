@@ -1,5 +1,6 @@
-"""The 'kwargs' module contains Configuration() for default **kwargs."""
+"""The 'settings' module contains Configuration() for default **kwargs."""
 from dataclasses import dataclass
+from typing import Type
 
 from constants import ConstantStorage
 
@@ -20,10 +21,9 @@ class Configuration:
             if key:
                 setattr(self.__KeyStorage, key, key)
 
-    def setdefaults(self, const: ConstantStorage) -> None:
+    def setdefaults(self, const: Type[ConstantStorage]) -> None:
         """Replace None with new values in attributes."""
-        # FIXME: replace const.URL.FPL_PROXY_URL const.URL.current
-        self.setdefault(self.key.url, const.URL.FPL_PROXY_URL)
+        self.setdefault(self.key.url, const.URL.PROXY_URL)
         self.setdefault(self.key.parser, const.PARSE.PARSER)
         self.setdefault(self.key.file_parsed, const.FILE.PARSED_PROXIES)
         self.setdefault(self.key.file_response, const.FILE.PROXY_RESPONSE)

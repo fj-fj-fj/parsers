@@ -5,13 +5,14 @@ __all__ = 'check', 'check_proxies'
 import requests
 from typing import Literal
 
-from request._types import TimeoutType
-from request.constants import ConstantStorage as const
+from datatypes import ProxyType
+from datatypes import TimeoutType
+from constants import ConstantStorage as const
 from request.useragent import gen_useragents_cycle
-from utils import set_random_timeout
+from request.times import set_timeout
 
 
-def check(proxy: str, uagent: str, timeout: TimeoutType = None) -> bool:
+def check(proxy: ProxyType, uagent: str, timeout: TimeoutType = None) -> bool:
     """Check proxy and return checked as True/False."""
     try:
         respone = requests.get(
@@ -29,19 +30,14 @@ def check(proxy: str, uagent: str, timeout: TimeoutType = None) -> bool:
 
 
 def check_proxies(
-    frows=-1,
-    timeout=True,
-    trandom=True,  # random timeout
-    file_proxies=const.FILE.PARSED_PROXIES,
-    file_valid_proxies=const.FILE.VALID_PROXIES,
-    file_invalid_proxies=const.FILE.INVALID_PROXIES,
+    stop_line: int = -1,
+    timeout: TimeoutType = set_timeout(),
+    file_proxies: str = const.FILE.PARSED_PROXIES,
+    file_valid_proxies: str = const.FILE.VALID_PROXIES,
+    file_invalid_proxies: str = const.FILE.INVALID_PROXIES,
     write_mode: Literal['a', 'w'] = 'w',
 ) -> None:
     """Read proxies file (full or frows), sort (valid/invalid files) each."""
-
-    def set_timeout():
-        """Set timeout as floats (default or random) or None."""
-        return timeout and set_random_timeout() if trandom else const.TIMEOUTS or None
 
     user_agents = gen_useragents_cycle(file=const.FILE.USER_AGENTS)
 
@@ -50,12 +46,11 @@ def check_proxies(
         open(file_valid_proxies, write_mode) as valid,
         open(file_invalid_proxies, write_mode) as invalid,
     ):
-        for i, proxy in enumerate(proxies.readlines()):
-            if i == frows:
+        for line, proxy in enumerate(proxies.readlines()):
+            if line == stop_line:
                 return
 
-            proxy, uagent, timeout = proxy.strip(), next(user_agents), set_timeout()
-            if check(proxy=proxy, uagent=uagent, timeout=timeout):
+            if check(proxy=proxy.strip(), uagent=next(user_agents), timeout=timeout):
                 valid.write(proxy + '\n')
             else:
                 invalid.write(proxy + '\n')
