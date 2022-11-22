@@ -12,7 +12,9 @@ if is_script := __name__ == '__main__':
     from sys import path; from os.path import dirname  # noqa: E702
     path.append(dirname(dirname(__file__)))
 
-from utils import classproperty
+from datatypes import classproperty
+from datatypes import NamespaceLiteral
+from exceptions import ParameterValueError
 
 PROJECT_DIR = getenv('PROJECT_DIR', '../..')
 PROXY_DATA = F'{PROJECT_DIR}/data/proxy'
@@ -23,46 +25,102 @@ class CommandLineInterface(Enum):
     VERBOSE = '--verbose'
 
 
-class Files(NamedTuple):
+class NameSpace(NamedTuple):
+    """Base class for all namespaces."""
+
+
+class Files(NameSpace):
     # proxy
-    PROXY_RESPONSE: str = F'{PROXY_DATA}/response.html'
-    PARSED_PROXIES: str = F'{PROXY_DATA}/proxies'
-    VALID_PROXIES: str = F'{PROXY_DATA}/valid'
-    INVALID_PROXIES: str = F'{PROXY_DATA}/invalid'
+    PROXY_RESPONSE = F'{PROXY_DATA}/response.html'
+    PARSED_PROXIES = F'{PROXY_DATA}/proxies'
+    VALID_PROXIES = F'{PROXY_DATA}/valid'
+    INVALID_PROXIES = F'{PROXY_DATA}/invalid'
     # useragent
-    USER_AGENTS: str = F'{PROJECT_DIR}/src/config/user_agents.txt'
+    USER_AGENTS = F'{PROJECT_DIR}/useragents.txt'
 
 
-class MagicNumbers(NamedTuple):
-    DEFAULT_CONNECTION_TIMEOUT: float = 5.05
-    DEFAULT_READ_TIMEOUT: float = 27.67
+class MagicNumbers(NameSpace):
+    DEFAULT_CONNECTION_TIMEOUT = 5.05
+    DEFAULT_READ_TIMEOUT = 27.67
 
 
-class ParsingConstants(NamedTuple):
-    PARSER: str = 'lxml'
+class ParsingConstants(NameSpace):
+    PARSER = 'lxml'
     # FOR: https://free-proxy-list.net/
-    SELECT_IP: str = 'td:nth-of-type(1)'
-    SELECT_PORT: str = 'td:nth-of-type(2)'
+    SELECT_IP = 'td:nth-of-type(1)'
+    SELECT_PORT = 'td:nth-of-type(2)'
 
 
-class UniformResourceLocator(NamedTuple):
+class UniformResourceLocator(NameSpace):
     # proxies
-    FPL_PROXY_URL: str = 'https://free-proxy-list.net/'
+    FPL_PROXY_URL = 'https://free-proxy-list.net/'
+    PROXY_URL = FPL_PROXY_URL
     # checking
-    CHECK_PROXY_URL: str = 'https://api.ipify.org/'
-    CHECK_PROXY_URL_PARAMS: dict[str, str] = {'format': 'json'}
+    CHECK_PROXY_URL = 'https://api.ipify.org/'
+    CHECK_PROXY_URL_PARAMS = {'format': 'json'}
 
 
-class ConstantStorage:
-    """
-    Contains classmethod-properties (files, URLs, xpath, etc).
+class DirAttributesMixin:
+    """Mixin to listing namespaces and/or their constatns."""
 
-    dir_public(): classmethod to check public namespaces
-    dir(namespace: str): classmethod to check namespace's constants
+    @classmethod
+    def dir(cls, namespace: NamespaceLiteral) -> str:
+        """Return public ConstantStorage.<namespace>.constants
 
-    """
+        >>> ConstantStorage().dir('cli')
+        'PARSE, VERBOSE'
+        >>> ConstantStorage().dir('file')
+        'INVALID_PROXIES, PARSED_PROXIES, PROXY_RESPONSE, USER_AGENTS, VALID_PROXIES'
+        >>> ConstantStorage().dir('magic_numbers')
+        'DEFAULT_CONNECTION_TIMEOUT, DEFAULT_READ_TIMEOUT'
+        >>> ConstantStorage().dir('parse')
+        'PARSER, SELECT_IP, SELECT_PORT'
+        >>> ConstantStorage().dir('timeouts')
+        ''
+        >>> ConstantStorage().dir('url')
+        'CHECK_PROXY_URL, CHECK_PROXY_URL_PARAMS, FPL_PROXY_URL'
+        >>> ConstantStorage().dir('foo')  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        exceptions.ParameterValueError: foo not in \
+typing.Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']
+
+        """
+        try:
+            namespace = dir(vars(cls)[namespace.upper()].fget(cls))  # type: ignore [assignment]
+            return ', '.join(const for const in namespace if const.isupper())
+        except KeyError:
+            raise ParameterValueError(f'{namespace} not in {NamespaceLiteral}')
+
+    @classmethod
+    def dir_public(cls, key: Literal['all', 'ns'] = 'all') -> str:
+        r"""Return all public constants or thier namespases only.
+
+        >>> ConstantStorage().dir_public()  # doctest: +ELLIPSIS
+        'CLI: PARSE, VERBOSE\nFILE: ...\nPARSE: ...\nURL: ...\n'
+        >>> ConstantStorage().dir_public('ns')
+        'CLI, FILE, MAGIC_NUMBERS, PARSE, TIMEOUTS, URL'
+        >>> ConstantStorage().dir_public('badparam')
+        Traceback (most recent call last):
+        ...
+        exceptions.ParameterValueError: 'what' is a Literal['all', 'ns'].
+
+        """
+        constants_ns_map = {
+            'all': ''.join(f'{ns}: {cls.dir(ns)}\n' for ns in dir(cls) if ns.isupper()),  # type: ignore [arg-type]
+            'ns': ', '.join(ns for ns in dir(cls) if ns.isupper()),
+        }
+        try:
+            return constants_ns_map[key]
+        except KeyError:
+            raise ParameterValueError("'what' is a Literal['all', 'ns'].")
+
+
+class ConstantStorage(DirAttributesMixin):
+    """Contains classmethod-properties (files, URLs, xpath, etc)."""
+
     @classproperty
-    def CLI(cls): return CommandLineInterface()    # noqa: E704
+    def CLI(cls): return CommandLineInterface      # noqa: E704
 
     @classproperty
     def FILE(cls): return Files()                  # noqa: E704
@@ -82,29 +140,14 @@ class ConstantStorage:
         mn = ConstantStorage.MAGIC_NUMBERS
         return mn.DEFAULT_CONNECTION_TIMEOUT, mn.DEFAULT_READ_TIMEOUT
 
-    @classmethod
-    def _dir(cls, namespace: str) -> str:
-        """Return public ConstantStorage.<namespace>.constants"""
-        namespace = dir(vars(cls)[namespace.upper()].fget(cls))
-        return ', '.join(const for const in namespace if const.isupper())
 
-    @classmethod
-    def _dir_public(cls, what: Literal['all', 'ns'] = 'all') -> str:
-        """Return all public constants or thier namespases only."""
-        return {
-            'all': ''.join(f"{ns}: {cls._dir(ns)}\n" for ns in dir(cls) if ns.isupper()),
-            'ns': ', '.join(ns for ns in dir(cls) if ns.isupper()),
-        }.get(what, "ParameterError: `what` is Literal['all', 'ns'].")
-
-
-def info():
-    """Display detail imformation about this module."""
+def info() -> None:
+    """Display detail imformation about 'constants' module."""
     msg = f'{__doc__}\n\n'
     msg += '<ConstantStorage> contains (namespase: constants):\n'
-    msg += f'{ConstantStorage._dir_public()}'
+    msg += f'{ConstantStorage.dir_public()}'
     print(msg)
 
 
 if is_script:
     info()
-    c = ConstantStorage  # if -i
