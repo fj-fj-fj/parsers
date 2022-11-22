@@ -1,0 +1,21 @@
+export PYTHONSTARTUP="$(pwd)"/.pythonrc
+export PROJECT_DIR=$(pwd)
+export PROJECT_NAME="$(basename $PROJECT_DIR)"
+export VENV="~/.pyenv/versions/.$PROJECT_NAME"
+
+# Activate virtal environment without pyenv
+# . .venv/bin/activate && echo '.venv activated successfully'
+
+printf "\e[1;33m"; python3 -V; printf "\e[0m"
+# use 'make versions' to read more
+
+# Create symlink if not exists to use: parse <parser_name>
+if [ ! -L "/usr/local/bin/parse" ]; then
+    sudo ln -s $(pwd)/__main__.py /usr/local/bin/parse
+fi
+
+code .
+
+unset PS1
+
+# direnv allow .

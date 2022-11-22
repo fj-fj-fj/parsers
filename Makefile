@@ -2,61 +2,85 @@ ifndef VERBOSE
 MAKEFLAGS += --no-print-directory
 endif
 
-
-versions: # Chrome, Chromedriver, Selenium
-	@/usr/bin/google-chrome --version
-	@"$(PWD)/driver/chrome/chromedriver" --version
-	@printf 'Selenium '; python3 -c "print(__import__('selenium').__version__)"
-
-cloc:
-	$@ --exclude-list-file=.clocignore .
+# ------------------- Makefile iformation -------------------
 
 list:
 	@grep '^[^#[:space:]].*:' Makefile
 
-# ------------------------------------ XSERVER ------------------------------------
+
+# -------------------------- Linting -------------------------
+
+flake8:
+	@$(BIN_DIR)/$@
+
+mypy:
+	@$(BIN_DIR)/$@ --show-error-codes
+
+check:
+	make flake8 mypy
+
+
+# -------------------- Versions/Updating --------------------
+
+versions: # Display the versions of Chrome, Chromedriver, Selenium
+	@/usr/bin/google-chrome --version
+	@"$(PWD)/src/driver/chrome/chromedriver" --version
+	@printf 'Selenium '; $(PYTHON) -c "print(__import__('selenium').__version__)"
+
+
+# --------------------- no-src execution ---------------------
+
+cloc:
+	$@ --exclude-list-file=.clocignore .
+
+
+# ---------------------- Configuration ----------------------
+
+# --- X Server ---
+
 check_xserver_process_exist:
 	@powershell.exe get-process vcxsrv -ErrorAction SilentlyContinue \
 	&& echo "success!" || { echo "failure!"; exit 1; }
 
 
-NOHUP := $(PWD)/config/nohup.out
-XLAUNCH_CONFIG := '"$(PWD)/config/config.xlaunch"'
+NOHUP := $(PWD)/src/config/nohup.out
+XLAUNCH_CONFIG := '"$(PWD)/src/config/config.xlaunch"'
 PROGRAM_DATA := /mnt/c/Progra~1
 XLAUNCH := '"$(PROGRAM_DATA)/VcXsrv/xlaunch.exe"'
 PARAMS := '-run', $(XLAUNCH_CONFIG)
+
 run_xlaunch:
 	@nohup python3 -c "__import__('subprocess').call([$(XLAUNCH), $(PARAMS)])" > $(NOHUP) 2>&1 &
 	@sleep 1; ps -o cmd | tail -4 | head -1
 
 xlaunch:
 	make check_xserver_process_exist || make run_xlaunch
+
 # ----------------------------------------------------------------------------------
 
-BIN_DIR := ./.venv/bin
-PYTHON := $(BIN_DIR)/python3
 
 # ------------------------------------ PARSERS ------------------------------------
 
+BIN_DIR := $$VENV/bin
+
 # -------------- proxy ----------------
 
-px: PARSER := $(PWD)/request/__init__.py
+px: PARSER := $(PWD)/src/parsers/proxy/__init__.py
 px: parse
 
 # -------------------------------------
 
 parse:
-	@time -vo $(shell dirname $(PARSER))/.time.log "$(PYTHON)" -i "$(PARSER)"
+	@time -vo $(shell dirname $(PARSER))/.time.log "$(BIN_DIR)/python" -i "$(PARSER)"
 
 
-include ./parsers/zvk/Makefile
+include ./src/parsers/zvk/Makefile
 
 ZVK_TARGET := $(filter $(firstword $(MAKECMDGOALS)), zparse readme check_status_codes check_correct_params generate_urls see_multi_params_files clean_up wc1 wc2 wc3 wc9)
 # ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),\
 # 	zparse readme check_status_codes check_correct_params generate_urls see_multi_params_files clean_up wc1 wc2 wc3 wc9))
 # ifdef $(ZVK_TARGET)
 ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),check_correct_params))
-	PYTHON := ./.venv/bin/python3
 
 	PARSER_DIR := $(PWD)/parsers/zvk
 	DATA := $(PARSER_DIR)/data
@@ -113,13 +137,4 @@ wt:
 
 count_animals:
 
-# ------------------------------------ LINTING -----------------------------------
 
-flake8:
-	@$(BIN_DIR)/$@
-
-mypy:
-	@$(BIN_DIR)/$@
-
-check:
-	make flake8 mypy

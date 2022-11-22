@@ -8,7 +8,6 @@ __pycache__/
 **tmp**
 .envrc
 .python_history
-.vscode/
 .story/
 .venv/
 misc.py

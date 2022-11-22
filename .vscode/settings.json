@@ -1,0 +1,60 @@
+// https://code.visualstudio.com/docs/editor/variables-reference
+{
+    "editor.cursorBlinking": "smooth",
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/*.pyc": true,
+        "**/__pycache__": true,
+        "**/node_modules": true,
+        "**/.mypy_cache/**": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "coverage": true,
+    },
+    "[git-commit]": {"editor.rulers": [50]},
+    "[python]": {
+        "editor.formatOnSave": false,
+        "editor.rulers": [
+            {"column":  72, "color": "#5a5a5a20"}, // dockstring Python right line
+            {"column":  79, "color": "#424142"}, // right rule (dock Django)
+            {"column": 120, "color": "#ff0000"} // extra right rule (Django)
+        ],
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+    },
+    "[JSON]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[markdown]": {
+        "files.trimTrailingWhitespace": false
+    },
+    "[YAML]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "python.defaultInterpreterPath": ".venv",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true,
+    "python.linting.flake8Args": [
+        "--max-line-lenth=119",
+        "--ignore=E402,F841,F401,E302,E305",
+        "--max-complexity=10",
+    ],
+    "python.testing.cwd": "${workspaceFolder}",
+    "python.analysis.extraPaths": [
+        "./gibdd_news",
+        "./discontinued_tech",
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    "python.autoComplete.extraPaths": [],
+    "python.autoComplete.addBrackets": true,
+    "workbench.editor.highlightModifiedTabs": true,
+    "python.analysis.completeFunctionParens": true
+}

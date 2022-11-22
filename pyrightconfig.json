@@ -1,7 +1,7 @@
 // https://github.com/Microsoft/pyright/blob/main/docs/configuration.md
 {
   "include": [
-    // "src"
+    "src"
 ],
 
   "exclude": [
@@ -24,6 +24,6 @@
   "verboseOutput": true,
 
 // "3.10.0rc2" does not match the pattern of "^3\.[0-9]+$".
-  "pythonVersion": "3.10",
+  "pythonVersion": "3.11",
   "pythonPlatform": "Linux",
 }
