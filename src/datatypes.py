@@ -1,6 +1,6 @@
 """Module 'datatypes' that contains data structures and types."""
 from typing import Literal
-from typing import TypeVar
+from typing import TypeAlias
 
 # config
 NamespaceLiteral = Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']
@@ -8,15 +8,16 @@ NamespaceLiteral = Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'time
 # request
 ProxyType = str
 ProxyList = list[ProxyType]
-TimeoutType = TypeVar('TimeoutType', float, tuple[float, float], None)
+TimeoutType: TypeAlias = float | tuple[float, ...] | None
 
 # saving data
-JsonStr = HTML = str
-Data = TypeVar('Data', bytes, HTML, JsonStr, list[str])
+JsonStr: TypeAlias = str
+HTML: TypeAlias = str
+Data: TypeAlias = bytes | HTML | JsonStr | list[str]
 
 # decorators
 class classproperty(property):
     """Decorator @staticmethod & @property"""
 
-    def __get__(self, cls, owner) -> type:
+    def __get__(self, cls, owner):
         return classmethod(self.fget).__get__(None, owner)()
