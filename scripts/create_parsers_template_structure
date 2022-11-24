@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# This scripts generates:
+# $PROJECT_DIR/src/user_parsers/$1/
+# ├──  __init__.py
+# ├──  config.py
+# ├──  constants.py
+# └──  parser.py
+
+# Error codes (from /usr/include/asm-generic/errno-base.h)
+E2BIG=7
+EINVAL=22
+E2SMALL=64
+
+# Usage
+SCRIPT_NAME=$0
+USAGE=$(cat << EOT
+
+This script requires exactly one argument DIRECTORY_NAME.
+
+RETURN CODES
+    The script has the following return codes:
+
+    0   success
+    $E2BIG  Argument list too long
+    $EINVAL Invalid argument
+    $E2SMALL Argument list too short
+
+USAGE
+    $(echo -e "\033[0;33m$SCRIPT_NAME <DIRECTORY_NAME>\033[0m")
+EOT
+)
+
+# Exit conditions
+if [ ${#} -lt 1 ] ; then
+    printf '\033[1;31mYou must pass a directory name to create a template!\033[0m\n'
+    printf '%s\n\n' "${USAGE}"
+    exit $E2SMALL
+fi
+if [ "${1}" = "-h" ] || [ "${1}" = "--help" ] ; then
+    printf '%s\n\n' "${USAGE}"
+    exit 0
+fi
+if [ ${#} -gt 1 ] ; then
+    printf '\033[1;31mYou must pass only one argument!\033[0m\n'
+    printf '%s\n\n' "${USAGE}"
+    exit $E2BIG
+fi
+
+DIR_NAME=$1
+PROJECT_DIR=$PROJECT_DIR
+PARSER_TEMPLATE=$PROJECT_DIR/src/user_parsers/$DIR_NAME
+
+# Generating
+mkdir $PARSER_TEMPLATE
+touch $PARSER_TEMPLATE/{__init__,config,constants,parser}.py
+
+cat <<EOT >> $PARSER_TEMPLATE/__init__.py
+#/usr/bin/env python
+
+from parser import *
+EOT
+
+cat <<EOT >> $PARSER_TEMPLATE/parser.py
+#/usr/bin/env python
+
+import requests
+from bs4 import BeautifulSoup
+
+
+def main():
+    pass
+
+
+if __name__ == '__main__':
+    main()
+EOT
+
+printf "\n\033[0;33mTemplate '$DIR_NAME' created successfully.\033[0m\n\n"
+tree -p $PARSER_TEMPLATE
