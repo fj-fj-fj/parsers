@@ -51,16 +51,16 @@ PROJECT_DIR=$PROJECT_DIR
 PARSER_TEMPLATE=$PROJECT_DIR/src/user_parsers/$DIR_NAME
 
 # Generating
-mkdir $PARSER_TEMPLATE
-touch $PARSER_TEMPLATE/{__init__,config,constants,parser}.py
+mkdir "$PARSER_TEMPLATE"
+touch "$PARSER_TEMPLATE"/{__init__,config,constants,parser}.py
 
-cat <<EOT >> $PARSER_TEMPLATE/__init__.py
+cat <<EOT >> "$PARSER_TEMPLATE"/__init__.py
 #/usr/bin/env python
 
-from parser import *
+from .parser import main
 EOT
 
-cat <<EOT >> $PARSER_TEMPLATE/parser.py
+cat <<EOT >> "$PARSER_TEMPLATE"/parser.py
 #/usr/bin/env python
 
 import requests
@@ -68,12 +68,12 @@ from bs4 import BeautifulSoup
 
 
 def main():
-    pass
+    print("\033[0;32mHello from $DIR_NAME.main function!\033[0m")
 
 
 if __name__ == '__main__':
     main()
 EOT
 
-printf "\n\033[0;33mTemplate '$DIR_NAME' created successfully.\033[0m\n\n"
-tree -p $PARSER_TEMPLATE
+printf "\n\033[0;33mTemplate '%s' created successfully.\033[0m\n\n" "${DIR_NAME}"
+tree -p "$PARSER_TEMPLATE"
