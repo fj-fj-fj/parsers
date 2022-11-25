@@ -2,6 +2,11 @@ BIN_DIR := $$VENV/bin
 
 # ------------------------- Parsers -------------------------
 
+# -------------- base ----------------
+# make run <PARSER_NAME>
+run:
+	$(BIN_DIR)/python . $(word 2, $(MAKECMDGOALS))
+
 # -------------- proxy ----------------
 px: PARSER := $(PWD)/src/parsers/proxy/__init__.py
 px: parse
@@ -52,6 +57,9 @@ mypy:
 
 check:
 	make flake8 mypy
+
+shellcheck:
+	$@ ./scripts/*
 
 
 # -------------------- Versions/Updating --------------------
