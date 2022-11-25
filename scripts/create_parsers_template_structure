@@ -50,7 +50,7 @@ DIR_NAME=$1
 PROJECT_DIR=$PROJECT_DIR
 PARSER_TEMPLATE=$PROJECT_DIR/src/user_parsers/$DIR_NAME
 
-# Generating
+# Generating parser template
 mkdir "$PARSER_TEMPLATE"
 touch "$PARSER_TEMPLATE"/{__init__,config,constants,parser}.py
 
@@ -74,6 +74,11 @@ def main():
 if __name__ == '__main__':
     main()
 EOT
+
+# Generating parsed data structure
+PARSED_DATA_TEMPLATE=$PROJECT_DIR/data/$DIR_NAME
+mkdir "$PARSED_DATA_TEMPLATE"
+touch "$PARSED_DATA_TEMPLATE"/response.html
 
 printf "\n\033[0;33mTemplate '%s' created successfully.\033[0m\n\n" "${DIR_NAME}"
 tree -p "$PARSER_TEMPLATE"
