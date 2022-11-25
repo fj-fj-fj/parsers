@@ -55,13 +55,13 @@ mkdir "$PARSER_TEMPLATE"
 touch "$PARSER_TEMPLATE"/{__init__,config,constants,parser}.py
 
 cat <<EOT >> "$PARSER_TEMPLATE"/__init__.py
-#/usr/bin/env python
+#!/usr/bin/env python
 
 from .parser import main
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/parser.py
-#/usr/bin/env python
+#!/usr/bin/env python
 
 import requests
 from bs4 import BeautifulSoup
