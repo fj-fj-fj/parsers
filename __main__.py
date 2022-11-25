@@ -1,40 +1,29 @@
-from sys import argv
+#!/usr/bin/env python
+"""Entry point.
 
-parser = argv[1:] and argv[1:][0]
+Requires exactly one command-line argument.
 
-match parser:
-    case 'coinmarketcap':
-        parser_number = sys.argv[2]
-        match parser_number:
-            case '1':
-                from parsers.coinmarketcap import *
-            case '2':
-                from parsers.coinmarketcap import *
-    case 'ctlnk':
-        from parsers.ctlnk.parser import *
-    case 'discontinued_tech':
-        from parsers.discontinued_tech import *
-    case 'zvk':
-        from parsers.zvk.links_parser import *
-    case 'wiki':
-        from parsers.wiki.parse_wikipedia import *
-    case _:
-        exit(f"NameError: name '{parser}' is not defined!")
+"""
+from types import ModuleType
 
-# save HTML files localy if needed
-if argv[-1] == '--save':
-    import os
 
-    directory = f'parsers/{parser}/html'
+def select_parser() -> ModuleType:
+    """Return mapped parser script by sys.argv or raise."""
+    from importlib import import_module
+    from sys import argv
+    try:
+        parser = argv[1]
+    except IndexError:
+        print('\t\033[1;31mYou forgot to enter the parser name!')
+        print('\t\033[0;33mUsage: make run parser_name\033[0m')
+        raise
+    return import_module(f'src.user_parsers.{parser}')
 
-    if not os.path.exists(directory):
-        os.makedirs(directory)
 
-    for link in url.endpoints():
-        file = f"{directory}/{link.split('/')[-2]}.html"
-        with open(file, 'w') as f:
-            f.write(requests.get(link).text)
-    exit('- html files saved succesfully!')
+def entry() -> None:
+    """Entry point."""
+    parser = select_parser()
+    parser.main()
 
-# run the main function of the matched parser
-main()
+
+entry()
