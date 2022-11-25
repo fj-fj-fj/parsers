@@ -13,6 +13,8 @@ parse:
 
 # ------------------------- Scripts -------------------------
 
+# --------- ./scrits/* ------------
+
 # Passing arguments to "make create_template_structure" or "make new"
 ifeq ($(filter $(new) $(create_template_structure), $(firstword $(MAKECMDGOALS))),)
   # use the rest as arguments for "new"
@@ -28,6 +30,16 @@ create_template_structure:
 #   make new <DIRECORY_NAME>
 #   make -- new --help
 new: create_template_structure
+
+
+# --------- makescripts ------------
+
+# Press <Ctrl+D> to close stdin
+note:
+	python -c "import sys;\
+	f=open(sys.argv[1],'a');\
+	f.write(''.join([i for i in sys.stdin]));\
+	f.close()" NOTE.tmp
 
 
 # -------------------------- Linting -------------------------
