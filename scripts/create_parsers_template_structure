@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # This scripts generates:
-# $PROJECT_DIR/src/user_parsers/$1/
+# $PROJECT_DIR/parsers/user_parsers/$1/
 # ├──  __init__.py
 # ├──  config.py
 # ├──  constants.py
@@ -48,7 +48,7 @@ fi
 
 DIR_NAME=$1
 PROJECT_DIR=$PROJECT_DIR
-PARSER_TEMPLATE=$PROJECT_DIR/src/user_parsers/$DIR_NAME
+PARSER_TEMPLATE=$PROJECT_DIR/parsers/user_parsers/$DIR_NAME
 
 # Generating parser template
 mkdir "$PARSER_TEMPLATE"
@@ -56,27 +56,70 @@ touch "$PARSER_TEMPLATE"/{__init__,config,constants,parser}.py
 
 cat <<EOT >> "$PARSER_TEMPLATE"/__init__.py
 #!/usr/bin/env python
-
+"""# TODO: docsting."""
 from .parser import main
 EOT
 
+cat <<EOT >> "$PARSER_TEMPLATE"/config.py
+"""# TODO: docstring."""
+EOT
+
 cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
-URL = ''
+"""# TODO: docsting."""
+
+URL = 'https://replaceme'
+
 PARSED_DIR = '$(basename $PROJECT_DIR)/data/$DIR_NAME'
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/parser.py
 #!/usr/bin/env python
-
+"""# TODO: docsting."""
 import requests
 from bs4 import BeautifulSoup
 
+if is_script := __name__ == '__main__':
+    __package__ = 'parsers.user_parsers.$DIR_NAME'
+
+    def fix_path():
+        '''Fix sys.path and die.'''
+        from sys import path
+        path.insert(0, path[0] + 3 * '/..')
+        global fix_path; del fix_path  # noqa: E702
+    fix_path()
+
+from ...storage.files import context_storage
+from .constants import URL, PARSED_DIR
+
+
+def load_page(url):
+    """# TODO: docsting."""
+    responce = requests.get(url)
+    return responce.text
+
+
+def parse_page(text, parser = 'lxml'):
+    """# TODO: docsting."""
+    result = None
+    soup = BeautifulSoup(text, parser)
+    # TODO: parsing
+    return result
+
+
+def save_result(data):
+    """# TODO: docstring."""
+    context_storage(data)
+
 
 def main():
+    """# TODO: docstring."""
+    html = load_page(URL)
+    data = parse_page(html)
+    save_result(data)
+
+
+if is_script:
     print("\033[0;32mHello from $DIR_NAME.main function!\033[0m")
-
-
-if __name__ == '__main__':
     main()
 EOT
 
