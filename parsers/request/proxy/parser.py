@@ -1,63 +1,63 @@
 #!/usr/bin/env python
-"""Module 'parser' that contains proxy parsers."""
+"""The 'parser' module contains proxy parsers."""
 
 __all__ = 'parse', 'parse_proxies'
 
-import requests
+import requests as _requests
 
 if is_script := __name__ == '__main__':
-    import sys; from os.path import dirname  # noqa: E401, E702
+    import sys as _sys; from os.path import dirname as _dn  # noqa: E401, E702
     # Append $PROJECT_DIR to use imports below
-    sys.path.append(dirname(dirname(__file__)))
+    _sys.path.append(_dn(_dn(__file__)))
 
-from datatypes import HTML
-from datatypes import ProxyList
-from exceptions import raise_notfound
-from constants import ConstantStorage
-from rawdata_handlers import make_soup
-from settings import Configuration
-from storage.files import save_to_file
+from parsers.datatypes import HTML as _HTML
+from parsers.datatypes import ProxyList as _ProxyList
+from parsers.exceptions import raise_notfound as _raise_notfound
+from parsers.constants import ConstantStorage as _ConstantStorage
+from parsers.rawdata_handlers import make_soup as _make_soup
+from parsers.settings import Configuration as _Configuration
+from parsers.storage.files import save_to_file as _save_to_file
 
 
-def parse_proxies(cfg: Configuration = Configuration(), output=False) -> ProxyList:
-    """Make request on cfg.url, parse response, return parsed proxies."""
-    cfg = _setdefault_configs(cfg or Configuration())
-    source_page = requests.get(cfg.url).text
-    save_to_file(data=source_page, file=cfg.file_response, log=output)
+def parse_proxies(cfg: _Configuration = _Configuration(), output=False) -> _ProxyList:
+    """Make request on `cfg`.url, parse response and return parsed proxies."""
+    cfg = _setdefault_configs(cfg or _Configuration())
+    source_page = _requests.get(cfg.url).text
+    _save_to_file(data=source_page, file=cfg.file_response, log=output)
     proxies = _parse_table(source_page, cfg.parser)
-    save_to_file(data='\n'.join(proxies), file=cfg.file_parsed, log=output)
+    _save_to_file(data='\n'.join(proxies), file=cfg.file_parsed, log=output)
     return proxies
 
 
-def _setdefault_configs(cfg: Configuration) -> Configuration:
-    cfg.setdefaults(const=ConstantStorage)
+def _setdefault_configs(cfg: _Configuration) -> _Configuration:
+    cfg.setdefaults(const=_ConstantStorage)
     return cfg
 
 
-def _parse_table(page: HTML, parser: str, tag='table') -> ProxyList:
+def _parse_table(page: _HTML, parser: str, tag='table') -> _ProxyList:
     """Return fetched IPs, ports from table > ResultSet[tr] > 1st,2nd td."""
     proxies = []
-    soup = make_soup(page, parser)
+    soup = _make_soup(page, parser)
     table = soup.find(tag)
     try:
         rows = table.find_all('tr')  # pyright: ignore [reportOptionalMemberAccess]
     except AttributeError as AE:
-        raise raise_notfound(tag) from AE
+        raise _raise_notfound(tag) from AE
     else:
         for td in rows:
-            ip = td.select_one(ConstantStorage.PARSE.SELECT_IP)
-            port = td.select_one(ConstantStorage.PARSE.SELECT_PORT)
+            ip = td.select_one(_ConstantStorage.PARSE.SELECT_IP)
+            port = td.select_one(_ConstantStorage.PARSE.SELECT_PORT)
             if ip and port:
                 proxies.append(f'{ip.text}:{port.text}')
     return proxies
 
 
-def parse(func=parse_proxies, configs: Configuration = None, output=True) -> None:
+def parse(func=parse_proxies, configs: _Configuration = None, output=True) -> None:
     """Parse proxies with `func` and display parsed with pydoc.pager"""
     from pydoc import pager
     pager('\n'.join(func(configs, output=output)))
 
 
-# $PROJECT_DIR/src/request/proxy/parser.py --parse
-if is_script and ConstantStorage.CLI.PARSE in sys.argv:
+# $PROJECT_DIR/parsers/request/proxy/parser.py --parse
+if is_script and _ConstantStorage.CLI.PARSE in _sys.argv:  # pyright: ignore [reportUnboundVariable]
     parse()

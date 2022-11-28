@@ -2,44 +2,44 @@
 
 __all__ = 'check', 'check_proxies'
 
-import requests
-from typing import Literal
+import requests as _requests
+from typing import Literal as _Literal
 
-from datatypes import ProxyType
-from datatypes import TimeoutType
-from constants import ConstantStorage as const
-from request.useragent import gen_useragents_cycle
-from request.times import set_timeout
+from parsers.datatypes import ProxyType as _ProxyType
+from parsers.datatypes import TimeoutType as _TimeoutType
+from parsers.constants import ConstantStorage as _const
+from parsers.request.useragent import gen_useragents_cycle as _gen_useragents_cycle
+from parsers.request.times import set_timeout as _set_timeout
 
 
-def check(proxy: ProxyType, uagent: str, timeout: TimeoutType = None) -> bool:
-    """Check proxy and return checked as True/False."""
+def check(proxy: _ProxyType, uagent: str, timeout: _TimeoutType = None) -> bool:
+    """Check proxy and return availability."""
     try:
-        respone = requests.get(
-            url=const.URL.CHECK_PROXY_URL,
-            params=const.URL.CHECK_PROXY_URL_PARAMS,
+        respone = _requests.get(
+            url=_const.URL.CHECK_PROXY_URL,
+            params=_const.URL.CHECK_PROXY_URL_PARAMS,
             headers={'user-agent': uagent},
             timeout=timeout,
             proxies={'https': 'https://' + proxy},
         )
         print(f'+ {proxy} {respone}')
         return True
-    except requests.RequestException as re:
+    except _requests.RequestException as re:
         print(f'- {proxy} {re!r}')
     return False
 
 
 def check_proxies(
     stop_line: int = -1,
-    timeout: TimeoutType = set_timeout(),
-    file_proxies: str = const.FILE.PARSED_PROXIES,
-    file_valid_proxies: str = const.FILE.VALID_PROXIES,
-    file_invalid_proxies: str = const.FILE.INVALID_PROXIES,
-    write_mode: Literal['a', 'w'] = 'w',
+    timeout: _TimeoutType = _set_timeout(),
+    file_proxies: str = _const.FILE.PARSED_PROXIES,
+    file_valid_proxies: str = _const.FILE.VALID_PROXIES,
+    file_invalid_proxies: str = _const.FILE.INVALID_PROXIES,
+    write_mode: _Literal['a', 'w'] = 'w',  # noqa: F821
 ) -> None:
-    """Read proxies file (full or frows), sort (valid/invalid files) each."""
+    """Sort `file_proxies` to `stop_line` by `file_(valid|invalid)_proxies`."""
 
-    user_agents = gen_useragents_cycle(file=const.FILE.USER_AGENTS)
+    user_agents = _gen_useragents_cycle(file=_const.FILE.USER_AGENTS)
 
     with (
         open(file_proxies) as proxies,

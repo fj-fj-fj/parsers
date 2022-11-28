@@ -1,10 +1,15 @@
 #!/usr/bin/env python
-"""Package 'proxy' that contais proxy parsers and checkers."""
+"""The 'core' module contains proxy parsers and checkers."""
 
-from typing import Callable
+from typing import Callable as _Callable
 
 if is_script := __name__ == '__main__':
-    __import__('_patch').update_syspath(__file__)
+    def fix_path():
+        '''Fix sys.path and disappear from the global scope.'''
+        from sys import path; from os.path import dirname  # noqa: E702
+        path.insert(0, dirname(dirname(dirname(dirname(__file__)))))
+        global fix_path; del fix_path  # noqa: E702
+    fix_path()
 
 from parsers.interfaces import AbstractProxy
 from parsers.interfaces import AbstractRequest
@@ -17,15 +22,15 @@ from parsers.request.proxy.parser import parse_proxies
 class ProxyCheckerMixin:
 
     def __init__(self) -> None:
-        self.check_proxies: Callable = check_proxies
-        self.check: Callable = check
+        self.check_proxies: _Callable = check_proxies
+        self.check: _Callable = check
 
 
 class ProxyParserMixin:
 
     def __init__(self) -> None:
-        self.parse_proxies: Callable = parse_proxies
-        self.parse: Callable = parse
+        self.parse_proxies: _Callable = parse_proxies
+        self.parse: _Callable = parse
 
 
 class Proxy(AbstractProxy, ProxyCheckerMixin, ProxyParserMixin):
@@ -40,16 +45,16 @@ class Request(AbstractRequest):
         self.proxy = Proxy()
 
 
-# $PROJECT_DIR/src/parsers/proxy/__init__.py
+# $PROJECT_DIR/parsers/request/proxy/__init__.py
 if __name__ == '__main__':
-    from inspect import signature
-    from types import FunctionType
+    from inspect import signature as _signature
+    from types import FunctionType as _FunctionType
 
     print('[!] This module contains:\n')
     for obj in locals().copy().values():
         # if item is a project function
-        if isinstance(obj, FunctionType) and obj != signature:
-            func_signature = f'def {obj.__name__}{signature(obj)}:\n'
+        if isinstance(obj, _FunctionType) and obj != _signature:
+            func_signature = f'def {obj.__name__}{_signature(obj)}:\n'
             func_docstring = f'\t"""{obj.__doc__}"""\n'
             print(func_signature, func_docstring)
         # if item is a project class
