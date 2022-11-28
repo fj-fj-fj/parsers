@@ -7,6 +7,10 @@
 # ├──  config.py
 # ├──  constants.py
 # └──  parser.py
+#
+# And starts a code editor at a certain position (line and column) of a file
+# file: $PROJECT_DIR/parsers/user_parsers/$1/constants.py
+
 
 # Error codes (from /usr/include/asm-generic/errno-base.h)
 E2BIG=7
@@ -52,6 +56,7 @@ DIR_NAME=$1
 PROJECT_DIR=$PROJECT_DIR
 PARSER_TEMPLATE=$PROJECT_DIR/parsers/user_parsers/$DIR_NAME
 
+
 # Generating parser template
 mkdir "$PARSER_TEMPLATE"
 touch "$PARSER_TEMPLATE"/{__init__,config,constants,parser}.py
@@ -69,16 +74,17 @@ EOT
 cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
 """# TODO: docsting."""
 
-URL = 'https://replaceme'
+URL = 'https://$DIR_NAME.com' # <-- fixme if needed
 
-PARSED_DIR = '$(basename $PROJECT_DIR)/data/$DIR_NAME'
+PARSED_DIR = '$(basename "$PROJECT_DIR")/data/$DIR_NAME'
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/parser.py
 #!/usr/bin/env python
 """# TODO: docsting."""
-import requests
-from bs4 import BeautifulSoup
+
+import requests as _requests
+from bs4 import BeautifulSoup as _BeautifulSoup
 
 if is_script := __name__ == '__main__':
     __package__ = 'parsers.user_parsers.$DIR_NAME'
@@ -90,38 +96,47 @@ if is_script := __name__ == '__main__':
         global fix_path; del fix_path  # noqa: E702
     fix_path()
 
-from ...storage.files import context_storage
-from .constants import URL, PARSED_DIR
+# 'Parsers' imports
+from ...storage.files import ParsedData as _ParsedData
+from ...storage.files import ParsedRawData as _ParsedRawData
+from ...storage.files import Storage as _Storage
+
+# '$DIR_NAME' template local imports
+from .constants import URL
+from .constants import PARSED_DIR
 
 
-def load_page(url):
+def load_page(url) -> _ParsedRawData:
     """# TODO: docsting."""
-    responce = requests.get(url)
-    return responce.text
+    response = _requests.get(url)
+    return _Storage(response.text)
 
 
-def parse_page(text, parser = 'lxml'):
+def parse_page(html, is_json: bool = False, bs4parser = 'lxml') -> _ParsedData:
     """# TODO: docsting."""
     result = None
-    soup = BeautifulSoup(text, parser)
-    # TODO: parsing
+    if is_json:
+        result = ...
+    else:
+        soup = _BeautifulSoup(html, bs4parser)
+        result = ...
     return result
 
 
-def save_result(data):
+def save_result(data, file = PARSED_DIR) -> None:
     """# TODO: docstring."""
-    context_storage(data)
+    _Storage(data, file=file, raw=False)
 
 
-def main():
+def main() -> None:
     """# TODO: docstring."""
-    html = load_page(URL)
-    data = parse_page(html)
+    parsed_data = load_page(URL)
+    data = parse_page(parsed_data.text, is_json=parsed_data.is_json)
     save_result(data)
 
 
 if is_script:
-    print("\033[0;32mHello from $DIR_NAME.main function!\033[0m")
+    print("\033[0;32mHello from $DIR_NAME.parser!\033[0m")
     main()
 EOT
 
@@ -132,3 +147,20 @@ touch "$PARSED_DATA_TEMPLATE"/response.html
 
 printf "\n\033[0;33mTemplate '%s' created successfully.\033[0m\n\n" "${DIR_NAME}"
 tree -p "$PARSER_TEMPLATE"
+
+
+# Open $PROJECT_DIR/parsers/user_parsers/$1/constants.py
+# to fix a first-level domain of URL constant
+CONSTANTS_URL="$PROJECT_DIR/parsers/user_parsers/$DIR_NAME/constants.py"
+# Define a magic number 20
+# A length of "URL = 'https://.com" + 1 (because the cursor sets before last char)
+declare -i CURSOR_COLUMN_POSITION=$((${#DIR_NAME} + 20))
+# Time to show on the terminal outs
+sleep 2
+# and start a code editor <file>:<line>:<column>
+# with the VSCode or Vim
+if command -v code >/dev/null; then
+    code --goto "$CONSTANTS_URL":3:"$CURSOR_COLUMN_POSITION"
+else
+    vim "+call cursor(3, $CURSOR_COLUMN_POSITION)" "$CONSTANTS_URL"
+fi
