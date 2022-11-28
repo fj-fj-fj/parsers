@@ -1,15 +1,16 @@
 """The 'times' module contains tools for sleep, timeout, etc."""
-from random import uniform as _uniform
-from typing import Type as _Type
-
-from constants import ConstantStorage as _Const
-from datatypes import TimeoutType as _TimeoutType
 
 __all__ = (
     'Timeout',
     'set_random_timeout',
     'set_timeout',
 )
+
+from random import uniform as _uniform
+from typing import Type as _Type
+
+from parsers.constants import ConstantStorage as _Const
+from parsers.datatypes import TimeoutType as _TimeoutType
 
 
 class Timeout:
