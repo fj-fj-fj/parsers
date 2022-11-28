@@ -20,6 +20,8 @@ $VENV/bin/flake8 \
     --max-complexity=10 \
     $CHANGED_PYTHON_FILES
 $VENV/bin/mypy \
+    --namespace-packages \
+    --explicit-package-bases \
     --show-error-codes \
     $CHANGED_PYTHON_FILES
 

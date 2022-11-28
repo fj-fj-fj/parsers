@@ -53,7 +53,7 @@ flake8:
 	@$(BIN_DIR)/$@
 
 mypy:
-	@$(BIN_DIR)/$@ --show-error-codes
+	@$(BIN_DIR)/$@ --namespace-packages --explicit-package-bases --show-error-codes
 
 check:
 	make flake8 mypy
