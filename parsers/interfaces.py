@@ -1,5 +1,5 @@
 """Module 'interfaces'."""
-from datatypes import ProxyList
+from parsers.datatypes import ProxyList
 
 
 class DataStorage:

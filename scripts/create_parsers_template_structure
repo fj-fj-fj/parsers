@@ -60,6 +60,11 @@ cat <<EOT >> "$PARSER_TEMPLATE"/__init__.py
 from .parser import main
 EOT
 
+cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
+URL = ''
+PARSED_DIR = '$(basename $PROJECT_DIR)/data/$DIR_NAME'
+EOT
+
 cat <<EOT >> "$PARSER_TEMPLATE"/parser.py
 #!/usr/bin/env python
 

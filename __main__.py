@@ -17,7 +17,7 @@ def select_parser() -> ModuleType:
         print('\t\033[1;31mYou forgot to enter the parser name!')
         print('\t\033[0;33mUsage: make run parser_name\033[0m')
         raise
-    return import_module(f'src.user_parsers.{parser}')
+    return import_module(f'parsers.user_parsers.{parser}')
 
 
 def entry() -> None:

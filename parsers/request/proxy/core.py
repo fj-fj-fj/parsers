@@ -6,12 +6,12 @@ from typing import Callable
 if is_script := __name__ == '__main__':
     __import__('_patch').update_syspath(__file__)
 
-from interfaces import AbstractProxy
-from interfaces import AbstractRequest
-from parsers.proxy.checker import check
-from parsers.proxy.checker import check_proxies
-from parsers.proxy.parser import parse
-from parsers.proxy.parser import parse_proxies
+from parsers.interfaces import AbstractProxy
+from parsers.interfaces import AbstractRequest
+from parsers.request.proxy.checker import check
+from parsers.request.proxy.checker import check_proxies
+from parsers.request.proxy.parser import parse
+from parsers.request.proxy.parser import parse_proxies
 
 
 class ProxyCheckerMixin:

@@ -1,11 +1,11 @@
 __pycache__/
 *.db
 *.log
-**data**
 **html**
 **log**
 **parsed_data**
 **tmp**
+data/**
 .envrc
 .python_history
 .story/

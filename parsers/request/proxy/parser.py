@@ -14,7 +14,7 @@ from datatypes import HTML
 from datatypes import ProxyList
 from exceptions import raise_notfound
 from constants import ConstantStorage
-from parsers.utils import make_soup
+from rawdata_handlers import make_soup
 from settings import Configuration
 from storage.files import save_to_file
 

@@ -8,7 +8,7 @@ run:
 	$(BIN_DIR)/python . $(word 2, $(MAKECMDGOALS))
 
 # -------------- proxy ----------------
-px: PARSER := $(PWD)/src/parsers/proxy/__init__.py
+px: PARSER := $(PWD)/parsers/request/proxy/core.py
 px: parse
 
 

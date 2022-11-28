@@ -12,9 +12,9 @@ if is_script := __name__ == '__main__':
     from sys import path; from os.path import dirname  # noqa: E702
     path.append(dirname(dirname(__file__)))
 
-from datatypes import classproperty
-from datatypes import NamespaceLiteral
-from exceptions import ParameterValueError
+from parsers.datatypes import classproperty
+from parsers.datatypes import NamespaceLiteral
+from parsers.exceptions import ParameterValueError
 
 PROJECT_DIR = getenv('PROJECT_DIR', '../..')
 PROXY_DATA = F'{PROJECT_DIR}/data/proxy'
@@ -30,6 +30,7 @@ class NameSpace(NamedTuple):
 
 
 class Files(NameSpace):
+    PARSED_DATA = F'{PROXY_DATA}/data'
     # proxy
     PROXY_RESPONSE = F'{PROXY_DATA}/response.html'
     PARSED_PROXIES = F'{PROXY_DATA}/proxies'
