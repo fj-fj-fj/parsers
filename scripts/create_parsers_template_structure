@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # This scripts generates:
+# $PROJECT_DIR/data/$1/
+# └──  response.html
 # $PROJECT_DIR/parsers/user_parsers/$1/
 # ├──  __init__.py
 # ├──  config.py
