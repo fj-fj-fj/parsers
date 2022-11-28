@@ -9,8 +9,8 @@ __all__ = (
 from random import uniform as _uniform
 from typing import Type as _Type
 
-from parsers.constants import ConstantStorage as _Const
 from parsers.datatypes import TimeoutType as _TimeoutType
+from parsers.constants import ConstantStorage as _Const
 
 
 class Timeout:

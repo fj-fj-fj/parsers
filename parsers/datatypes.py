@@ -1,4 +1,4 @@
-"""Module 'datatypes' that contains data structures and types."""
+"""The 'datatypes' module contains data structures and types."""
 from typing import Literal as _Literal
 from typing import TypeAlias as _TypeAlias
 from typing import Union as _Union

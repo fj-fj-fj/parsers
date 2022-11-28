@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""Module 'exceptions' that contains errors and warnings."""
-from typing import NoReturn
+"""The 'exceptions' module contains errors and warnings."""
+from typing import NoReturn as _NoReturn
 
 __all__ = 'ElementNotFoundError', 'raise_notfound'
 
@@ -17,7 +17,7 @@ class ParameterValueError(BaseError):
     """Got an unexpected argument value."""
 
 
-def raise_notfound(tag: str) -> NoReturn:
+def raise_notfound(tag: str) -> _NoReturn:
     """Raise <tag>NotFoundError."""
     raise _notfound_factory(tag)
 

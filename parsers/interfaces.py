@@ -1,5 +1,12 @@
-"""Module 'interfaces'."""
-from parsers.datatypes import ProxyList
+"""The 'interfaces' module contains API."""
+
+__all__ = (
+    'AbstractProxy',
+    'AbstractRequest',
+    'DataStorage',
+)
+
+from parsers.datatypes import ProxyList as _ProxyList
 
 
 class DataStorage:
@@ -12,7 +19,7 @@ class DataStorage:
 class AbstractProxy:
     """Interface for proxy tools."""
 
-    def parse_proxies(self, *args, **kwargs) -> ProxyList:
+    def parse_proxies(self, *args, **kwargs) -> _ProxyList:
         raise NotImplementedError
 
     def check(self, *args, **kwargs) -> bool:
