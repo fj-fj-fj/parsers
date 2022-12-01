@@ -36,8 +36,13 @@ create_template_structure:
 #   make -- new --help
 new: create_template_structure
 
+# Usage:
+#   make trace <PARSER>
+#    - to generate traceback markdown file if fail
+#   make trace <PARSER> [1|--new-window (i.e anything true)]
+#    - to new VSCode instance with traceback's files directory if fail
 trace:
-	./scripts/traceback $(word 2, $(MAKECMDGOALS))
+	./scripts/traceback $(word 2, $(MAKECMDGOALS)) $(word 3, $(MAKECMDGOALS))
 
 #12 --------- makescripts ------------
 

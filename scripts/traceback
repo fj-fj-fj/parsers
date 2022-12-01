@@ -1,49 +1,106 @@
 #!/usr/bin/env python
 # type: ignore
+"""
+run __main__.py to catch exceptions and trace files if any.
+Store them for easier analysis.
+"""
+# usage:
+#   1. make dev <parser>
+#     - Generate and open VSCode $(PROJECT_DIR)/traceback.tmp.md in new tab
+#   2. make dev <parser> <smth true>
+#     - Generate $(PROJECT_DIR)/log/traceback/{traceback.tmp.py,.vscode/settings.json}
+#     - Open new VSCode instance with traceback files
+#   3. $(PROJECT_DIR)/scripts/traceback <parser> [, <smth true>]
 
-# Create ./log/traceback.tmp.py to see the color trace
-# Create ./log/traceback.tmp.md  to use markdown links
-# Open new vscode instance with traceback files
-#
-# usage: `make dev <parser>`
+import enum
 import json
 import os.path
 import re
 import subprocess
 import sys
 
+PROJECT_DIR = os.getenv("PROJECT_DIR", "..")
+TRACEBACK_DIR = f"{PROJECT_DIR}/log/traceback"
+
+
+class Args(enum.StrEnum):
+    PARSER = f"{sys.argv[1]}"
+    VSC_INSTANCE = "--new-window"
+
+
+class ComandLine(enum.StrEnum):
+    PYTHON_MAIN = "python . {} {}"
+    CODE_NEW_WINDOW = "code --new-window {}"
+    CODE_GOTO = "code --goto {}"
+
+
+PYTHON_COMMAND = ComandLine.PYTHON_MAIN.format(
+    Args.PARSER,
+    Args.VSC_INSTANCE if sys.argv[2:10] else "",
+)
+raised_exception: subprocess.CalledProcessError = None
 try:
-    subprocess.run(f"python . {sys.argv[1]}", check=True, capture_output=True, shell=True)
-except Exception as e:
-    tb_files = ["./log/traceback.tmp.py", "./log/traceback.tmp.md"]
-    traceback_msg = e.stderr.decode()
-    traceback_md_msg = str()
+    subprocess.run(PYTHON_COMMAND, check=True, capture_output=True, shell=True)
+except Exception as ex:
+    raised_exception = ex
+else:
+    sys.exit(0)
 
-    # Generate traceback markdown message
-    for line in traceback_msg.split("\n"):
-        file = "".join(re.findall(r'"[^<](.+?)"', line))
-        lineno = "".join(re.findall(r"\d", line))
-        if file and lineno:
-            tb_files.append(f'/{file}:{lineno}\n')
-            # Link to source code via the #L param
-            file_lineno = f"[/{file}](../{os.path.basename(file)}#L{lineno})"
-            traceback_md_msg += line.strip().replace(f"/{file}", file_lineno)
 
-    # Write messages to traceback.tmp.*
-    for tbf, msg in zip(tb_files, [traceback_msg, traceback_md_msg]):
-        with open(tbf, 'w') as f:
-            f.write(msg)
+class File(enum.StrEnum):
+    TRACEBACK_PY = "./log/traceback/traceback.tmp.py"
+    TRACEBACK_MD = "./traceback.tmp.md"
+    VSCODE_SETTINGS = "./log/traceback/.vscode/settings.json"
 
-    # Set VSCode preview markdown by default
-    vscode_settings_file = "./log/.vscode/settings.json"
-    os.makedirs(os.path.dirname(vscode_settings_file), exist_ok=True)
-    with open(vscode_settings_file, 'w') as settings:
-        settings.write(json.dumps({
-            "workbench.editorAssociations": {
-                "*.md": "vscode.markdown.preview.editor"
-            }
-        }))
-    tb_files.insert(0, vscode_settings_file)
+    @staticmethod
+    def tb_files():
+        # Order is important
+        return [File.TRACEBACK_PY, File.TRACEBACK_MD]
 
-    # Open the ./log directory
-    subprocess.call(f"code --new-window --goto ./log/", shell=True)
+    @staticmethod
+    def ls():
+        # Scip current VSC window files
+        return [File.VSCODE_SETTINGS, File.TRACEBACK_PY]
+
+
+traceback_msg = raised_exception.stderr.decode()
+traceback_md_msg = "```  \n"
+traceback_md_msg_extra = ""
+files = File.ls()
+
+# Generate traceback markdown message
+for line in traceback_msg.split("\n"):
+    file = "".join(re.findall(r'"[^<](.+?)"', line))
+    lineno = "".join(re.findall(r"\d", line))
+    if file and lineno:
+        files.append(f'/{file}')
+        # Link to source code via the #L param
+        file_lineno = f"[/{file}](../{os.path.basename(file)}#L{lineno})"
+        traceback_md_msg_extra += f'{line.strip().replace(f"/{file}", file_lineno)}\n'
+    traceback_md_msg += f"{line}  \n"
+traceback_md_msg += "```\n#\n"
+traceback_md_msg = traceback_md_msg.replace("  \n", "python  \n", 1)
+traceback_md_msg += "##### <Ctrl+K V> to open markdown preview\n\n"
+traceback_md_msg += traceback_md_msg_extra
+
+# Write messages to traceback.tmp.*
+for tb, msg in zip(File.tb_files(), [traceback_msg, traceback_md_msg]):
+    os.makedirs(os.path.dirname(tb), exist_ok=True)
+    with open(tb, 'w') as f:
+        f.write(msg)
+
+# Set VSCode preview markdown by default
+os.makedirs(os.path.dirname(File.VSCODE_SETTINGS), exist_ok=True)
+with open(File.VSCODE_SETTINGS, 'w') as settings:
+    settings.write(json.dumps({
+        "workbench.editorAssociations": {
+            "*.md": "vscode.markdown.preview.editor"
+        }
+    }))
+
+# Open VSCode(new tab) $(PROJECT_DIR)/traceback.tmp.md:<line_problem>
+subprocess.call(ComandLine.CODE_GOTO.format(File.TRACEBACK_MD), shell=True)
+# Open VSCode(new window) $(PROJECT_DIR)/log/traceback/ and other traceback's `files`
+if Args.VSC_INSTANCE in PYTHON_COMMAND:
+    subprocess.call(ComandLine.CODE_NEW_WINDOW.format(TRACEBACK_DIR), shell=True)
+    subprocess.call(ComandLine.CODE_GOTO.format(" ".join(files)), shell=True)
