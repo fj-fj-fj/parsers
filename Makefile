@@ -1,13 +1,32 @@
+# Makefile search <Ctlr+F>
+# ------------------------
+# Parsers -------- # + 0
+#  base .......... # + 01
+#  proxy ......... # + 02
+# Scripts -------- # + 1
+#  ./scripts/* ... # + 11
+#  makescripts ... # + 12
+# Data ----------- # + 2
+# Linting -------- # + 3
+# Information ---- # + 4
+# Updaing -------- # + 5
+# Clean ---------- # + 6
+# Configuration -- #`
+#  XServer ....... #` + 1
+#  makeconf ...... #` + 2
+
+
 BIN_DIR := $$VENV/bin
 
-# ------------------------- Parsers -------------------------
 
-# -------------- base ----------------
+#0 ------------------------- Parsers -------------------------
+
+#01 -------------- base ----------------
 # make run <PARSER_NAME>
 run:
 	$(BIN_DIR)/python . $(word 2, $(MAKECMDGOALS))
 
-# -------------- proxy ----------------
+#02 -------------- proxy ----------------
 px: PARSER := $(PWD)/parsers/request/proxy/core.py
 px: parse
 
@@ -16,9 +35,9 @@ parse:
 	@time -vo $(shell dirname $(PARSER))/.time.log "$(BIN_DIR)/python" -i "$(PARSER)"
 
 
-# ------------------------- Scripts -------------------------
+#1 ------------------------- Scripts -------------------------
 
-# --------- ./scrits/* ------------
+#11 --------- ./scrits/* ------------
 
 # Passing arguments to "make create_template_structure" or "make new"
 ifeq ($(filter $(new) $(create_template_structure), $(firstword $(MAKECMDGOALS))),)
@@ -42,7 +61,7 @@ new: create_template_structure
 #   make trace <PARSER> [1|--new-window (i.e anything true)]
 #    - to new VSCode instance with traceback's files directory if fail
 trace:
-	./scripts/traceback $(word 2, $(MAKECMDGOALS)) $(word 3, $(MAKECMDGOALS))
+	@./scripts/traceback $(word 2, $(MAKECMDGOALS)) $(word 3, $(MAKECMDGOALS))
 
 #12 --------- makescripts ------------
 
@@ -54,7 +73,14 @@ note:
 	f.close()" NOTE.tmp
 
 
-# -------------------------- Linting -------------------------
+#2 -------------------------- Data --------------------------
+
+head:
+	echo ./data/$(word 3, $(MAKECMDGOALS))
+	@$@ $(word 2, $(MAKECMDGOALS)) ./data/$(word 3, $(MAKECMDGOALS))/response.* | code -
+
+
+#3 -------------------------- Linting -------------------------
 
 flake8:
 	@$(BIN_DIR)/$@
@@ -69,7 +95,13 @@ shellcheck:
 	$@ ./scripts/*
 
 
-# -------------------- Versions/Updating --------------------
+#4 ------------------------ Information -----------------------
+
+cloc:
+	$@ --exclude-list-file=.clocignore .
+
+
+#5 ------------------------- Updating -------------------------
 
 versions: # Display the versions of Chrome, Chromedriver, Selenium
 	@/usr/bin/google-chrome --version
@@ -77,19 +109,15 @@ versions: # Display the versions of Chrome, Chromedriver, Selenium
 	@printf 'Selenium '; $(PYTHON) -c "print(__import__('selenium').__version__)"
 
 
-# --------------------- no-src execution ---------------------
-
-cloc:
-	$@ --exclude-list-file=.clocignore .
+#6 -------------------------- Clean --------------------------
 
 
-# ---------------------- Configuration ----------------------
+#` ---------------------- Configuration ----------------------
 
-# ------------ XServer --------------
+#`1 ------------ XServer --------------
 check_xserver_process_exist:
 	@powershell.exe get-process vcxsrv -ErrorAction SilentlyContinue \
 	&& echo "success!" || { echo "failure!"; exit 1; }
-
 
 NOHUP := $(PWD)/src/config/nohup.out
 XLAUNCH_CONFIG := '"$(PWD)/src/config/config.xlaunch"'
@@ -104,7 +132,7 @@ run_xlaunch:
 xlaunch:
 	make check_xserver_process_exist || make run_xlaunch
 
-
+#`2 ------------ makeconf --------------
 ifndef VERBOSE
 MAKEFLAGS += --no-print-directory
 endif
