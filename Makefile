@@ -36,8 +36,10 @@ create_template_structure:
 #   make -- new --help
 new: create_template_structure
 
+trace:
+	./scripts/traceback $(word 2, $(MAKECMDGOALS))
 
-# --------- makescripts ------------
+#12 --------- makescripts ------------
 
 # Press <Ctrl+D> to close stdin
 note:

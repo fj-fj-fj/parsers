@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+# type: ignore
+
+# Create ./log/traceback.tmp.py to see the color trace
+# Create ./log/traceback.tmp.md  to use markdown links
+# Open new vscode instance with traceback files
+#
+# usage: `make dev <parser>`
+import json
+import os.path
+import re
+import subprocess
+import sys
+
+try:
+    subprocess.run(f"python . {sys.argv[1]}", check=True, capture_output=True, shell=True)
+except Exception as e:
+    tb_files = ["./log/traceback.tmp.py", "./log/traceback.tmp.md"]
+    traceback_msg = e.stderr.decode()
+    traceback_md_msg = str()
+
+    # Generate traceback markdown message
+    for line in traceback_msg.split("\n"):
+        file = "".join(re.findall(r'"[^<](.+?)"', line))
+        lineno = "".join(re.findall(r"\d", line))
+        if file and lineno:
+            tb_files.append(f'/{file}:{lineno}\n')
+            # Link to source code via the #L param
+            file_lineno = f"[/{file}](../{os.path.basename(file)}#L{lineno})"
+            traceback_md_msg += line.strip().replace(f"/{file}", file_lineno)
+
+    # Write messages to traceback.tmp.*
+    for tbf, msg in zip(tb_files, [traceback_msg, traceback_md_msg]):
+        with open(tbf, 'w') as f:
+            f.write(msg)
+
+    # Set VSCode preview markdown by default
+    vscode_settings_file = "./log/.vscode/settings.json"
+    os.makedirs(os.path.dirname(vscode_settings_file), exist_ok=True)
+    with open(vscode_settings_file, 'w') as settings:
+        settings.write(json.dumps({
+            "workbench.editorAssociations": {
+                "*.md": "vscode.markdown.preview.editor"
+            }
+        }))
+    tb_files.insert(0, vscode_settings_file)
+
+    # Open the ./log directory
+    subprocess.call(f"code --new-window --goto ./log/", shell=True)
