@@ -5,8 +5,11 @@ Requires exactly one command-line argument.
 
 """
 from types import ModuleType
-import snoop
 
+# from parsers.imports import snoops
+
+
+# @snoops
 def select_parser() -> ModuleType:
     """Return mapped parser script by sys.argv or raise."""
     from importlib import import_module
@@ -25,7 +28,7 @@ def select_parser() -> ModuleType:
         print('\t\033[0;33mOr create new: make new parser_name\033[0m')
         raise
 
-@snoop
+# @snoops
 def entry() -> None:
     """Entry point."""
     parser = select_parser()
