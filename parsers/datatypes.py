@@ -1,19 +1,26 @@
 """The 'datatypes' module contains data structures and types."""
+from functools import wraps
 from typing import Literal as _Literal
+from typing import Type as _Type
 from typing import TypeAlias as _TypeAlias
 from typing import Union as _Union
 
-JsonStr: _TypeAlias = str
+
+# Content of the response, in unicode
 HTML: _TypeAlias = str
-Data: _TypeAlias = bytes | HTML | JsonStr | list[str]
+
+# Json content of the response, in unicode
+JsonStr: _TypeAlias = 'dict[str, "Json"] | list["Json"] | str | int | float | bool | None'
+
+Json: _TypeAlias = dict[str, "Json"] | list["Json"] | str | int | float | bool | None
+
+ResponseContentStr = _Type[str | list | dict]
 
 NamespaceLiteral = _Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']  # noqa: F821
 
 ProxyType: _TypeAlias = str
 ProxyList: _TypeAlias = list[ProxyType]
 
-# error: Type application has too many types (1 expected)  [misc]
-# TimeoutType: _TypeAlias = float | tuple[float, float] | None
 TimeoutType: _TypeAlias = _Union[float, tuple[float, float], None]
 
 

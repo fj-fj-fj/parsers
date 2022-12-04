@@ -18,7 +18,7 @@ from parsers.datatypes import NamespaceLiteral as _NamespaceLiteral
 from parsers.exceptions import ParameterValueError
 
 _PROJECT_DIR = _getenv('PROJECT_DIR', '../..')
-_PROXY_DATA = F'{_PROJECT_DIR}/data/proxy'
+_PROXY_DATA_DIR = F'{_PROJECT_DIR}/data/proxy/'
 
 
 class _CommandLineInterface(_Enum):
@@ -31,14 +31,14 @@ class _NameSpace(_NamedTuple):
 
 
 class _Files(_NameSpace):
-    PARSED_DATA = F'{_PROXY_DATA}/data'
+    PARSED_DATA = F'{_PROXY_DATA_DIR}/data/'
     # proxy
-    PROXY_RESPONSE = F'{_PROXY_DATA}/response.html'
-    PARSED_PROXIES = F'{_PROXY_DATA}/proxies'
-    VALID_PROXIES = F'{_PROXY_DATA}/valid'
-    INVALID_PROXIES = F'{_PROXY_DATA}/invalid'
+    PROXY_RESPONSE = F'{_PROXY_DATA_DIR}response.html'
+    PARSED_PROXIES = F'{_PROXY_DATA_DIR}proxies'
+    VALID_PROXIES = F'{_PROXY_DATA_DIR}valid'
+    INVALID_PROXIES = F'{_PROXY_DATA_DIR}invalid'
     # useragent
-    USER_AGENTS = F'{_PROJECT_DIR}/useragents.txt'
+    USER_AGENTS = F'{_PROJECT_DIR}useragents.txt'
 
 
 class _MagicNumbers(_NameSpace):
