@@ -74,7 +74,7 @@ EOT
 cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
 """# TODO: docsting."""
 
-URL = 'https://$DIR_NAME.com' # <-- fixme if needed
+URL = 'https://$DIR_NAME.com' # FIXME: if needed    <---
 
 PARSED_DIR = '$(basename "$PROJECT_DIR")/data/$DIR_NAME'
 EOT
@@ -97,42 +97,52 @@ if is_script := __name__ == '__main__':
     fix_path()
 
 # 'Parsers' imports
-from ...storage.files import ParsedData as _ParsedData
-from ...storage.files import ParsedRawData as _ParsedRawData
-from ...storage.files import Storage as _Storage
+from ...constants import ConstantStorage as _ConstantStorage
+from ...handlers import handle_data as _handle_data
+from ...handlers import HandledData as _HandledData
+from ...imports import snoop as _snoop
 
 # '$DIR_NAME' template local imports
 from .constants import URL
+from .constants import URL_DPI
 from .constants import PARSED_DIR
 
-
-def load_page(url) -> _ParsedRawData:
-    """# TODO: docsting."""
-    response = _requests.get(url)
-    return _Storage(response.text)
+URL = URL or None
 
 
-def parse_page(html, is_json: bool = False, bs4parser = 'lxml') -> _ParsedData:
-    """# TODO: docsting."""
+# @_snoop
+def _load_page(url: str, **request_kwargs) -> _HandledData:
+    """Get the page and return HandledData object"""
+    response = _requests.get(url, **request_kwargs)
+    # _handle_data() automatically saves the loaded page
+    # IN $PROJECT_DIR$DIRNAME.{html or json}
+    return _handle_data(response, PARSED_DIR)
+
+
+# @_snoop
+def _parse(raw: _HandledData, parser: str = _ConstantStorage.PARSE.PARSER):
+    """Fetch the data from \`raw.data\`"""
     result = None
-    if is_json:
+    if raw.is_json:
         result = ...
     else:
-        soup = _BeautifulSoup(html, bs4parser)
+        soup = _BeautifulSoup(raw.data, parser or input('Enter bs4 parser: '))
         result = ...
     return result
 
 
-def save_result(data, file = PARSED_DIR) -> None:
+# @_snoop
+def _save_result(data) -> None:
     """# TODO: docstring."""
-    _Storage(data, file=file, raw=False)
+    pass
 
 
-def main() -> None:
-    """# TODO: docstring."""
-    parsed_data = load_page(URL)
-    data = parse_page(parsed_data.text, is_json=parsed_data.is_json)
-    save_result(data)
+#@_snoop
+def main(url: str = None) -> None:
+    """Parse and save"""
+    handled = _load_page(url or URL or input('Enter URL: '))
+    parsed = _parse(handled)
+    _save_result(parsed)
 
 
 if is_script:
