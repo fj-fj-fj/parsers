@@ -1,5 +1,4 @@
 """The 'datatypes' module contains data structures and types."""
-from functools import wraps
 from typing import Literal as _Literal
 from typing import Type as _Type
 from typing import TypeAlias as _TypeAlias
@@ -16,7 +15,7 @@ Json: _TypeAlias = dict[str, "Json"] | list["Json"] | str | int | float | bool |
 
 StrOrJson = HTML | Json
 
-ResponseContentStr = _Type[str | JsonStr]
+ResponseContentStr = _Type[_Union[str, JsonStr]]
 
 NamespaceLiteral = _Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']  # noqa: F821
 
