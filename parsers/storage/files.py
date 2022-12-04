@@ -2,8 +2,6 @@ from os import makedirs as _makedirs
 from os.path import dirname as _dirname
 from typing import Type as _Type
 
-from requests import Response as _Response
-
 from parsers.datatypes import StrOrJson as _StrOrJson
 from parsers.interfaces import DataStorage as _DataStorage
 
@@ -49,20 +47,14 @@ class JsonStorage(_DataStorage):
             f.write(self._utils.dumps(data))
 
 
+Storage = PlainStorage | JsonStorage
+
+
 class ContextStorage:
     """Manager to map stored data with `DataStorage` subclasses"""
 
-    def __init__(self, data: _Response = None, dirname: str = None) -> None:
-        self._data = data
-        self._dirname = dirname
-
-    def map(self, keytype: _Type[_StrOrJson]) -> _Type[_DataStorage]:
-        return {_Type[str]: PlainStorage, _Type[list]: JsonStorage}[_Type[keytype]]
-
-    def update(self, data: _Response, dirname: str) -> None:
-        self._data = data
-        self._dirname = dirname
-
-    def update_ifnot_exist(self, data: _Response, dirname: str) -> None:
-        self._data = self._data or data
-        self._dirname = self._dirname or dirname
+    def map(self, keytype: _Type[_StrOrJson]) -> Storage:
+        return {
+            _Type[str]: PlainStorage,
+            _Type[list]: JsonStorage,
+        }[_Type[keytype]]   # type: ignore

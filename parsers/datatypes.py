@@ -16,7 +16,7 @@ Json: _TypeAlias = dict[str, "Json"] | list["Json"] | str | int | float | bool |
 
 StrOrJson = HTML | Json
 
-ResponseContentStr = _Type[str | list | dict]
+ResponseContentStr = _Type[str | JsonStr]
 
 NamespaceLiteral = _Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']  # noqa: F821
 
