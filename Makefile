@@ -63,6 +63,13 @@ new: create_template_structure
 trace:
 	@./scripts/traceback $(word 2, $(MAKECMDGOALS)) $(word 3, $(MAKECMDGOALS))
 
+birdseye:
+	@nohup python -m $@ > ./log/$@_nohup.out 2>&1 &
+	@echo http://localhost:7777
+
+r: birdseye run
+t: birdseye trace
+
 #12 --------- makescripts ------------
 
 # Press <Ctrl+D> to close stdin

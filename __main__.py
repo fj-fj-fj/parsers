@@ -5,7 +5,7 @@ Requires exactly one command-line argument.
 
 """
 from types import ModuleType
-
+import snoop
 
 def select_parser() -> ModuleType:
     """Return mapped parser script by sys.argv or raise."""
@@ -17,9 +17,15 @@ def select_parser() -> ModuleType:
         print('\t\033[1;31mYou forgot to enter the parser name!')
         print('\t\033[0;33mUsage: make run parser_name\033[0m')
         raise
-    return import_module(f'parsers.user_parsers.{parser}')
+    try:
+        return import_module(f'parsers.user_parsers.{parser}')
+    except ModuleNotFoundError:
+        print('\t\033[1;31mNon-existent parser name passed!')
+        print('\t\033[0;33mEnter correct parser name\033[0m')
+        print('\t\033[0;33mOr create new: make new parser_name\033[0m')
+        raise
 
-
+@snoop
 def entry() -> None:
     """Entry point."""
     parser = select_parser()

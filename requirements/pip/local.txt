@@ -1,2 +1,5 @@
 -r ./base.txt
 -r ./lint.txt
+
+birdseye==0.9.4
+snoop==0.4.2
