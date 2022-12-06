@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+# flake8: noqa F821
 """The 'constants' module contains request constants."""
 
-__all__ = 'ConstantStorage',
+__all__ = 'Constant',
 
 from enum import Enum as _Enum
 from os import getenv as _getenv
@@ -14,8 +15,20 @@ if is_script := __name__ == '__main__':
     _path.append(_dn(_dn(__file__)))
 
 from parsers.datatypes import classproperty as _classproperty
-from parsers.datatypes import NamespaceLiteral as _NamespaceLiteral
-from parsers.exceptions import ParameterValueError
+from parsers.exceptions import ParameterValueError as _ParameterValueError
+
+_NamespaceLiteral = _Literal[
+    'cli',
+    'file',
+    'url',
+    'parse',
+    'prompt',
+    'magic_numbers',
+    'timeouts'
+]
+
+_ALL_OR_NS = _Literal['all', 'ns']
+
 
 _PROJECT_DIR = _getenv('PROJECT_DIR', '../..')
 _PROXY_DATA_DIR = F'{_PROJECT_DIR}/data/proxy/'
@@ -41,6 +54,11 @@ class _Files(_NameSpace):
     USER_AGENTS = F'{_PROJECT_DIR}useragents.txt'
 
 
+class _Prompt(_NameSpace):
+    ENTER_URL_OR_FALSE = "Enter URL (or False to use 'httpbin.org'): "
+    ENTER_BS4_PARSER = 'Enter bs4 parser: '
+
+
 class _MagicNumbers(_NameSpace):
     DEFAULT_CONNECTION_TIMEOUT = 5.05
     DEFAULT_READ_TIMEOUT = 27.67
@@ -54,6 +72,8 @@ class _ParsingConstants(_NameSpace):
 
 
 class _UniformResourceLocator(_NameSpace):
+    # A simple HTTP Request & Response Service
+    HTTPBIN_ORG = 'https://httpbin.org'
     # proxies
     FPL_PROXY_URL = 'https://free-proxy-list.net/'
     PROXY_URL = FPL_PROXY_URL
@@ -67,45 +87,46 @@ class _DirAttributesMixin:
 
     @classmethod
     def dir(cls, namespace: _NamespaceLiteral) -> str:
-        """Return public ConstantStorage.<namespace>.constants
+        """Return public _ConstantStorage.<namespace>.constants
 
-        >>> ConstantStorage().dir('cli')
+        >>> _ConstantStorage().dir('cli')
         'PARSE, VERBOSE'
-        >>> ConstantStorage().dir('file')
+        >>> _ConstantStorage().dir('file')
         'INVALID_PROXIES, PARSED_PROXIES, PROXY_RESPONSE, USER_AGENTS, VALID_PROXIES'
-        >>> ConstantStorage().dir('magic_numbers')
+        >>> _ConstantStorage().dir('magic_numbers')
         'DEFAULT_CONNECTION_TIMEOUT, DEFAULT_READ_TIMEOUT'
-        >>> ConstantStorage().dir('parse')
+        >>> _ConstantStorage().dir('parse')
         'PARSER, SELECT_IP, SELECT_PORT'
-        >>> ConstantStorage().dir('timeouts')
+        >>> _ConstantStorage().dir('timeouts')
         ''
-        >>> ConstantStorage().dir('url')
+        >>> _ConstantStorage().dir('url')
         'CHECK_PROXY_URL, CHECK_PROXY_URL_PARAMS, FPL_PROXY_URL'
-        >>> ConstantStorage().dir('foo')  # doctest: +ELLIPSIS
+        >>> _ConstantStorage().dir('foo')  # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
         exceptions.ParameterValueError: foo not in \
-typing.Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']
+typing.Literal['cli', 'file', 'url', 'parse', 'prompt', \
+'magic_numbers', 'timeouts']
 
         """
         try:
             namespace = dir(vars(cls)[namespace.upper()].fget(cls))  # type: ignore [assignment]
             return ', '.join(const for const in namespace if const.isupper())
         except KeyError:
-            raise ParameterValueError(f'{namespace} not in {_NamespaceLiteral}')
+            raise _ParameterValueError(f'{namespace} not in {_NamespaceLiteral}')
 
     @classmethod
-    def dir_public(cls, key: _Literal['all', 'ns'] = 'all') -> str:  # noqa: F821
+    def dir_public(cls, key: _ALL_OR_NS = 'all') -> str:
         r"""Return all public constants or thier namespases only.
 
-        >>> ConstantStorage().dir_public()  # doctest: +ELLIPSIS
+        >>> _ConstantStorage().dir_public()  # doctest: +ELLIPSIS
         'CLI: PARSE, VERBOSE\nFILE: ...\nPARSE: ...\nURL: ...\n'
-        >>> ConstantStorage().dir_public('ns')
+        >>> _ConstantStorage().dir_public('ns')
         'CLI, FILE, MAGIC_NUMBERS, PARSE, TIMEOUTS, URL'
-        >>> ConstantStorage().dir_public('badparam')
+        >>> _ConstantStorage().dir_public('badparam')
         Traceback (most recent call last):
         ...
-        exceptions.ParameterValueError: 'what' is a Literal['all', 'ns'].
+        exceptions._: 'key' is a typing.Literal['all', 'ns'].
 
         """
         constants_ns_map = {
@@ -115,10 +136,10 @@ typing.Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']
         try:
             return constants_ns_map[key]
         except KeyError:
-            raise ParameterValueError("'what' is a Literal['all', 'ns'].")
+            raise _ParameterValueError(f"'key' is a {_ALL_OR_NS}")
 
 
-class ConstantStorage(_DirAttributesMixin):
+class _ConstantStorage(_DirAttributesMixin):
     """Contains classmethod-properties (files, URLs, xpath, etc)."""
 
     @_classproperty
@@ -134,22 +155,19 @@ class ConstantStorage(_DirAttributesMixin):
     def PARSE(cls): return _ParsingConstants()      # noqa: E704
 
     @_classproperty
+    def PROMPT(cls): return _Prompt()               # noqa: E704
+
+    @_classproperty
     def MAGIC_NUMBERS(cls): return _MagicNumbers()  # noqa: E704
 
     @_classproperty
     def TIMEOUTS(cls) -> tuple[float, float]:
         """Return default timeouts."""
-        mn = ConstantStorage.MAGIC_NUMBERS
+        mn = _ConstantStorage.MAGIC_NUMBERS
         return mn.DEFAULT_CONNECTION_TIMEOUT, mn.DEFAULT_READ_TIMEOUT
 
 
-def _info() -> None:
-    """Display detail imformation about 'constants' module."""
-    msg = f'{__doc__}\n\n'
-    msg += '<ConstantStorage> contains (namespase: constants):\n'
-    msg += f'{ConstantStorage.dir_public()}'
-    print(msg)
+class Constant(_ConstantStorage):
 
-
-if is_script:
-    _info()
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}: {_ConstantStorage.dir_public('ns')}>"

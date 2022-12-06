@@ -13,7 +13,7 @@ if is_script := __name__ == '__main__':
 from parsers.datatypes import HTML as _HTML
 from parsers.datatypes import ProxyList as _ProxyList
 from parsers.exceptions import raise_notfound as _raise_notfound
-from parsers.constants import ConstantStorage as _ConstantStorage
+from parsers.constants import Constant as _Constant
 from parsers.rawdata_handlers import make_soup as _make_soup
 from parsers.settings import Configuration as _Configuration
 from parsers.storage.files import save_to_file as _save_to_file
@@ -30,7 +30,7 @@ def parse_proxies(cfg: _Configuration = _Configuration(), output=False) -> _Prox
 
 
 def _setdefault_configs(cfg: _Configuration) -> _Configuration:
-    cfg.setdefaults(const=_ConstantStorage)
+    cfg.setdefaults(const=_Constant)
     return cfg
 
 
@@ -45,8 +45,8 @@ def _parse_table(page: _HTML, parser: str, tag='table') -> _ProxyList:
         raise _raise_notfound(tag) from AE
     else:
         for td in rows:
-            ip = td.select_one(_ConstantStorage.PARSE.SELECT_IP)
-            port = td.select_one(_ConstantStorage.PARSE.SELECT_PORT)
+            ip = td.select_one(_Constant.PARSE.SELECT_IP)
+            port = td.select_one(_Constant.PARSE.SELECT_PORT)
             if ip and port:
                 proxies.append(f'{ip.text}:{port.text}')
     return proxies
@@ -59,5 +59,5 @@ def parse(func=parse_proxies, configs: _Configuration = None, output=True) -> No
 
 
 # $PROJECT_DIR/parsers/request/proxy/parser.py --parse
-if is_script and _ConstantStorage.CLI.PARSE in _sys.argv:  # pyright: ignore [reportUnboundVariable]
+if is_script and _Constant.CLI.PARSE in _sys.argv:  # pyright: ignore [reportUnboundVariable]
     parse()

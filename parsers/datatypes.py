@@ -17,8 +17,6 @@ StrOrJson = HTML | Json
 
 ResponseContentStr = _Type[_Union[str, JsonStr]]
 
-NamespaceLiteral = _Literal['cli', 'file', 'url', 'parse', 'magic_numbers', 'timeouts']  # noqa: F821
-
 ProxyType: _TypeAlias = str
 ProxyList: _TypeAlias = list[ProxyType]
 

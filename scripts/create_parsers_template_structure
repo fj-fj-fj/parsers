@@ -97,7 +97,7 @@ if is_script := __name__ == '__main__':
     fix_path()
 
 # 'Parsers' imports
-from ...constants import ConstantStorage as _ConstantStorage
+from ...constants import Constant as _Constant
 from ...handlers import handle_data as _handle_data
 from ...handlers import HandledData as _HandledData
 from ...imports import snoop as _snoop
@@ -120,7 +120,7 @@ def _load_page(url: str, **request_kwargs) -> _HandledData:
 
 
 # @_snoop
-def _parse(raw: _HandledData, parser: str = _ConstantStorage.PARSE.PARSER):
+def _parse(raw: _HandledData, parser: str = _Constant.PARSE.PARSER):
     """Fetch the data from \`raw.data\`"""
     result = None
     if raw.is_json:

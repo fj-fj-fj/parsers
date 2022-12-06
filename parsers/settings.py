@@ -2,7 +2,7 @@
 from dataclasses import dataclass as _dataclass
 from typing import Type as _Type
 
-from parsers.constants import ConstantStorage as _ConstantStorage
+from parsers.constants import Constant as _Constant
 
 
 @_dataclass
@@ -21,7 +21,7 @@ class Configuration:
             if key:
                 setattr(self.__KeyStorage, key, key)
 
-    def setdefaults(self, const: _Type[_ConstantStorage]) -> None:
+    def setdefaults(self, const: _Type[_Constant]) -> None:
         """Replace None with new values in attributes."""
         self.setdefault(self.key.url, const.URL.PROXY_URL)
         self.setdefault(self.key.parser, const.PARSE.PARSER)

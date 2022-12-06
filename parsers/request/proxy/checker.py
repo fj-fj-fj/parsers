@@ -7,7 +7,7 @@ from typing import Literal as _Literal
 
 from parsers.datatypes import ProxyType as _ProxyType
 from parsers.datatypes import TimeoutType as _TimeoutType
-from parsers.constants import ConstantStorage as _const
+from parsers.constants import Constant as _Constant
 from parsers.request.useragent import gen_useragents_cycle as _gen_useragents_cycle
 from parsers.request.times import set_timeout as _set_timeout
 
@@ -16,8 +16,8 @@ def check(proxy: _ProxyType, uagent: str, timeout: _TimeoutType = None) -> bool:
     """Check proxy and return availability."""
     try:
         respone = _requests.get(
-            url=_const.URL.CHECK_PROXY_URL,
-            params=_const.URL.CHECK_PROXY_URL_PARAMS,
+            url=_Constant.URL.CHECK_PROXY_URL,
+            params=_Constant.URL.CHECK_PROXY_URL_PARAMS,
             headers={'user-agent': uagent},
             timeout=timeout,
             proxies={'https': 'https://' + proxy},
@@ -32,14 +32,14 @@ def check(proxy: _ProxyType, uagent: str, timeout: _TimeoutType = None) -> bool:
 def check_proxies(
     stop_line: int = -1,
     timeout: _TimeoutType = _set_timeout(),
-    file_proxies: str = _const.FILE.PARSED_PROXIES,
-    file_valid_proxies: str = _const.FILE.VALID_PROXIES,
-    file_invalid_proxies: str = _const.FILE.INVALID_PROXIES,
+    file_proxies: str = _Constant.FILE.PARSED_PROXIES,
+    file_valid_proxies: str = _Constant.FILE.VALID_PROXIES,
+    file_invalid_proxies: str = _Constant.FILE.INVALID_PROXIES,
     write_mode: _Literal['a', 'w'] = 'w',  # noqa: F821
 ) -> None:
     """Sort `file_proxies` to `stop_line` by `file_(valid|invalid)_proxies`."""
 
-    user_agents = _gen_useragents_cycle(file=_const.FILE.USER_AGENTS)
+    user_agents = _gen_useragents_cycle(file=_Constant.FILE.USER_AGENTS)
 
     with (
         open(file_proxies) as proxies,
