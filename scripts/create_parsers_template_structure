@@ -97,7 +97,7 @@ cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
 $DOCSTRING
 from parsers.constants import Constant as _Constant
 
-URL = 'https://$DIR_NAME.com'  # FIXME: if needed      <---
+URL = 'https://$DIR_NAME.com'  # FIXME: if needed      <<----
 $(# Magic number 20:        ^ (Cursor column position)
 # It's the result of (28 - 9 + 1) where 9 is the length
 # of $DIR_NAME and 1 because the cursor sets before last char.
@@ -157,8 +157,8 @@ URL = URL or input(_Constant.PROMPT.ENTER_URL_OR_FALSE)
 # @_snoop
 def _load_page(url: str, **request_kwargs) -> _Handler:
     """Make request and return received data \`Handler\`"""
-    if (response := _requests.get(url, **request_kwargs)):
-        return _handle_data(response, PARSED_DIR)
+    response = _requests.get(url, **request_kwargs)
+    return _handle_data(response, PARSED_DIR)
 
 
 # @_snoop
