@@ -15,6 +15,7 @@
 # Error codes (from /usr/include/asm-generic/errno-base.h)
 E2BIG=7
 EINVAL=22
+ENOTEMPTY=39
 E2SMALL=64
 
 # Usage
@@ -30,6 +31,7 @@ RETURN CODES
     $E2BIG  Argument list too long
     $EINVAL Invalid argument
     $E2SMALL Argument list too short
+    $ENOTEMPTY Directory not empty
 
 USAGE
     $(echo -e "\033[0;33m$SCRIPT_NAME <DIRECTORY_NAME>\033[0m")
@@ -54,37 +56,80 @@ fi
 
 DIR_NAME=$1
 PROJECT_DIR=$PROJECT_DIR
+PARSED_DATA_TEMPLATE=$PROJECT_DIR/data/$DIR_NAME
 PARSER_TEMPLATE=$PROJECT_DIR/parsers/user_parsers/$DIR_NAME
 
+if [ -d "$PARSER_TEMPLATE" ] ; then
+    REMOVE='rm --recursive --force'
+    CMD=$(echo $REMOVE "${PARSED_DATA_TEMPLATE}" "${PARSER_TEMPLATE}")
+    printf '\033[1;31mTemplate already exists!\033[0m\n'
+    printf 'Delete template: \n'
+    printf '\033[0;33m  %s %s %s\033[0m\n\n' \
+        "${REMOVE}" \
+        "${PARSED_DATA_TEMPLATE}" \
+        "${PARSER_TEMPLATE}"
+    printf '\033[1mType <ctrl+U> to skip this command or excecute it:\033[0m\n'
 
-# Generating parser template
+    read -e -p '$ ' -i "${CMD}" command; eval $command
+
+    if [ -d "$PARSER_TEMPLATE" ] ; then
+        exit $ENOTEMPTY
+    fi
+fi
+
+mkdir "$PARSED_DATA_TEMPLATE"
 mkdir "$PARSER_TEMPLATE"
 touch "$PARSER_TEMPLATE"/{__init__,config,constants,parser}.py
 
+
+DOCSTRING='"""# TODO: clean up \U0001F4A9 and write docsting"""'
+
 cat <<EOT >> "$PARSER_TEMPLATE"/__init__.py
 #!/usr/bin/env python
-"""# TODO: docsting."""
+$DOCSTRING
 from .parser import main
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/config.py
-"""# TODO: docstring."""
+$DOCSTRING
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
-"""# TODO: docsting."""
+$DOCSTRING
+from parsers.constants import Constant as _Constant
 
-URL = 'https://$DIR_NAME.com' # FIXME: if needed    <---
+URL = 'https://$DIR_NAME.com' # FIXME: if needed      <---
+$(# Magic number 20:        ^ (Cursor column position)
+# It's the result of (28 - 9 + 1) where 9 is the length
+# of $DIR_NAME and 1 because the cursor sets before last char.
+# This script will end by opening the <code editor> at this point.
 
-PARSED_DIR = '$(basename "$PROJECT_DIR")/data/$DIR_NAME'
+
+# https://superuser.com/a/862395/1206349
+exec 3>&1)
+# Checked by curl
+__HTTP_STATUS_CODE=$(
+    curl \
+    --silent \
+    --write-out "%{http_code}" \
+    --output >(cat >&3) \
+    https://$DIR_NAME.com
+)
+# The server returns __HTTP_STATUS_CODE.
+# The block of code below has been automatically generated
+# for the convenience of the first parsing steps.
+# Delete this block or reasign \`URL\` if needed.
+if __HTTP_STATUS_CODE < 400:
+    URL = _Constant.URL.HTTPBIN_ORG
+
+PARSED_DIR = f'{_Constant.DIR.PARSED_DATA}$DIR_NAME'
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/parser.py
 #!/usr/bin/env python
-"""# TODO: docsting."""
+$DOCSTRING
 
 import requests as _requests
-from bs4 import BeautifulSoup as _BeautifulSoup
 
 if is_script := __name__ == '__main__':
     __package__ = 'parsers.user_parsers.$DIR_NAME'
@@ -98,50 +143,48 @@ if is_script := __name__ == '__main__':
 
 # 'Parsers' imports
 from ...constants import Constant as _Constant
+from ...handlers import Handler as _Handler
 from ...handlers import handle_data as _handle_data
-from ...handlers import HandledData as _HandledData
+from ...handlers import HandledResponse as _HandledResponse
 from ...imports import snoop as _snoop
 
 # '$DIR_NAME' template local imports
 from .constants import URL
-from .constants import URL_DPI
 from .constants import PARSED_DIR
 
-URL = URL or None
+URL = URL or input(_Constant.PROMPT.ENTER_URL_OR_FALSE)
 
 
 # @_snoop
-def _load_page(url: str, **request_kwargs) -> _HandledData:
-    """Get the page and return HandledData object"""
-    response = _requests.get(url, **request_kwargs)
-    # _handle_data() automatically saves the loaded page
-    # IN $PROJECT_DIR$DIRNAME.{html or json}
-    return _handle_data(response, PARSED_DIR)
+def _load_page(url: str, **request_kwargs) -> _Handler:
+    """Make request and return received data \`Handler\`"""
+    if (response := _requests.get(url, **request_kwargs)):
+        return _handle_data(response, PARSED_DIR)
 
 
 # @_snoop
-def _parse(raw: _HandledData, parser: str = _Constant.PARSE.PARSER):
-    """Fetch the data from \`raw.data\`"""
+def _parse(data: _HandledResponse):
+    """Extract data"""
     result = None
-    if raw.is_json:
+    if data.is_json:
         result = ...
     else:
-        soup = _BeautifulSoup(raw.data, parser or input('Enter bs4 parser: '))
+        soup =  data.make_soup()
         result = ...
     return result
 
 
 # @_snoop
 def _save_result(data) -> None:
-    """# TODO: docstring."""
+    $DOCSTRING
     pass
 
 
-#@_snoop
+# @_snoop
 def main(url: str = None) -> None:
     """Parse and save"""
-    handled = _load_page(url or URL or input('Enter URL: '))
-    parsed = _parse(handled)
+    handler = _load_page(url or URL)
+    parsed = _parse(handler.data)
     _save_result(parsed)
 
 
@@ -150,11 +193,6 @@ if is_script:
     main()
 EOT
 
-# Generating parsed data structure
-PARSED_DATA_TEMPLATE=$PROJECT_DIR/data/$DIR_NAME
-mkdir "$PARSED_DATA_TEMPLATE"
-touch "$PARSED_DATA_TEMPLATE"/response.html
-
 printf "\n\033[0;33mTemplate '%s' created successfully.\033[0m\n\n" "${DIR_NAME}"
 tree -p "$PARSER_TEMPLATE"
 
@@ -162,15 +200,12 @@ tree -p "$PARSER_TEMPLATE"
 # Open $PROJECT_DIR/parsers/user_parsers/$1/constants.py
 # to fix a first-level domain of URL constant
 CONSTANTS_URL="$PROJECT_DIR/parsers/user_parsers/$DIR_NAME/constants.py"
-# Define a magic number 20
-# A length of "URL = 'https://.com" + 1 (because the cursor sets before last char)
+declare -i LINE=4
+# Define a magic number (<ctrl+F> to read about)
 declare -i CURSOR_COLUMN_POSITION=$((${#DIR_NAME} + 20))
-# Time to show on the terminal outs
-sleep 2
-# and start a code editor <file>:<line>:<column>
-# with the VSCode or Vim
+# Start a code editor <file>:<line>:<column> with VSCode or Vim
 if command -v code >/dev/null; then
-    code --goto "$CONSTANTS_URL":3:"$CURSOR_COLUMN_POSITION"
+    code --goto "$CONSTANTS_URL":$LINE:"$CURSOR_COLUMN_POSITION"
 else
-    vim "+call cursor(3, $CURSOR_COLUMN_POSITION)" "$CONSTANTS_URL"
+    vim "+call cursor($LINE, $CURSOR_COLUMN_POSITION)" "$CONSTANTS_URL"
 fi
