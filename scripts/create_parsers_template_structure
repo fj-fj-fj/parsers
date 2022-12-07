@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
-# This scripts generates:
+# This scripts generates a structure with your future parser
+# and a directory for saving data.
+#
 # $PROJECT_DIR/data/$1/
-# └──  response.html
+# └──  [1..n]_response.{json or html}
+#      * files will be created each time a response is received
+#
 # $PROJECT_DIR/parsers/user_parsers/$1/
 # ├──  __init__.py
 # ├──  config.py
 # ├──  constants.py
+# |    * correct the URL if it is not generated correctly
 # └──  parser.py
+#      * correct request and collect data here
 #
-# And starts a code editor at a certain position (line and column) of a file
-# file: $PROJECT_DIR/parsers/user_parsers/$1/constants.py
+# The script also starts a code editor at a certain position (line and column)
+# of a $PROJECT_DIR/parsers/user_parsers/$1/constants.py to fix URL :)
 
 
 # Error codes (from /usr/include/asm-generic/errno-base.h)
@@ -38,41 +44,44 @@ USAGE
 EOT
 )
 
-# Exit conditions
-if [ ${#} -lt 1 ] ; then
+# Exits
+if [ ${#} -lt 1 ]; then
     printf '\033[1;31mYou must pass a directory name to create a template!\033[0m\n'
     printf '%s\n\n' "${USAGE}"
     exit $E2SMALL
 fi
-if [ "${1}" = "-h" ] || [ "${1}" = "--help" ] ; then
+if [ "${1}" = "-h" ] || [ "${1}" = "--help" ]; then
     printf '%s\n\n' "${USAGE}"
     exit 0
 fi
-if [ ${#} -gt 1 ] ; then
+if [ ${#} -gt 1 ]; then
     printf '\033[1;31mYou must pass only one argument!\033[0m\n'
     printf '%s\n\n' "${USAGE}"
     exit $E2BIG
 fi
 
 DIR_NAME=$1
-PROJECT_DIR=$PROJECT_DIR
+PROJECT_DIR="$(realpath -e -- "$(dirname -- "$(dirname -- "${BASH_SOURCE[0]}")")")"
 PARSED_DATA_TEMPLATE=$PROJECT_DIR/data/$DIR_NAME
 PARSER_TEMPLATE=$PROJECT_DIR/parsers/user_parsers/$DIR_NAME
 
-if [ -d "$PARSER_TEMPLATE" ] ; then
+# If templates exist: <Ctrl+U> or recreate.
+if [ -d "$PARSER_TEMPLATE" ]; then
     REMOVE='rm --recursive --force'
-    CMD=$(echo $REMOVE "${PARSED_DATA_TEMPLATE}" "${PARSER_TEMPLATE}")
+    printf -v CMD '%s %s %s' "$REMOVE" "${PARSED_DATA_TEMPLATE}" "${PARSER_TEMPLATE}"
+
     printf '\033[1;31mTemplate already exists!\033[0m\n'
     printf 'Delete template: \n'
     printf '\033[0;33m  %s %s %s\033[0m\n\n' \
         "${REMOVE}" \
         "${PARSED_DATA_TEMPLATE}" \
         "${PARSER_TEMPLATE}"
-    printf '\033[1mType <ctrl+U> to skip this command or excecute it:\033[0m\n'
+    printf '\033[1mType <Ctrl+U> to skip this command or excecute it:\033[0m\n'
 
-    read -e -p '$ ' -i "${CMD}" command; eval $command
+    # Display `rm -rf <templates>` in terminal.
+    read -e -p '$ ' -i "${CMD}" -r command; eval "$command"
 
-    if [ -d "$PARSER_TEMPLATE" ] ; then
+    if [ -d "$PARSER_TEMPLATE" ]; then
         exit $ENOTEMPTY
     fi
 fi
@@ -80,7 +89,7 @@ fi
 mkdir --parents "$PARSED_DATA_TEMPLATE" "$PARSER_TEMPLATE"
 touch "$PARSER_TEMPLATE"/{__init__,config,constants,parser}.py
 
-
+# Dosctings are good. But this better fix.
 DOCSTRING='"""# TODO: clean up \U0001F4A9 and write docsting"""'
 
 cat <<EOT >> "$PARSER_TEMPLATE"/__init__.py
@@ -106,13 +115,13 @@ $(# Magic number 20:        ^ (Cursor column position)
 
 # https://superuser.com/a/862395/1206349
 exec 3>&1)
-# Checked by curl
+# Checked by \`curl\`
 __HTTP_STATUS_CODE = $(
     curl \
     --silent \
     --write-out "%{http_code}" \
     --output >(cat >&3) \
-    https://$DIR_NAME.com
+    https://"$DIR_NAME".com
 )
 # The server returns __HTTP_STATUS_CODE.
 # The block of code below has been automatically generated
@@ -200,7 +209,7 @@ tree -p "$PARSER_TEMPLATE"
 # to fix a first-level domain of URL constant
 CONSTANTS_URL="$PROJECT_DIR/parsers/user_parsers/$DIR_NAME/constants.py"
 declare -i LINE=4
-# Define a magic number (<ctrl+F> to read about)
+# Define a magic number (<Ctrl+F> to read about)
 declare -i CURSOR_COLUMN_POSITION=$((${#DIR_NAME} + 20))
 # Start a code editor <file>:<line>:<column> with VSCode or Vim
 if command -v code >/dev/null; then
