@@ -72,5 +72,30 @@ class ResponseHandler:
         return self._handled
 
 
-def handle_data(response: _Response, parsed_dir: str) -> HandledData:
-    return ResponseHandler(response, parsed_dir, auto=True).data
+class SoupHandler:
+
+    def make_soup(self, data: _HTML, parser: _BS4_PARSER = None) -> _BeautifulSoup:
+        def soup():
+            return _BeautifulSoup(data, parser or _Constant.PARSE.PARSER)
+        return soup
+
+
+class Handler(ResponseHandler, SoupHandler):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    @property
+    def data(self) -> HandledResponse:
+        html = self._handled if type(self._handled) == str else ''
+        return HandledResponse(
+            data=self._handled,
+            is_json=self._dtype in (dict, list),
+            make_soup=self.make_soup(html),
+            storage=self._storage,
+        )
+
+
+def handle_data(response: _Response, parsed_dir: str) -> Handler:
+    return Handler(response, parsed_dir, auto=True)
+    # return ResponseHandler(response, parsed_dir, auto=True).data
