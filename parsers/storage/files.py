@@ -23,22 +23,20 @@ class _FileCheckerMixin:
 
     def __init__(self) -> None:
         self.number_of_files = self._count_files
-        self.file = self.root + self._suffix
+        self.file = f'{self.parsed_dir}/{self.STEM}{self._suffix}'
 
     def create_file_if_not_exists(self) -> None:
-        if not _os.path.exists(self.file):
-            _os.makedirs(self.parsed_dir, exist_ok=True)
-        else:
+        if _os.path.exists(self.file):
             last_file = self._files[-1]
             n = _ospath.basename(last_file)[0]
             n_plus_one = str(self._count_files + 1)
             self.file = last_file.replace(n, n_plus_one)
-            _os.makedirs(self.parsed_dir, exist_ok=True)
+        _os.makedirs(self.parsed_dir, exist_ok=True)
 
     @property
     def _count_files(self) -> int:
         """(property) Return count of *.(specific ext)"""
-        self._files = _glob.glob(f'{self.parsed_dir}*{self._suffix}')
+        self._files = _glob.glob(f'{self.parsed_dir}/*{self._suffix}')
         return len(self._files)
 
     @property
@@ -53,13 +51,9 @@ class _FileCheckerMixin:
 class PlainStorage(_DataStorage, _FileCheckerMixin):
     """Store data in plain text file"""
 
-    _STEM = '1_response'
-
     def __init__(self, data, parsed_dir: str = None) -> None:
         self.parsed_dir = parsed_dir or self.PARSED_DIR
-        self.root = self.parsed_dir + JsonStorage._STEM
         super().__init__()
-
         self.data = data
 
     def save(self, data, mode: str = 'w') -> None:
@@ -72,13 +66,9 @@ class PlainStorage(_DataStorage, _FileCheckerMixin):
 class JsonStorage(_DataStorage, _FileCheckerMixin):
     """Store data in json file"""
 
-    _STEM = '1_response'
-
     def __init__(self, data, parsed_dir: str = None) -> None:
         self.parsed_dir = parsed_dir or self.PARSED_DIR
-        self.root = self.parsed_dir + JsonStorage._STEM
         super().__init__()
-
         self.data = data
 
     def save(self, data, mode: str = 'w') -> None:
@@ -98,4 +88,5 @@ class ContextStorage:
         return {
             _Type[str]: PlainStorage,
             _Type[list]: JsonStorage,
+            _Type[dict]: JsonStorage,
         }[_Type[keytype]]   # type: ignore
