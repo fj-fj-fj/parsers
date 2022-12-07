@@ -19,6 +19,7 @@ from parsers.exceptions import ParameterValueError as _ParameterValueError
 
 _NamespaceLiteral = _Literal[
     'cli',
+    'dir',
     'file',
     'url',
     'parse',
@@ -43,8 +44,13 @@ class _NameSpace(_NamedTuple):
     """Base class for all namespaces."""
 
 
+class _Directories(_NameSpace):
+    PARSED_DATA = F'{_PROJECT_DIR}/data/'
+    PARSERS = F'{_PROJECT_DIR}/parsers/'
+    USER_PARSERS = F'{_PROJECT_DIR}/parsers/user_parsers/'
+
+
 class _Files(_NameSpace):
-    PARSED_DATA = F'{_PROXY_DATA_DIR}/data/'
     # proxy
     PROXY_RESPONSE = F'{_PROXY_DATA_DIR}response.html'
     PARSED_PROXIES = F'{_PROXY_DATA_DIR}proxies'
@@ -56,7 +62,7 @@ class _Files(_NameSpace):
 
 class _Prompt(_NameSpace):
     ENTER_URL_OR_FALSE = "Enter URL (or False to use 'httpbin.org'): "
-    ENTER_BS4_PARSER = 'Enter bs4 parser: '
+    ENTER_BS4_PARSER = "Type enter to use 'lxml' or enter other:  "
 
 
 class _MagicNumbers(_NameSpace):
@@ -73,7 +79,7 @@ class _ParsingConstants(_NameSpace):
 
 class _UniformResourceLocator(_NameSpace):
     # A simple HTTP Request & Response Service
-    HTTPBIN_ORG = 'https://httpbin.org'
+    HTTPBIN_ORG = 'https://httpbin.org/'
     # proxies
     FPL_PROXY_URL = 'https://free-proxy-list.net/'
     PROXY_URL = FPL_PROXY_URL
@@ -91,12 +97,16 @@ class _DirAttributesMixin:
 
         >>> _ConstantStorage().dir('cli')
         'PARSE, VERBOSE'
+        >>> _ConstantStorage().dir('dir')
+        'PARSED_DATA, PARSERS, USER_PARSERS'
         >>> _ConstantStorage().dir('file')
         'INVALID_PROXIES, PARSED_PROXIES, PROXY_RESPONSE, USER_AGENTS, VALID_PROXIES'
         >>> _ConstantStorage().dir('magic_numbers')
         'DEFAULT_CONNECTION_TIMEOUT, DEFAULT_READ_TIMEOUT'
         >>> _ConstantStorage().dir('parse')
         'PARSER, SELECT_IP, SELECT_PORT'
+        >>> _ConstantStorage().dir('prompt')
+        'ENTER_URL_OR_FALSE, ENTER_BS4_PARSER'
         >>> _ConstantStorage().dir('timeouts')
         ''
         >>> _ConstantStorage().dir('url')
@@ -105,8 +115,8 @@ class _DirAttributesMixin:
         Traceback (most recent call last):
         ...
         exceptions.ParameterValueError: foo not in \
-typing.Literal['cli', 'file', 'url', 'parse', 'prompt', \
-'magic_numbers', 'timeouts']
+typing.Literal['cli', 'dir', 'file', 'url', 'parse', \
+'prompt', 'magic_numbers', 'timeouts']
 
         """
         try:
@@ -120,9 +130,9 @@ typing.Literal['cli', 'file', 'url', 'parse', 'prompt', \
         r"""Return all public constants or thier namespases only.
 
         >>> _ConstantStorage().dir_public()  # doctest: +ELLIPSIS
-        'CLI: PARSE, VERBOSE\nFILE: ...\nPARSE: ...\nURL: ...\n'
+        'CLI: PARSE, VERBOSE\nDIR: ...\nPARSE: ...\nURL: ...\n'
         >>> _ConstantStorage().dir_public('ns')
-        'CLI, FILE, MAGIC_NUMBERS, PARSE, TIMEOUTS, URL'
+        'CLI, DIR, FILE, MAGIC_NUMBERS, PARSE, PROMPT, TIMEOUTS, URL'
         >>> _ConstantStorage().dir_public('badparam')
         Traceback (most recent call last):
         ...
@@ -144,6 +154,9 @@ class _ConstantStorage(_DirAttributesMixin):
 
     @_classproperty
     def CLI(cls): return _CommandLineInterface      # noqa: E704
+
+    @_classproperty
+    def DIR(cls): return _Directories()                  # noqa: E704
 
     @_classproperty
     def FILE(cls): return _Files()                  # noqa: E704
