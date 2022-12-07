@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
+# shellcheck source=./scripts/create_parsers_template_structure
+
+. "$(dirname "$0")"/scripts/create_parsers_template_structure
