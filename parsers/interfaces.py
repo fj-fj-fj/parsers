@@ -13,7 +13,8 @@ from parsers.datatypes import ProxyList as _ProxyList
 class DataStorage:
     """Interface for any storage saving data."""
 
-    PARSED_DIR = _Constant.FILE.PARSED_DATA
+    STEM = '1_response'
+    PARSED_DIR = _Constant.DIR.PARSED_DATA
 
     def save(self, data: str | bytes | list) -> None:
         raise NotImplementedError
