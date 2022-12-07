@@ -77,8 +77,7 @@ if [ -d "$PARSER_TEMPLATE" ] ; then
     fi
 fi
 
-mkdir "$PARSED_DATA_TEMPLATE"
-mkdir "$PARSER_TEMPLATE"
+mkdir --parents "$PARSED_DATA_TEMPLATE" "$PARSER_TEMPLATE"
 touch "$PARSER_TEMPLATE"/{__init__,config,constants,parser}.py
 
 
@@ -98,7 +97,7 @@ cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
 $DOCSTRING
 from parsers.constants import Constant as _Constant
 
-URL = 'https://$DIR_NAME.com' # FIXME: if needed      <---
+URL = 'https://$DIR_NAME.com'  # FIXME: if needed      <---
 $(# Magic number 20:        ^ (Cursor column position)
 # It's the result of (28 - 9 + 1) where 9 is the length
 # of $DIR_NAME and 1 because the cursor sets before last char.
@@ -108,7 +107,7 @@ $(# Magic number 20:        ^ (Cursor column position)
 # https://superuser.com/a/862395/1206349
 exec 3>&1)
 # Checked by curl
-__HTTP_STATUS_CODE=$(
+__HTTP_STATUS_CODE = $(
     curl \
     --silent \
     --write-out "%{http_code}" \
@@ -169,7 +168,7 @@ def _parse(data: _HandledResponse):
     if data.is_json:
         result = ...
     else:
-        soup =  data.make_soup()
+        soup = data.make_soup()
         result = ...
     return result
 
