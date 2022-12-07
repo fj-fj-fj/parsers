@@ -1,20 +1,26 @@
+from typing import Callable as _Callable
 from typing import NamedTuple as _NamedTuple
 from typing import Type as _Type
 
+from bs4 import BeautifulSoup as _BeautifulSoup
 from requests.exceptions import JSONDecodeError as _JSONDecodeError
 from requests import Response as _Response
 
+from parsers.constants import Constant as _Constant
+from parsers.datatypes import HTML as _HTML
 from parsers.datatypes import StrOrJson as _StrOrJson
 from parsers.datatypes import ResponseContentStr as _ResponseContentStr
 from parsers.storage.files import ContextStorage as _ContextStorage
 from parsers.storage.files import PlainStorage as _PlainStorage
 from parsers.storage.files import Storage as _Storage
 
+_BS4_PARSER = str | None
 
-class HandledData(_NamedTuple):
+class HandledResponse(_NamedTuple):
     """HandledData(data, is_json, storage)"""
     data: _StrOrJson
     is_json: bool
+    make_soup: _Callable[[_BS4_PARSER], _BeautifulSoup]
     storage: _Storage
 
 
@@ -52,14 +58,6 @@ class ResponseHandler:
 
     def save(self, data: _StrOrJson = None) -> None:
         self._storage.save(data or self._handled)
-
-    @property
-    def data(self) -> HandledData:
-        return HandledData(
-            data=self._handled,
-            is_json=self._dtype in (dict, list),
-            storage=self._storage,
-        )
 
     def get_data_type(self) -> _ResponseContentStr:
         return type(self._get_data_from_response())
