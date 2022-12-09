@@ -39,21 +39,21 @@ parse:
 
 #11 --------- ./scrits/* ------------
 
-# Passing arguments to "make create_template_structure" or "make new"
-ifeq ($(filter $(new) $(create_template_structure), $(firstword $(MAKECMDGOALS))),)
+# Passing arguments to "make create_template" or "make new"
+ifeq ($(filter $(new) $(create_template), $(firstword $(MAKECMDGOALS))),)
   # use the rest as arguments for "new"
   NEW_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   # ...and turn them into do-nothing targets
   $(eval $(NEW_ARGS):;@:)
 endif
 
-create_template_structure:
-	@./scripts/create_parsers_template_structure $(NEW_ARGS)
+create_template:
+	@./scripts/create_parser_template $(NEW_ARGS)
 
 # Usage:
-#   make new <DIRECORY_NAME>
+#   make new <PARSER>
 #   make -- new --help
-new: create_template_structure
+new: create_template
 
 # Usage:
 #   make trace <PARSER>
