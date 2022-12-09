@@ -64,11 +64,23 @@ DIR_NAME=$1
 PROJECT_DIR="$(realpath -e -- "$(dirname -- "$(dirname -- "${BASH_SOURCE[0]}")")")"
 PARSED_DATA_TEMPLATE=$PROJECT_DIR/data/$DIR_NAME
 PARSER_TEMPLATE=$PROJECT_DIR/parsers/user_parsers/$DIR_NAME
+TRASH_DIR=$PROJECT_DIR/log/trash
+
+function preexec() {
+    if [[ "$BASH_COMMAND" = "$1" ]]; then
+        eval "$2"
+    fi
+}
+
 
 # If templates exist: <Ctrl+U> or recreate.
 if [ -d "$PARSER_TEMPLATE" ]; then
     REMOVE='rm --recursive --force'
     printf -v CMD '%s %s %s' "$REMOVE" "${PARSED_DATA_TEMPLATE}" "${PARSER_TEMPLATE}"
+
+    mkdir --parents "$TRASH_DIR/$DIR_NAME"/{"$DIR_NAME",data}
+    MV_TO_TRASH="cp -pr $PARSER_TEMPLATE/. $TRASH_DIR/$DIR_NAME/$DIR_NAME;
+        cp -pr $PARSED_DATA_TEMPLATE/.   $TRASH_DIR/$DIR_NAME/data"
 
     printf '\033[1;31mTemplate already exists!\033[0m\n'
     printf 'Delete template: \n'
@@ -79,7 +91,10 @@ if [ -d "$PARSER_TEMPLATE" ]; then
     printf '\033[1mType <Ctrl+U> to skip this command or excecute it:\033[0m\n'
 
     # Display `rm -rf <templates>` in terminal.
-    read -e -p '$ ' -i "${CMD}" -r command; eval "$command"
+    read -e -p '$ ' -i "${CMD}" -r command
+    # Execute `MV_TO_TRASH` before `command`
+    trap 'preexec "${CMD}" "${MV_TO_TRASH}"' DEBUG
+    eval "$command"
 
     if [ -d "$PARSER_TEMPLATE" ]; then
         exit $ENOTEMPTY
