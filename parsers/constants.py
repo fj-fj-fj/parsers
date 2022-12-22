@@ -43,6 +43,13 @@ class _CommandLineInterface(_Enum):
 class _NameSpace(_NamedTuple):
     """Base class for all namespaces."""
 
+    def __repr__(self) -> str:
+        attributes = ', '.join(
+            f"{attr}='{getattr(self, attr)}'" for attr in dir(self)
+            if attr.isupper()
+        )
+        return f'{self.__class__.__name__}({attributes})'
+
 
 class _Directories(_NameSpace):
     PARSED_DATA = F'{_PROJECT_DIR}/data/'
@@ -57,7 +64,9 @@ class _Files(_NameSpace):
     VALID_PROXIES = F'{_PROXY_DATA_DIR}valid'
     INVALID_PROXIES = F'{_PROXY_DATA_DIR}invalid'
     # useragent
-    USER_AGENTS = F'{_PROJECT_DIR}useragents.txt'
+    USER_AGENTS = F'{_PROJECT_DIR}/useragents.txt'
+    # xpath general file
+    SAMPLE = F'{_PROJECT_DIR}/samples.txt'
 
 
 class _Prompt(_NameSpace):
@@ -81,11 +90,11 @@ class _UniformResourceLocator(_NameSpace):
     # A simple HTTP Request & Response Service
     HTTPBIN_ORG = 'https://httpbin.org/'
     # proxies
-    FPL_PROXY_URL = 'https://free-proxy-list.net/'
-    PROXY_URL = FPL_PROXY_URL
+    _FPL_PROXY_URL = 'https://free-proxy-list.net/'
+    PROXY_URL = _FPL_PROXY_URL
     # checking
     CHECK_PROXY_URL = 'https://api.ipify.org/'
-    CHECK_PROXY_URL_PARAMS = {'format': 'json'}
+    CHECK_PROXY_URL_PARAMS = '{"format": "json"}'
 
 
 class _DirAttributesMixin:
@@ -168,8 +177,8 @@ class _ConstantStorage(_DirAttributesMixin):
     def PARSE(cls): return _ParsingConstants()      # noqa: E704
 
     @_classproperty
-    def PROMPT(cls): return _Prompt()               # noqa: E704
 
+    def PROMPT(cls): return _Prompt()               # noqa: E704
     @_classproperty
     def MAGIC_NUMBERS(cls): return _MagicNumbers()  # noqa: E704
 

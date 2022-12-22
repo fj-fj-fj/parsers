@@ -5,9 +5,11 @@ __all__ = (
     'AbstractRequest',
     'DataStorage',
 )
+from typing import overload as _overload
 
 from parsers.constants import Constant as _Constant
 from parsers.datatypes import ProxyList as _ProxyList
+from parsers.datatypes import Json as _Json
 
 
 class DataStorage:
@@ -16,7 +18,15 @@ class DataStorage:
     STEM = '1_response'
     PARSED_DIR = _Constant.DIR.PARSED_DATA
 
-    def save(self, data: str | bytes | list) -> None:
+    @_overload
+    def save(self, data: str, mode: str = ...) -> int:
+        ...
+
+    @_overload
+    def save(self, data: _Json, mode: str = ...) -> int:
+        ...
+
+    def save(self, data, mode='w'):
         raise NotImplementedError
 
 

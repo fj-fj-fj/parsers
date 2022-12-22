@@ -17,7 +17,7 @@ def check(proxy: _ProxyType, uagent: str, timeout: _TimeoutType = None) -> bool:
     try:
         respone = _requests.get(
             url=_Constant.URL.CHECK_PROXY_URL,
-            params=_Constant.URL.CHECK_PROXY_URL_PARAMS,
+            params=dict(_Constant.URL.CHECK_PROXY_URL_PARAMS),
             headers={'user-agent': uagent},
             timeout=timeout,
             proxies={'https': 'https://' + proxy},

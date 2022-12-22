@@ -1,38 +1,29 @@
 #!/usr/bin/env python
 """Entry point.
 
-Requires exactly one command-line argument.
-
+Requires exactly one command-line argument <parser>.
 """
-from types import ModuleType
-
-# from parsers.imports import snoops
+from parsers.imports import refresh
 
 
-# @snoops
-def select_parser() -> ModuleType:
-    """Return mapped parser script by sys.argv or raise."""
-    from importlib import import_module
-    from sys import argv
+def entry():
+    """Entry point.
+    Returns the matched parser or exits with status 65
+    """
+    from parsers.imports import select_parser
     try:
-        parser = argv[1]
-    except IndexError:
-        print('\t\033[1;31mYou forgot to enter the parser name!')
-        print('\t\033[0;33mUsage: make run parser_name\033[0m')
-        raise
-    try:
-        return import_module(f'parsers.user_parsers.{parser}')
-    except ModuleNotFoundError:
-        print('\t\033[1;31mNon-existent parser name passed!')
-        print('\t\033[0;33mEnter correct parser name\033[0m')
-        print('\t\033[0;33mOr create new: make new parser_name\033[0m')
-        raise
-
-# @snoops
-def entry() -> None:
-    """Entry point."""
-    parser = select_parser()
-    parser.main()
+        parser = select_parser()
+    except Exception as ex:
+        import os
+        print(ex)
+        os._exit(os.EX_DATAERR)
+    return parser
 
 
-entry()
+__parser__ = entry()
+
+if __import__('sys').flags.interactive:
+    # import * from selected package into interactive shell
+    exec(f'from {__parser__.__name__} import *; print(info)')
+else:
+    __parser__.main()

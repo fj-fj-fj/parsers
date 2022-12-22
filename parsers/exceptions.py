@@ -13,6 +13,10 @@ class ElementNotFoundError(BaseError):
     """Has no HTML element."""
 
 
+class DataNotFoundError(BaseError):
+    """Raw data does not exist."""
+
+
 class ParameterValueError(BaseError):
     """Got an unexpected argument value."""
 
