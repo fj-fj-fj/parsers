@@ -23,8 +23,11 @@ BIN_DIR := $$VENV/bin
 
 #01 -------------- base ----------------
 # make run <PARSER_NAME>
+runi:
+	@$(BIN_DIR)/python -i . $(word 2, $(MAKECMDGOALS))
+
 run:
-	$(BIN_DIR)/python . $(word 2, $(MAKECMDGOALS))
+	@$(BIN_DIR)/python . $(word 2, $(MAKECMDGOALS))
 
 #02 -------------- proxy ----------------
 px: PARSER := $(PWD)/parsers/request/proxy/core.py
@@ -102,10 +105,13 @@ shellcheck:
 	$@ ./scripts/*
 
 
-#4 ------------------------ Information -----------------------
+#4 --------------------------- files --------------------------
 
 cloc:
 	$@ --exclude-list-file=.clocignore .
+
+recompile:
+	@$(BIN_DIR)/python -m recompile ./parsers -q
 
 
 #5 ------------------------- Updating -------------------------

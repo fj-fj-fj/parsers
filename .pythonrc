@@ -7,18 +7,20 @@ import os
 import readline
 import rlcompleter
 
-PYTHON_LOG_FILE = f"{os.environ['PROJECT_DIR']}/log/.python_history"
+rmcache = "find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete"
+q = quit
+# PYTHON_LOG_FILE = f"{os.environ['PROJECT_DIR']}/log/.python_history"
 
 # enable tab completion
 readline.parse_and_bind("tab: complete")
 
 
-def set_interactive_mode():
-    os.environ['PYTHONINSPECT'] = 'True'
+# def set_interactive_mode():
+#     os.environ['PYTHONINSPECT'] = 'True'
 
 
-def register_python_history_file(name: str = PYTHON_LOG_FILE):
-    atexit.register(lambda: readline.write_history_file(name))
+# def register_python_history_file(name: str = PYTHON_LOG_FILE):
+#     atexit.register(lambda: readline.write_history_file(name))
 
 
 history = readline.get_history_item
@@ -29,5 +31,3 @@ top = lambda n: [history(command) for command in range(n)]
 tail = lambda n: [
     history(current_history_length - command) for command in range(n, 0, -1)
 ]
-
-q = quit

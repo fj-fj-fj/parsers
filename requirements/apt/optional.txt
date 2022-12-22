@@ -1,2 +1,3 @@
 cloc
+jq
 shellcheck

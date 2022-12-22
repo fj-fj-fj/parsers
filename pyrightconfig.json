@@ -7,7 +7,9 @@
   "exclude": [
     "**/node_modules",
     "**/__pycache__",
-    "**/.git"
+    "**/.git",
+    "**/data",
+    "**/log"
 ],
 
   "ignore": [
