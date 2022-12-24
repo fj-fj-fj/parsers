@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# This scripts generates a structure with your future parser
+# This scripts generates a structure for nu parser
 # and a directory for saving data.
 #
 # $PROJECT_DIR/data/$1/
@@ -8,24 +8,24 @@
 #
 # $PROJECT_DIR/parsers/user_parsers/$1/
 # ├──  __init__.py
-# ├──  config.py
+# ├──  logic.py
 # ├──  constants.py
-# |    * correct the URL if it is not generated correctly
-# └──  parser.py
-#      * correct request and collect data here
+# ├──  notes.txt
+# ├──  parser.py
+# └──  samples.txt
 #
-# The script also starts a code editor at a certain position (line and column)
-# of a $PROJECT_DIR/parsers/user_parsers/$1/constants.py to fix URL :)
+# The script also starts a code editor at a certain position
+# of a $PROJECT_DIR/parsers/user_parsers/$1/constants.py to fix URL
 
 
-# Error codes (from /usr/include/asm-generic/errno-base.h)
+SCRIPT_NAME=$0
+
+# Error codes (/usr/include/asm-generic/errno-base.h)
 E2BIG=7
 EINVAL=22
 ENOTEMPTY=39
 E2SMALL=64
 
-# Usage
-SCRIPT_NAME=$0
 USAGE=$(cat << EOT
 
 This script requires exactly one argument DIRECTORY_NAME.
@@ -44,7 +44,6 @@ USAGE
 EOT
 )
 
-# Exits
 if [ ${#} -lt 1 ]; then
     printf '\033[1;31mYou must pass a directory name to create a template!\033[0m\n'
     printf '%s\n\n' "${USAGE}"
@@ -72,8 +71,7 @@ function preexec() {
     fi
 }
 
-
-# If templates exist: <Ctrl+U> or recreate.
+# If templates exist: recreate if needed.
 if [ -d "$PARSER_TEMPLATE" ]; then
     REMOVE='rm --recursive --force'
     printf -v CMD '%s %s %s' "$REMOVE" "${PARSED_DATA_TEMPLATE}" "${PARSER_TEMPLATE}"
@@ -88,11 +86,9 @@ if [ -d "$PARSER_TEMPLATE" ]; then
         "${REMOVE}" \
         "${PARSED_DATA_TEMPLATE}" \
         "${PARSER_TEMPLATE}"
-    printf '\033[1mType <Ctrl+U> to skip this command or excecute it:\033[0m\n'
+    printf '\033[1mType <Ctrl+U> to skip this command or <Enter> to excecute:\033[0m\n'
 
-    # Display `rm -rf <templates>` in terminal.
     read -e -p '$ ' -i "${CMD}" -r command
-    # Execute `MV_TO_TRASH` before `command`
     trap 'preexec "${CMD}" "${MV_TO_TRASH}"' DEBUG
     eval "$command"
 
@@ -102,130 +98,199 @@ if [ -d "$PARSER_TEMPLATE" ]; then
 fi
 
 mkdir --parents "$PARSED_DATA_TEMPLATE" "$PARSER_TEMPLATE"
-touch "$PARSER_TEMPLATE"/{__init__,config,constants,parser}.py
-
-# Dosctings are good. But this better fix.
-DOCSTRING='"""# TODO: clean up \U0001F4A9 and write docsting"""'
+touch "$PARSER_TEMPLATE"/{__init__,constants,logic,parser}.py
+touch "$PARSER_TEMPLATE"/{notes,samples}.txt
 
 cat <<EOT >> "$PARSER_TEMPLATE"/__init__.py
 #!/usr/bin/env python
-$DOCSTRING
-from .parser import main
-EOT
+# mypy: ignore-errors
+"""
+Modules:
+- config
+    'parsers.user_parsers.$DIR_NAME.config' from './$DIR_NAME/config.py'
+- constatns
+    parsers.user_parsers.$DIR_NAME.constants' from './$DIR_NAME/constats.py'
+- parser (alias core)
+    parsers.user_parsers.$DIR_NAME.parser' from './$DIR_NAME/parser.py'
 
-cat <<EOT >> "$PARSER_TEMPLATE"/config.py
-$DOCSTRING
+Functions:
+- main
+    'parsers.user_parsers.$DIR_NAME.parser.main' function from './$DIR_NAME/parser.py'
+- shortcuts
+    'parsers.imports.shortcuts.<locals>._shortcuts'
+- note
+    (lambda) Simple dict-like container
+    Use ad-hoc attributes to hodl smth
+    Will be automatically saved to ./notes.json
+
+Classes:
+- info
+    'parsers.imports.ModuleDocstring' instance from './$DIR_NAME/parser.py'
+- parser
+    'parsers.handlers.Parser' instance from './$DIR_NAME/parser.py'
+- samples
+    'parsers.datatypes.Sample' list-like instance from './$DIR_NAME/parser.py'
+
+Files:
+- ./samples.txt
+    File that will contain your samples (strings)
+    Will be generated after \`samples.save()\`
+- ./notes.json
+    File that will contain your notes (keys:values)
+    Will be generated after REPL exiting
+
+"""
+from parsers.imports import importcore as _importcore
+core = _importcore('$DIR_NAME')
+
+from .parser import info
+from .parser import main
+from .parser import parser
+from .parser import samples
+
+
+note = lambda: vars(note)  # noqa: E731
+
+
+from parsers.imports import shortcuts
+shortcuts = shortcuts(fn=main, nb=note, pa=parser, ss=samples)
+
+import atexit as _atexit
+from parsers.storage.files import exit_handler as _exit_handler
+_atexit.register(_exit_handler, note)
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
-$DOCSTRING
-from parsers.constants import Constant as _Constant
+from types import SimpleNamespace as _namespce
 
-URL = 'https://$DIR_NAME.com'  # FIXME: if needed      <<----
-$(# Magic number 20:        ^ (Cursor column position)
-# It's the result of (28 - 9 + 1) where 9 is the length
-# of $DIR_NAME and 1 because the cursor sets before last char.
-# This script will end by opening the <code editor> at this point.
+from parsers.constants import Constant as _base
 
+_URL = URL = 'https://$DIR_NAME.com'
+$(#                                ^ (Cursor column position)
+# The script will end by opening the <code editor> at this point.
 
-# https://superuser.com/a/862395/1206349
 exec 3>&1)
-# Checked by \`curl\`
-__HTTP_STATUS_CODE = $(
+# Directory for storing final data
+PARSED_DIR = F'{_base.DIR.PARSED_DATA}$DIR_NAME'
+# File to store samples for extracting raw data
+SAMPLE_FILE = F'{_base.DIR.USER_PARSERS}$DIR_NAME/samples.txt'
+
+PRINT_TO_STDOUT = True
+
+# Checked by \`curl\`=======================================
+# The block of code below has been automatically generated
+# Delete condition or reasign \`URL\`
+if $(
     curl \
     --silent \
     --write-out "%{http_code}" \
     --output >(cat >&3) \
     https://"$DIR_NAME".com
-)
-# The server returns __HTTP_STATUS_CODE.
-# The block of code below has been automatically generated
-# for the convenience of the first parsing steps.
-# Delete this block or reasign \`URL\` if needed.
-if __HTTP_STATUS_CODE < 400:
-    URL = _Constant.URL.HTTPBIN_ORG
+) not in range(200, 400):
+    URL = _base.URL.HTTPBIN_ORG
+# ========================================================
 
-PARSED_DIR = f'{_Constant.DIR.PARSED_DATA}$DIR_NAME'
+constant_locals = _namespce(
+    base=_base,
+    URL=URL,
+    PARSED_DIR=PARSED_DIR,
+    PRINT_TO_STDOUT=PRINT_TO_STDOUT,
+    SAMPLE_FILE=SAMPLE_FILE,
+)
+EOT
+
+cat <<EOT >> "$PARSER_TEMPLATE"/logic.py
+"""Module contains sample processing logic.
+
+Example:
+
+    >>> def main(samples):
+    ...    return [f'{ip}:{port}' for ip,port in zip(*samples)]
+    ...
+    >>> ips = ['140.82.121.4', '140.82.121.4']
+    >>> ports = ['80', '443']
+    >>> main([ips, ports])
+    ['140.82.121.4:80', '140.82.121.4:443']
+
+"""
+from typing import Any
+
+
+def main(samples: list[Any]) -> list[Any]:
+    """Handle samples. (API)"""
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/parser.py
 #!/usr/bin/env python
-$DOCSTRING
+# mypy: ignore-errors
+"""
+Usage:
 
-import requests as _requests
+    First start writing CSS selectors
+    ---------------------------------
+
+    >>> parser.go
+    >>> soup.select(<any selector>)
+    >>> ss.add(<correct selector>)
+    >>> # ... See more EXAMPLE.md
+    >>> ss.save()
+    >>> q()
+
+    Now that you have a list of samples, just run this parser
+    ---------------------------------------------------------
+
+    Find parsed data in $PROJECT_DIR/data/<parser>
+    They are yours.
+
+"""
+import sys
+from pydoc import pager
 
 if is_script := __name__ == '__main__':
     __package__ = 'parsers.user_parsers.$DIR_NAME'
+    sys.path.insert(0, sys.path[0] + 3 * '/..')
 
-    def fix_path():
-        '''Fix sys.path and die.'''
-        from sys import path
-        path.insert(0, path[0] + 3 * '/..')
-        global fix_path; del fix_path  # noqa: E702
-    fix_path()
+from ...constants import Constant
+from ...datatypes import EXIT_CODE, Sample
+from ...handlers import Parser
+from ...imports import ModuleDocstring as info, snoop
 
-# 'Parsers' imports
-from ...constants import Constant as _Constant
-from ...handlers import Handler as _Handler
-from ...handlers import handle_data as _handle_data
-from ...handlers import HandledResponse as _HandledResponse
-from ...imports import snoop as _snoop
+from .logic import main as sample_handler
+from .constants import constant_locals as constloc
 
-# '$DIR_NAME' template local imports
-from .constants import URL
-from .constants import PARSED_DIR
+URL = constloc.URL or input(Constant.PROMPT.ENTER_URL_OR_FALSE)
 
-URL = URL or input(_Constant.PROMPT.ENTER_URL_OR_FALSE)
+samples = Sample(file=constloc.SAMPLE_FILE)
+parser = Parser(URL, constloc.PARSED_DIR, samples)
 
 
-# @_snoop
-def _load_page(url: str, **request_kwargs) -> _Handler:
-    """Make request and return received data \`Handler\`"""
-    response = _requests.get(url, **request_kwargs)
-    return _handle_data(response, PARSED_DIR)
+# @snoop
+def main(display=constloc.PRINT_TO_STDOUT) -> EXIT_CODE:
+    """Parse and save.
+
+    When \`display\` is True, parsed data will down to stdout.
+    Return exit code.
+    """
+    parser.logic = sample_handler
+    parsed = parser.go
+    if display and not parsed.fail:
+        pager(str(parsed.data))
+    return parsed.status_code
 
 
-# @_snoop
-def _parse(data: _HandledResponse):
-    """Extract data"""
-    result = None
-    if data.is_json:
-        result = ...
-    else:
-        soup = data.make_soup()
-        result = ...
-    return result
+if is_script and not sys.flags.interactive:
+    sys.exit(main())
 
-
-# @_snoop
-def _save_result(data) -> None:
-    $DOCSTRING
-    pass
-
-
-# @_snoop
-def main(url: str = None) -> None:
-    """Parse and save"""
-    handler = _load_page(url or URL)
-    parsed = _parse(handler.data)
-    _save_result(parsed)
-
-
-if is_script:
-    print("\033[0;32mHello from $DIR_NAME.parser!\033[0m")
-    main()
+info = info(__doc__)
 EOT
 
 printf "\n\033[0;33mTemplate '%s' created successfully.\033[0m\n\n" "${DIR_NAME}"
 tree -p "$PARSER_TEMPLATE"
 
 
-# Open $PROJECT_DIR/parsers/user_parsers/$1/constants.py
-# to fix a first-level domain of URL constant
 CONSTANTS_URL="$PROJECT_DIR/parsers/user_parsers/$DIR_NAME/constants.py"
-declare -i LINE=4
-# Define a magic number (<Ctrl+F> to read about)
-declare -i CURSOR_COLUMN_POSITION=$((${#DIR_NAME} + 20))
+declare -i LINE=5
+declare -i CURSOR_COLUMN_POSITION=$((${#DIR_NAME} + 27))
 # Start a code editor <file>:<line>:<column> with VSCode or Vim
 if command -v code >/dev/null; then
     code --goto "$CONSTANTS_URL":$LINE:"$CURSOR_COLUMN_POSITION"
