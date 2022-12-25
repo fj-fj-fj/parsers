@@ -2,7 +2,7 @@ __pycache__/
 *.db
 *.log
 **html**
-**log**
+**log/**
 **parsed_data**
 **tmp**
 data/**
