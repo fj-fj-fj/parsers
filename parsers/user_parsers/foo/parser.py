@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# mypy: ignore-errors
 """
 Usage:
 
@@ -6,9 +7,9 @@ Usage:
     ---------------------------------
 
     >>> parser.go
-    >>> soup.select(...)
+    >>> soup.select(<any selector>)
     >>> ss.add(<correct selector>)
-    >>> # ...
+    >>> # ... See more EXAMPLE.md
     >>> ss.save()
     >>> q()
 
@@ -31,13 +32,13 @@ from ...datatypes import EXIT_CODE, Sample
 from ...handlers import Parser
 from ...imports import ModuleDocstring as info, snoop
 
-from .logic import main as logic
+from .logic import main as sample_handler
 from .constants import constant_locals as constloc
 
 URL = constloc.URL or input(Constant.PROMPT.ENTER_URL_OR_FALSE)
 
 samples = Sample(file=constloc.SAMPLE_FILE)
-parser = Parser(URL, constloc.PARSED_DIR, samples)
+parser = Parser(url=URL, parsed_dir=constloc.PARSED_DIR, samples=samples)
 
 
 # @snoop
@@ -47,7 +48,7 @@ def main(display=constloc.PRINT_TO_STDOUT) -> EXIT_CODE:
     When `display` is True, parsed data will down to stdout.
     Return exit code.
     """
-    parser.logic = logic
+    parser.logic = sample_handler
     parsed = parser.go
     if display and not parsed.fail:
         pager(str(parsed.data))
@@ -58,4 +59,3 @@ if is_script and not sys.flags.interactive:
     sys.exit(main())
 
 info = info(__doc__)
-

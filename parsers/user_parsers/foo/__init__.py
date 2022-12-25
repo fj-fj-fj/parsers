@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# mypy: ignore-errors
 """
 Modules:
 - config
@@ -14,7 +15,7 @@ Functions:
 - shortcuts
     'parsers.imports.shortcuts.<locals>._shortcuts'
 - note
-    lambda (simple dict-like container)
+    (lambda) Simple dict-like container
     Use ad-hoc attributes to hodl smth
     Will be automatically saved to ./notes.json
 
@@ -32,7 +33,7 @@ Files:
     Will be generated after `samples.save()`
 - ./notes.json
     File that will contain your notes (keys:values)
-    Will be generated after REPR exiting
+    Will be generated after REPL exiting
 
 """
 from parsers.imports import importcore as _importcore
@@ -43,17 +44,13 @@ from .parser import main
 from .parser import parser
 from .parser import samples
 
-import atexit as _atexit
-from parsers.storage.files import exit_handler as _exit_handler
 
-_atexit.register(
-    _exit_handler,
-    notes := lambda: vars(notes),
-    file=core.constloc.SAMPLE_FILE.replace('samples', 'notes'),
-    mode='a',
-)
+note = lambda: vars(note)  # noqa: E731
+
 
 from parsers.imports import shortcuts
+shortcuts = shortcuts(fn=main, nb=note, pa=parser, ss=samples)
 
-shortcuts = shortcuts(fn=main, nb=notes, pa=parser, ss=samples)
-
+import atexit as _atexit
+from parsers.storage.files import exit_handler as _exit_handler
+_atexit.register(_exit_handler, note, file=core.constloc.SAMPLE_FILE.replace('samples', 'notes'))
