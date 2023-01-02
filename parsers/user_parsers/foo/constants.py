@@ -15,7 +15,7 @@ PRINT_TO_STDOUT = True
 # The block of code below has been automatically generated
 # Delete condition or reasign `URL`
 if 000 not in range(200, 400):
-    URL = 'https://free-proxy-list.net'
+    URL = _base.URL.HTTPBIN_ORG
 # ========================================================
 
 constant_locals = _namespce(

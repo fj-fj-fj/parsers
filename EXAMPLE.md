@@ -44,14 +44,19 @@ Usage:
 
 ## Parsing
 ```python
+>>> # import os; assert os.listdir('./data/foo') == []
+>>>
 >>> __parser__.constants.URL
 'https://foo.com/'
 >>> # This site is not interesting
 >>> # We came up with a bad name. Change the url
 >>> parser.request('https://free-proxy-list.net/')
 <Response [200]>
+>>> # assert os.listdir('./data/foo') == ['repl_1_response.html']
+>>>
 >>> parser.parse()
 HandledData(data=<class 'bs4.BeautifulSoup'>, fail=False, status_code=0)
+>>> # assert os.listdir('./data/foo') == ['repl_1_raw_data.tmp', 'repl_1_response.html']
 >>> _
 HandledData(data=<class 'bs4.BeautifulSoup'>, fail=False, status_code=0)
 >>> 'foo'
@@ -62,7 +67,7 @@ HandledData(data=<class 'bs4.BeautifulSoup'>, fail=False, status_code=0)
 Traceback (most recent call last):
 File "<stdin>", line 1, in <module>
 NameError: name 'HandledData' is not defined
->>> # Use underscore like this:
+>>>
 >>> parser._
 HandledData(data=<class 'bs4.BeautifulSoup'>, fail=False, status_code=0)
 >>> parser.last_result == _
@@ -77,12 +82,12 @@ HandledData(data=<class 'bs4.BeautifulSoup'>, fail=False, status_code=0)
 >>> soup = _.data
 >>> ips = soup.select('table td:nth-of-type(1)')
 >>> ips
-[...]  # Expectation vs. reality ~ 50%
+[...]  # Expectation vs. reality ~50%
 >>>
 >>> ips = soup.select('table td:nth-of-type(1):not(:has([class]))')
->>> # expectation vs reality ~ 90+
+>>> # ^ expectation vs reality ~90%
 >>> ips = soup.select('table td:nth-of-type(1):not(:has([class])):not([class])')
->>> # 100%
+>>> # ^ 100% match
 >>>
 >>> # Saving a few keystrokes
 >>> # Use 'notes' shortcut
@@ -97,41 +102,44 @@ NameError: name 'nb' is not defined
 True
 >>>
 >>> # Store ips as a function attribute to avoid reassignment and history digging
->>> nb.ips = [ip.text for ip in ips]
+>>> nb.ips = [ip.text for ip in ips if '.' in ip.text]
 >>> nb.ips
-['47.91.44.217', '34.81.72.31', ... '2022-12-16', '2022-12-15']
+['169.57.1.85:8123', '18.136.21.248', ... '154.236.184.71', '89.107.197.164']
+>>> # Use 'less' for paging through text one screenful at a time
+>>> parser.less(nb.ips) # q
+>>>
 >>> # add success selector to `samples`
 >>> ss == samples  # (shortcut)
 True
 >>> ss.append('table td:nth-of-type(1):not(:has([class])):not([class])')
 >>>
 >>> ports = soup.select('table td:nth-of-type(2):not(:has([class])):not([class])')
->>> # expectation vs reality ~ 90+
+>>> # ^ expectation vs reality ~90%
 >>> ports = soup.select('table td:nth-of-type(2):not(:has([class])):not([class]):not([title])')
->>> # 100%
+>>> # ^ 100% match
 >>> nb.ports = [port.text for port in ports]
 >>> nb.ports
-['8000', '80', ... '945', '861']
+['8123', '8118', ... '707', '770']
 >>> ss.append('table td:nth-of-type(2):not(:has([class])):not([class]):not([title])')
 >>>
 >>> len(nb.ips), len(nb.ports)
-(305, 305)
->>> # at least for this
+(300, 305)  # skip 5 no-ip items
+>>>
 >>> import datetime as d; d.datetime.now()
-datetime.datetime(2022, 12, 20, 0, 26, 48, 467282)
+datetime.datetime(2023, 1, 2, 13, 29, 39, 8729)
 >>>
->>> # Collect proxies
+>>> # Create sample handler function and collect proxies
 >>> nb.sample_handler = lambda: [f'{ip}:{port}' for ip,port in zip(nb.ips, nb.ports)]
->>> nb.sample_handler()
-['47.91.44.217:8000', '34.81.72.31:80', [...] '2022-12-16:945', '2022-12-15:861']
->>> nb.proxies = _
+>>> nb.proxies = nb.sample_handler()
+>>> nb.proxies
+['169.57.1.85:8123', '18.136.21.248:8118', ... '154.236.184.71:1975', '89.107.197.164:3128']
 >>>
->>> nb()
-{'ips': ['96.126.103.64', ... '2022-12-15'],
-'ports': ['9992', '80', '80', '3128', ... '861'],
-'func': <function <lambda> at 0x7f834f287380>,
-'proxies': ['96.126.103.64:9992', ... '2022-12-15:861']}
->>> # OK
+>>> parser.less(nb())
+# {'ips': ['169.57.1.85', ... '89.107.197.164'],
+# 'ports': ['8123', '8118', ... '707', '770'],
+# 'sample_handler': <function <lambda> at ...>,
+# 'proxies': ['169.57.1.85:8123', ... '89.107.197.164:3128']}
+# (END)
 ```
 
 ## Saving
@@ -139,7 +147,14 @@ datetime.datetime(2022, 12, 20, 0, 26, 48, 467282)
 >>> # Save your samples
 >>> ss.save()
 >>> # Your notes will be automatically saved to parsers/user_parsers/<parser>/notes.txt
->>> quit()
+>>> quit()  # Follow next header
+>>> # Or make final data manually
+>>> parser.handler._data_handler.samples = ss
+>>> parser.handler._data_handler.sample_handler = lambda x: [f'{i}:{p}' for i,p in zip(x[0], x[1])]
+>>> final_data = parser.handler._data_handler.prepare()
+>>> parser.save()
+6639
+>>> # assert os.listdir('./data/foo')[0] == 'repl_1_final_data.json'
 ```
 
 - ./parsers/user_parsers/foo/notes.txt is enough to quickly work with data.
@@ -176,15 +191,17 @@ if 000 not in range(200, 400):
 
 ## Check final data
 ```bash
-(3.11.0) $ ls -a ./data/foo/
-.  ..  1_response.json
-(3.11.0) $ wc !$1_response.json
-wc ./data/foo/1_response.json
-   0  305 6609 ./data/foo/1_response.json
+(3.11.0) $ ls -a ./data/foo
+.   1_final_data.json  1_response.html         repl_1_raw_data.tmp
+..  1_raw_data.tmp     repl_1_final_data.json  repl_1_response.html
+(3.11.0) $
+(3.11.0) $ wc !$/1_final_data.json
+wc ./data/foo/1_final_data.json
+   0  305 6591 ./data/foo/1_final_data.json
 (3.11.0) $
 (3.11.0) $ jq '. | first' !$
-jq '. | first' ./data/foo/1_response.json
-"46.101.49.62:80"
+jq '. | first' ./data/foo/1_final_data.json
+"96.126.124.197:52725"
 ```
 
 

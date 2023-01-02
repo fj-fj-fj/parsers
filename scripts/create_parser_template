@@ -157,7 +157,7 @@ shortcuts = shortcuts(fn=main, nb=note, pa=parser, ss=samples)
 
 import atexit as _atexit
 from parsers.storage.files import exit_handler as _exit_handler
-_atexit.register(_exit_handler, note)
+_atexit.register(_exit_handler, note, file=core.constloc.SAMPLE_FILE.replace('samples', 'notes'))
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
