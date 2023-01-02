@@ -1,9 +1,13 @@
 #!/usr/bin/env python
-"""The 'exceptions' module contains errors and warnings."""
+__all__ = (
+    'BaseError',
+    'ElementNotFoundError',
+    'DataNotFoundError',
+    'ParameterValueError',
+    'raise_notfound',
+)
+
 from typing import NoReturn as _NoReturn
-
-__all__ = 'ElementNotFoundError', 'raise_notfound'
-
 
 class BaseError(Exception):
     """Base shell for all errors."""

@@ -2,17 +2,18 @@
 
 __all__ = 'check', 'check_proxies'
 
+import typing as _t
 import requests as _requests
-from typing import Literal as _Literal
 
-from parsers.datatypes import ProxyType as _ProxyType
-from parsers.datatypes import TimeoutType as _TimeoutType
 from parsers.constants import Constant as _Constant
 from parsers.request.useragent import gen_useragents_cycle as _gen_useragents_cycle
 from parsers.request.times import set_timeout as _set_timeout
 
 
-def check(proxy: _ProxyType, uagent: str, timeout: _TimeoutType = None) -> bool:
+_ProxyType: _t.TypeAlias = str
+
+
+def check(proxy: _ProxyType, uagent: str, timeout=None) -> bool:
     """Check proxy and return availability."""
     try:
         respone = _requests.get(
@@ -31,11 +32,11 @@ def check(proxy: _ProxyType, uagent: str, timeout: _TimeoutType = None) -> bool:
 
 def check_proxies(
     stop_line: int = -1,
-    timeout: _TimeoutType = _set_timeout(),
+    timeout=_set_timeout(),
     file_proxies: str = _Constant.FILE.PARSED_PROXIES,
     file_valid_proxies: str = _Constant.FILE.VALID_PROXIES,
     file_invalid_proxies: str = _Constant.FILE.INVALID_PROXIES,
-    write_mode: _Literal['a', 'w'] = 'w',  # noqa: F821
+    write_mode: _t.Literal['a', 'w'] = 'w',  # noqa: F821
 ) -> None:
     """Sort `file_proxies` to `stop_line` by `file_(valid|invalid)_proxies`."""
 

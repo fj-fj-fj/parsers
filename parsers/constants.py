@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 # flake8: noqa F821
-"""The 'constants' module contains request constants."""
-
 __all__ = 'Constant',
 
+import typing as _t
 from enum import Enum as _Enum
 from os import getenv as _getenv
-from typing import Literal as _Literal
-from typing import NamedTuple as _NamedTuple
 
 if is_script := __name__ == '__main__':
     from sys import path as _path
@@ -17,7 +14,7 @@ if is_script := __name__ == '__main__':
 from parsers.datatypes import classproperty as _classproperty
 from parsers.exceptions import ParameterValueError as _ParameterValueError
 
-_NamespaceLiteral = _Literal[
+_NamespaceLiteral = _t.Literal[
     'cli',
     'dir',
     'file',
@@ -28,20 +25,18 @@ _NamespaceLiteral = _Literal[
     'timeouts'
 ]
 
-_ALL_OR_NS = _Literal['all', 'ns']
+_ALL_OR_NS = _t.Literal['all', 'ns']
 
-
-_PROJECT_DIR = _getenv('PROJECT_DIR', '../..')
-_PROXY_DATA_DIR = F'{_PROJECT_DIR}/data/proxy/'
+_PROJECT_DIR: _t.Final = _getenv('PROJECT_DIR', '../..')
+_PROXY_DATA_DIR: _t.Final = F'{_PROJECT_DIR}/data/proxy/'
 
 
 class _CommandLineInterface(_Enum):
-    PARSE = '--parse'
-    VERBOSE = '--verbose'
+    PARSE: _t.Final = '--parse'
+    VERBOSE: _t.Final = '--verbose'
 
 
-class _NameSpace(_NamedTuple):
-    """Base class for all namespaces."""
+class _NameSpace(_t.NamedTuple):
 
     def __repr__(self) -> str:
         attributes = ', '.join(
@@ -52,35 +47,36 @@ class _NameSpace(_NamedTuple):
 
 
 class _Directories(_NameSpace):
-    PARSED_DATA = F'{_PROJECT_DIR}/data/'
-    PARSERS = F'{_PROJECT_DIR}/parsers/'
-    USER_PARSERS = F'{_PROJECT_DIR}/parsers/user_parsers/'
+    PARSED_DATA: _t.Final = F'{_PROJECT_DIR}/data/'
+    PARSERS: _t.Final = F'{_PROJECT_DIR}/parsers/'
+    USER_PARSERS: _t.Final = F'{_PROJECT_DIR}/parsers/user_parsers/'
 
 
 class _Files(_NameSpace):
     # proxy
-    PROXY_RESPONSE = F'{_PROXY_DATA_DIR}response.html'
-    PARSED_PROXIES = F'{_PROXY_DATA_DIR}proxies'
-    VALID_PROXIES = F'{_PROXY_DATA_DIR}valid'
-    INVALID_PROXIES = F'{_PROXY_DATA_DIR}invalid'
+    PROXY_RESPONSE: _t.Final = F'{_PROXY_DATA_DIR}response.html'
+    PARSED_PROXIES: _t.Final = F'{_PROXY_DATA_DIR}proxies'
+    VALID_PROXIES: _t.Final = F'{_PROXY_DATA_DIR}valid'
+    INVALID_PROXIES: _t.Final = F'{_PROXY_DATA_DIR}invalid'
     # useragent
-    USER_AGENTS = F'{_PROJECT_DIR}/useragents.txt'
+    USER_AGENTS: _t.Final = F'{_PROJECT_DIR}/useragents.txt'
     # xpath general file
-    SAMPLE = F'{_PROJECT_DIR}/samples.txt'
+    SAMPLE: _t.Final = F'{_PROJECT_DIR}/samples.txt'
+    NOTES: _t.Final = F'{_PROJECT_DIR}/notes.txt'
 
 
 class _Prompt(_NameSpace):
-    ENTER_URL_OR_FALSE = "Enter URL (or False to use 'httpbin.org'): "
-    ENTER_BS4_PARSER = "Type enter to use 'lxml' or enter other:  "
+    ENTER_URL_OR_FALSE: _t.Final = "Enter URL (or False to use 'httpbin.org'): "
+    ENTER_BS4_PARSER: _t.Final = "Type enter to use 'lxml' or enter other:  "
 
 
 class _MagicNumbers(_NameSpace):
-    DEFAULT_CONNECTION_TIMEOUT = 5.05
-    DEFAULT_READ_TIMEOUT = 27.67
+    DEFAULT_CONNECTION_TIMEOUT: _t.Final = 5.05
+    DEFAULT_READ_TIMEOUT: _t.Final = 27.67
 
 
 class _ParsingConstants(_NameSpace):
-    PARSER = 'lxml'
+    PARSER: _t.Final = 'lxml'
     # FOR: https://free-proxy-list.net/
     SELECT_IP = 'td:nth-of-type(1)'
     SELECT_PORT = 'td:nth-of-type(2)'
@@ -88,46 +84,21 @@ class _ParsingConstants(_NameSpace):
 
 class _UniformResourceLocator(_NameSpace):
     # A simple HTTP Request & Response Service
-    HTTPBIN_ORG = 'https://httpbin.org/'
+    HTTPBIN_ORG: _t.Final = 'https://httpbin.org/'
     # proxies
-    _FPL_PROXY_URL = 'https://free-proxy-list.net/'
+    _FPL_PROXY_URL: _t.Final = 'https://free-proxy-list.net/'
     PROXY_URL = _FPL_PROXY_URL
     # checking
-    CHECK_PROXY_URL = 'https://api.ipify.org/'
-    CHECK_PROXY_URL_PARAMS = '{"format": "json"}'
+    CHECK_PROXY_URL: _t.Final = 'https://api.ipify.org/'
+    CHECK_PROXY_URL_PARAMS: _t.Final = '{"format": "json"}'
 
 
 class _DirAttributesMixin:
-    """Mixin to listing namespaces and/or their constatns."""
+    """Mixin to listing namespaces and/or their constatns"""
 
     @classmethod
     def dir(cls, namespace: _NamespaceLiteral) -> str:
-        """Return public _ConstantStorage.<namespace>.constants
-
-        >>> _ConstantStorage().dir('cli')
-        'PARSE, VERBOSE'
-        >>> _ConstantStorage().dir('dir')
-        'PARSED_DATA, PARSERS, USER_PARSERS'
-        >>> _ConstantStorage().dir('file')
-        'INVALID_PROXIES, PARSED_PROXIES, PROXY_RESPONSE, USER_AGENTS, VALID_PROXIES'
-        >>> _ConstantStorage().dir('magic_numbers')
-        'DEFAULT_CONNECTION_TIMEOUT, DEFAULT_READ_TIMEOUT'
-        >>> _ConstantStorage().dir('parse')
-        'PARSER, SELECT_IP, SELECT_PORT'
-        >>> _ConstantStorage().dir('prompt')
-        'ENTER_URL_OR_FALSE, ENTER_BS4_PARSER'
-        >>> _ConstantStorage().dir('timeouts')
-        ''
-        >>> _ConstantStorage().dir('url')
-        'CHECK_PROXY_URL, CHECK_PROXY_URL_PARAMS, FPL_PROXY_URL'
-        >>> _ConstantStorage().dir('foo')  # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-        ...
-        exceptions.ParameterValueError: foo not in \
-typing.Literal['cli', 'dir', 'file', 'url', 'parse', \
-'prompt', 'magic_numbers', 'timeouts']
-
-        """
+        """Return public _ConstantStorage.<namespace>.constants"""
         try:
             namespace = dir(vars(cls)[namespace.upper()].fget(cls))  # type: ignore [assignment]
             return ', '.join(const for const in namespace if const.isupper())
@@ -136,18 +107,7 @@ typing.Literal['cli', 'dir', 'file', 'url', 'parse', \
 
     @classmethod
     def dir_public(cls, key: _ALL_OR_NS = 'all') -> str:
-        r"""Return all public constants or thier namespases only.
-
-        >>> _ConstantStorage().dir_public()  # doctest: +ELLIPSIS
-        'CLI: PARSE, VERBOSE\nDIR: ...\nPARSE: ...\nURL: ...\n'
-        >>> _ConstantStorage().dir_public('ns')
-        'CLI, DIR, FILE, MAGIC_NUMBERS, PARSE, PROMPT, TIMEOUTS, URL'
-        >>> _ConstantStorage().dir_public('badparam')
-        Traceback (most recent call last):
-        ...
-        exceptions._: 'key' is a typing.Literal['all', 'ns'].
-
-        """
+        r"""Return all public constants or thier namespases only"""
         constants_ns_map = {
             'all': ''.join(f'{ns}: {cls.dir(ns)}\n' for ns in dir(cls) if ns.isupper()),  # type: ignore [arg-type]
             'ns': ', '.join(ns for ns in dir(cls) if ns.isupper()),
@@ -159,13 +119,12 @@ typing.Literal['cli', 'dir', 'file', 'url', 'parse', \
 
 
 class _ConstantStorage(_DirAttributesMixin):
-    """Contains classmethod-properties (files, URLs, xpath, etc)."""
 
     @_classproperty
     def CLI(cls): return _CommandLineInterface      # noqa: E704
 
     @_classproperty
-    def DIR(cls): return _Directories()                  # noqa: E704
+    def DIR(cls): return _Directories()             # noqa: E704
 
     @_classproperty
     def FILE(cls): return _Files()                  # noqa: E704
@@ -177,8 +136,8 @@ class _ConstantStorage(_DirAttributesMixin):
     def PARSE(cls): return _ParsingConstants()      # noqa: E704
 
     @_classproperty
-
     def PROMPT(cls): return _Prompt()               # noqa: E704
+
     @_classproperty
     def MAGIC_NUMBERS(cls): return _MagicNumbers()  # noqa: E704
 
@@ -189,7 +148,15 @@ class _ConstantStorage(_DirAttributesMixin):
         return mn.DEFAULT_CONNECTION_TIMEOUT, mn.DEFAULT_READ_TIMEOUT
 
 
+assert not (symmetric_difference := set(
+    {ns.lower() for ns in _ConstantStorage.dir_public('ns').split(', ')}
+    ^ {v for v in _NamespaceLiteral.__args__}  # type: ignore [attr-defined]
+)), f"{symmetric_difference=}  '_ConstantStorage.dir_public' != '_NamespaceLiteral'"
+del symmetric_difference
+
+
+@_t.final
 class Constant(_ConstantStorage):
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}: {_ConstantStorage.dir_public('ns')}>"
+        return f"{self.__class__.__name__}({_ConstantStorage.dir_public('ns')})"

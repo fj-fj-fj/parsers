@@ -1,4 +1,15 @@
 # flake8: noqa: E122,W504
+__all__ = (
+    'ModuleDocstring',
+    'check_reinit_states',
+    'display_repl_code',
+    'importcore',
+    'refresh',
+    'select_parser',
+    'shortcuts',
+    'snoop',
+)
+
 import importlib as _importlib
 import os as _os
 import re as _re
@@ -6,7 +17,6 @@ import sys as _sys
 from functools import wraps as _wraps
 from typing import Callable as _Callable
 from types import ModuleType as _ModuleType
-from types import LambdaType as _LambdaType
 
 from parsers.datatypes import Sample as _Sample
 from parsers.handlers import Parser as _Parser
@@ -83,7 +93,7 @@ class ModuleDocstring:
     __repr__ = __call__
 
 
-def shortcuts(fn: _Callable, nb: _LambdaType, pa: _Parser, ss: _Sample) -> _Callable:
+def shortcuts(fn: _Callable, nb: _Callable, pa: _Parser, ss: _Sample) -> _Callable:
     """Updates globals() of the `module` namespace
 
     Shortcuts:

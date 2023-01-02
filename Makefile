@@ -23,7 +23,7 @@ BIN_DIR := $$VENV/bin
 
 #01 -------------- base ----------------
 # make run <PARSER_NAME>
-runi:
+irun:
 	@$(BIN_DIR)/python -i . $(word 2, $(MAKECMDGOALS))
 
 run:
@@ -82,6 +82,10 @@ note:
 	f.write(''.join([i for i in sys.stdin]));\
 	f.close()" NOTE.tmp
 
+
+diff:
+	@$@ -u $(word 2, $(MAKECMDGOALS)) $(word 3, $(MAKECMDGOALS)) \
+	| perl /usr/share/doc/git/contrib/diff-highlight/diff-highlight
 
 #2 -------------------------- Data --------------------------
 

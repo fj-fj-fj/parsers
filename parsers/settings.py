@@ -1,4 +1,6 @@
 """The 'settings' module contains Configuration() for default **kwargs."""
+__all__ = 'Configuration',
+
 from dataclasses import dataclass as _dataclass
 from typing import Type as _Type
 

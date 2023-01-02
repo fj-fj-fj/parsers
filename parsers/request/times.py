@@ -5,13 +5,12 @@ __all__ = (
     'set_random_timeout',
     'set_timeout',
 )
-
+import typing as _t
 from random import uniform as _uniform
-from typing import Type as _Type
 
-from parsers.datatypes import TimeoutType as _TimeoutType
 from parsers.constants import Constant as _Constant
 
+_TimeoutType: _t.TypeAlias = float | tuple[float, ...] | None
 
 class Timeout:
 
@@ -25,7 +24,7 @@ class Timeout:
         return connection_timeout, read_timeout
 
     @staticmethod
-    def set_timeout(const: _Type[_Constant] = _Constant, random: bool = True) -> _TimeoutType:
+    def set_timeout(const: _t.Type[_Constant] = _Constant, random: bool = True) -> _TimeoutType:
         """Return random timeout or constants.ConstantStorage.TIMEOUTS."""
         return Timeout.set_random_timeout() if random else const.TIMEOUTS
 
