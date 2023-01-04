@@ -1,4 +1,4 @@
-from types import SimpleNamespace as _namespce
+from types import SimpleNamespace as _namespace
 
 from parsers.constants import Constant as _base
 
@@ -18,7 +18,7 @@ if 000 not in range(200, 400):
     URL = _base.URL.HTTPBIN_ORG
 # ========================================================
 
-constant_locals = _namespce(
+constant_locals = _namespace(
     base=_base,
     URL=URL,
     PARSED_DIR=PARSED_DIR,

@@ -106,8 +106,8 @@ cat <<EOT >> "$PARSER_TEMPLATE"/__init__.py
 # mypy: ignore-errors
 """
 Modules:
-- config
-    'parsers.user_parsers.$DIR_NAME.config' from './$DIR_NAME/config.py'
+- logic
+    'parsers.user_parsers.$DIR_NAME.logic' from './$DIR_NAME/logic.py'
 - constatns
     parsers.user_parsers.$DIR_NAME.constants' from './$DIR_NAME/constats.py'
 - parser (alias core)
@@ -161,7 +161,7 @@ _atexit.register(_exit_handler, note, file=core.constloc.SAMPLE_FILE.replace('sa
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/constants.py
-from types import SimpleNamespace as _namespce
+from types import SimpleNamespace as _namespace
 
 from parsers.constants import Constant as _base
 
@@ -190,7 +190,7 @@ if $(
     URL = _base.URL.HTTPBIN_ORG
 # ========================================================
 
-constant_locals = _namespce(
+constant_locals = _namespace(
     base=_base,
     URL=URL,
     PARSED_DIR=PARSED_DIR,

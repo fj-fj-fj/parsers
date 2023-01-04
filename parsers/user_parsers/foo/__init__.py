@@ -2,12 +2,12 @@
 # mypy: ignore-errors
 """
 Modules:
-- config
-    'parsers.user_parsers.foo.config' from './foo/config.py'
+- logic
+    'parsers.user_parsers.foo.logic' from './foo/logic.py'
 - constatns
-    parsers.user_parsers.foo.constants' from './foo/constats.py'
+    'parsers.user_parsers.foo.constants' from './foo/constats.py'
 - parser (alias core)
-    parsers.user_parsers.foo.parser' from './foo/parser.py'
+    'parsers.user_parsers.foo.parser' from './foo/parser.py'
 
 Functions:
 - main

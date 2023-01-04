@@ -80,14 +80,14 @@ class _FileMixin:
     STEP_STEM_MAP = {0: '1_response', 1: '1_raw_data', 2: '1_final_data'}
     STEP_SUFFIX_MAP = {0: '.html', 1: '.tmp', 2: '.json'}
     UNKNOWN_STEM = '1_unknow_step'
-    REPR_PREFIX = 'repl_'
+    REPL_PREFIX = 'repl_'
 
     def define_file(self, step: int) -> None:
         stem = self.STEP_STEM_MAP.get(step, self.UNKNOWN_STEM)
         suffix = self.STEP_SUFFIX_MAP.get(step, '')
         basename = f'{stem}{suffix}'
         if _sys.flags.interactive:
-            basename = f'{self.REPR_PREFIX}{basename}'
+            basename = f'{self.REPL_PREFIX}{basename}'
         self.file = f'{self.parsed_dir}/{basename}'
         _os.makedirs(self.parsed_dir, exist_ok=True)
         # GOTO: self.save(increment_prefix=False)
