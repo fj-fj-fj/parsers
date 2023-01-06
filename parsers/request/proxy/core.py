@@ -11,8 +11,6 @@ if is_script := __name__ == '__main__':
         global fix_path; del fix_path  # noqa: E702
     fix_path()
 
-from parsers.interfaces import AbstractProxy
-from parsers.interfaces import AbstractRequest
 from parsers.request.proxy.checker import check
 from parsers.request.proxy.checker import check_proxies
 from parsers.request.proxy.parser import parse
@@ -33,13 +31,13 @@ class ProxyParserMixin:
         self.parse: _Callable = parse
 
 
-class Proxy(AbstractProxy, ProxyCheckerMixin, ProxyParserMixin):
+class Proxy(ProxyCheckerMixin, ProxyParserMixin):
 
     def __init__(self) -> None:
         super().__init__()
 
 
-class Request(AbstractRequest):
+class Request:
 
     def __init__(self) -> None:
         self.proxy = Proxy()

@@ -11,7 +11,6 @@ if is_script := __name__ == '__main__':
     _sys.path.append(_dn(_dn(__file__)))
 
 from parsers.datatypes import HTML as _HTML
-from parsers.datatypes import ProxyList as _ProxyList
 from parsers.exceptions import raise_notfound as _raise_notfound
 from parsers.constants import Constant as _Constant
 from parsers.rawdata_handlers import make_soup as _make_soup
@@ -19,13 +18,13 @@ from parsers.settings import Configuration as _Configuration
 from parsers.storage.files import save_to_file as _save_to_file
 
 
-def parse_proxies(cfg: _Configuration = _Configuration(), output=False) -> _ProxyList:
+def parse_proxies(cfg: _Configuration = _Configuration(), output=False):
     """Make request on `cfg`.url, parse response and return parsed proxies."""
     cfg = _setdefault_configs(cfg or _Configuration())
     source_page = _requests.get(cfg.url).text
-    _save_to_file(data=source_page, file=cfg.file_response, log=output)
+    _save_to_file(data=source_page, file=cfg.file_response)
     proxies = _parse_table(source_page, cfg.parser)
-    _save_to_file(data='\n'.join(proxies), file=cfg.file_parsed, log=output)
+    _save_to_file(data='\n'.join(proxies), file=cfg.file_parsed)
     return proxies
 
 
@@ -34,7 +33,7 @@ def _setdefault_configs(cfg: _Configuration) -> _Configuration:
     return cfg
 
 
-def _parse_table(page: _HTML, parser: str, tag='table') -> _ProxyList:
+def _parse_table(page: _HTML, parser: str, tag='table'):
     """Return fetched IPs, ports from table > ResultSet[tr] > 1st,2nd td."""
     proxies = []
     soup = _make_soup(page, parser)

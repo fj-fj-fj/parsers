@@ -18,7 +18,6 @@ from io import TextIOWrapper as _TextIOWrapper
 
 from parsers.datatypes import Content as _Content
 from parsers.datatypes import OpenMode as _OpenMode
-from parsers.interfaces import DataStorage as _DataStorage
 
 
 def exit_handler(func: _t.Callable, file='./notes.json', mode=_OpenMode.WRITE) -> None:
@@ -105,7 +104,7 @@ class _FileMixin:
         return len(self._files)
 
 
-class PlainStorage(_DataStorage, _FileMixin):
+class PlainStorage(_FileMixin):
     """Store data in plain text file"""
 
     SUFFIX_DEFAULT = ''
@@ -113,7 +112,7 @@ class PlainStorage(_DataStorage, _FileMixin):
     def __init__(self, parsed_dir: str = None):
         self.parsed_dir = parsed_dir or self.PARSED_DIR
 
-    def save(self, data: str, step: int, mode=_OpenMode.WRITE) -> int:  # type: ignore
+    def save(self, data: str, *, step: int, mode=_OpenMode.WRITE) -> int:
         self.data = data
         self.define_file(step=step)
         with open(self.file, mode) as plain_storage_fh:
@@ -124,7 +123,7 @@ class PlainStorage(_DataStorage, _FileMixin):
         return 'str', 'bs4', 'page', 'text'
 
 
-class JsonStorage(_DataStorage, _FileMixin):
+class JsonStorage(_FileMixin):
     """Store data in json file"""
 
     SUFFIX_DEFAULT = '.json'
@@ -133,7 +132,7 @@ class JsonStorage(_DataStorage, _FileMixin):
         self.parsed_dir = parsed_dir or self.PARSED_DIR
         super().__init__()
 
-    def save(self, data: _Content.JSON, step: int, mode=_OpenMode.WRITE) -> int:
+    def save(self, data: _Content.JSON, *, step: int, mode=_OpenMode.WRITE) -> int:
         self.data = data
         self.define_file(step=step)
         with open(self.file, mode) as json_storage_fh:
