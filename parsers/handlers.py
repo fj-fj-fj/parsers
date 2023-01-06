@@ -57,7 +57,7 @@ class RequestHandler:
         """Save previous response if it was and return new"""
         if self._server_response is not None:
             self._previous_responses.append(self._server_response)
-        self.server_response = _requests.get(url or self.url)
+        self.server_response = _requests.get(self.validate(url or self.url))
         self.ct = self.server_response.headers.get('Content-Type', '')
         return self.server_response
 
@@ -75,6 +75,13 @@ class RequestHandler:
         if self._previous_responses:
             self._server_response = self._previous_responses.pop()
         self._server_response = None
+
+    def validate(self, url: str) -> str:
+        assert (f:=url.startswith)('https://') or f('http://'), f'invalid {url=}'
+        return (
+            url if '{}' not in url else
+            url.format(input(f" {url.format('{ ??? }')!r} <-- fill placeholder "))
+        )
 
     @property
     def content_data_type(self) -> _t.Literal['json', 'str']:
