@@ -81,9 +81,9 @@ class _FileMixin:
     UNKNOWN_STEM = '1_unknow_step'
     REPL_PREFIX = 'repl_'
 
-    def define_file(self, step: int) -> None:
+    def define_file(self, step: int, suffix=None) -> None:
         stem = self.STEP_STEM_MAP.get(step, self.UNKNOWN_STEM)
-        suffix = self.STEP_SUFFIX_MAP.get(step, '')
+        suffix = suffix or self.STEP_SUFFIX_MAP.get(step, '')
         basename = f'{stem}{suffix}'
         if _sys.flags.interactive:
             basename = f'{self.REPL_PREFIX}{basename}'
@@ -112,9 +112,9 @@ class PlainStorage(_FileMixin):
     def __init__(self, parsed_dir: str = None):
         self.parsed_dir = parsed_dir or self.PARSED_DIR
 
-    def save(self, data: str, *, step: int, mode=_OpenMode.WRITE) -> int:
+    def save(self, data: str, *, step: int, mode=_OpenMode.WRITE, suffix=None) -> int:
         self.data = data
-        self.define_file(step=step)
+        self.define_file(step=step, suffix=suffix)
         with open(self.file, mode) as plain_storage_fh:
             return plain_storage_fh.write(data)
 
@@ -130,11 +130,10 @@ class JsonStorage(_FileMixin):
 
     def __init__(self, parsed_dir: str = None):
         self.parsed_dir = parsed_dir or self.PARSED_DIR
-        super().__init__()
 
-    def save(self, data: _Content.JSON, *, step: int, mode=_OpenMode.WRITE) -> int:
+    def save(self, data: _Content.JSON, *, step: int, mode=_OpenMode.WRITE, suffix=None) -> int:
         self.data = data
-        self.define_file(step=step)
+        self.define_file(step=step, suffix=suffix)
         with open(self.file, mode) as json_storage_fh:
             return json_storage_fh.write(_json.dumps(data))
 

@@ -1,6 +1,7 @@
 # flake8: noqa W503
 # mypy: disable-error-code=attr-defined
 import typing as _t
+from pprint import pprint as _pprint
 from pydoc import pager as _pager
 from time import time as _time
 from collections import defaultdict as _defaultdict
@@ -80,7 +81,7 @@ class RequestHandler:
         assert (f:=url.startswith)('https://') or f('http://'), f'invalid {url=}'
         return (
             url if '{}' not in url else
-            url.format(input(f" {url.format('{ ??? }')!r} <-- fill placeholder "))
+            url.format(input(f" {url.format('{ ? }')!r}\n\tfill placehoder: "))
         )
 
     @property
@@ -139,22 +140,22 @@ class DataHandler:
     def prepare(self) -> _Content.UNION_HTML_SOUP_JSON:
         """Return final data or intermediate (json|soup).
 
-        For final data samples and sample handler must be created.
+        For final data samples and/or sample handler must be created.
         Note: cook soup with select only (not select_one)
         """
-        if not self.samples:
+        if not self.samples and not self.sample_handler:
             return self.json or self.soup
-        # assert self.raw is not None
-        # if self.is_json:
-        #     keychain = self.raw
-        #     for key in keychain.split('.'):
-        #         keychain = keychain.get(key, 'chain_none')
-        #     return keychain
-        # assert self.soup is not None, f'Old ? {self.samples}'
-        assert self.sample_handler is not None, """
-        Set `sample_handler` (name def priority: 'Parser', 'Handler', 'DataHandler')
 
-        """
+        assert self.sample_handler is not None
+
+        if self.json is self.samples is self.sample_handler is None:
+            self.final_data = self.raw
+            return self.final_data
+        elif self.json and self.sample_handler:
+            self.final_data = self.sample_handler(self.json)
+            return self.final_data
+
+        # create [list[sample_result] for sample in samples]
         for sample in self.samples:
             self._parsed.append([s.text for s in self.soup.select(sample)])
         # GOTO: select or select_one
@@ -164,7 +165,17 @@ class DataHandler:
 
 
 class Handler:
+    """Manager for RequestHandler, DataHandler, ContextStorage.
 
+    Base API:
+        response (property):
+            (with RequestHandler) return server response
+        data (property):
+            (with DataHandler) return HandledData
+        save()
+            (with ContextStorage) return int saved chars
+
+    """
     def __init__(self, url: str, parsed_dir: str):
         self.parsed_dir = parsed_dir
         self.url = url
@@ -262,6 +273,8 @@ class Parser:
             Extract data and return (json or soup) or page
         `less(text: str)`:
             `pydoc.pager` to emulate 'less' in repl
+        `pp`:
+            pprint.pprint
         `save()`:
             Save data to Constant.DIR.PARSED_DATA
         `last_result`: property
@@ -285,9 +298,10 @@ class Parser:
         """
         self.handler = Handler(url=url, parsed_dir=parsed_dir)
         self.less = lambda text: _pager(str(text))
+        self.pp = _pprint
         # defaultdict updated dynamically after method calls.
         #   key(str): <method name>, value(float): epoch
-        self._called: _defaultdict = _defaultdict(lambda: .0)
+        self._called: _defaultdict = _defaultdict(float)
         self.parsed: HandledData = None
         self.samples = samples
         self.logic = None

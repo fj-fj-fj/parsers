@@ -1,3 +1,4 @@
+from os import getenv as _getenv
 from types import SimpleNamespace as _namespace
 
 from parsers.constants import Constant as _base
@@ -18,9 +19,18 @@ if 000 not in range(200, 400):
     URL = _base.URL.HTTPBIN_ORG
 # ========================================================
 
+GITHUB_TOKEN = _getenv('GITHUB_TOKEN')
+assert GITHUB_TOKEN
+
+API_URL = 'https://api.github.com'
+SEARCH_PARAM = '/search/issues?q=type:pr+is:public+author:{}&per_page=300'
+AUTORIZATION_PARAM = f'&authorization_request={GITHUB_TOKEN}'
+PARAMS = SEARCH_PARAM + AUTORIZATION_PARAM
+
 constant_locals = _namespace(
     base=_base,
-    URL=URL,
+    GITHUB_TOKEN=GITHUB_TOKEN,
+    URL=API_URL + PARAMS,
     PARSED_DIR=PARSED_DIR,
     PRINT_TO_STDOUT=PRINT_TO_STDOUT,
     SAMPLE_FILE=SAMPLE_FILE,
