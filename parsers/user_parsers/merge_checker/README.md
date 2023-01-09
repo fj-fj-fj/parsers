@@ -3,7 +3,7 @@
 ## Introduction
  See which projects the GitHub user made pull-requests to that were merged.
 
-- On the main page, enter the username on the GitHub and click `Send`
+- Use the full url or add the author in the console
 - As a result, a page with a list of projects to which the user made a pull-request to that was merged. For each project you can see:
   - the name of the project
   - link to the project on GitHub
