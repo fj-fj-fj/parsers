@@ -1,31 +1,61 @@
 #!/usr/bin/env python
+# mypy: ignore-errors
+"""
+Usage:
 
-import requests
-from bs4 import BeautifulSoup
+    First start writing CSS selectors
+    ---------------------------------
+
+    >>> parser.go
+    >>> soup.select(<any selector>)
+    >>> ss.add(<correct selector>)
+    >>> # ... See more EXAMPLE.md
+    >>> ss.save()
+    >>> q()
+
+    Now that you have a list of samples, just run this parser
+    ---------------------------------------------------------
+
+    Find parsed data in /mnt/c/dev/fj-fj-fj/parsers/data/<parser>
+    They are yours.
+
+"""
+import sys
+from pydoc import pager
 
 if is_script := __name__ == '__main__':
-    import sys; from os.path import dirname  # noqa: E401, E702
-    # Append $PROJECT_DIR to use imports below
-    # sys.path.append(dirname(dirname(__file__)))
-    pass
+    __package__ = 'parsers.user_parsers.roscomsvoboda'
+    sys.path.insert(0, sys.path[0] + 3 * '/..')
 
-from parsers.rawdata_handlers import convert_response_to_str_or_json
-from parsers.storage.files import context_storage
+from ...constants import Constant
+from ...datatypes import EXIT_CODE, Sample
+from ...handlers import Parser
+from ...imports import ModuleDocstring as info, snoop
 
-from .constants import URL, PARSED_DIR
+from .logic import main as sample_handler
+from .constants import constant_locals as constloc
 
+URL = constloc.URL or input(Constant.PROMPT.ENTER_URL_OR_FALSE)
 
-def parse(URL):
-    response = requests.get(URL)
-    converted = convert_response_to_str_or_json(response)
-
-    file = PARSED_DIR
-    context_storage(converted, file).save(converted)
+samples = Sample(file=constloc.SAMPLE_FILE)
+parser = Parser(URL, constloc.PARSED_DIR, samples)
 
 
-def main():
-    parse(URL)
+# @snoop
+def main(display=constloc.PRINT_TO_STDOUT) -> EXIT_CODE:
+    """Parse and save.
+
+    When `display` is True, parsed data will down to stdout.
+    Return exit code.
+    """
+    parser.logic = sample_handler
+    parsed = parser.go
+    if display and not parsed.fail:
+        pager(str(parsed.data))
+    return parsed.status_code
 
 
-if __name__ == '__main__':
-    main()
+if is_script and not sys.flags.interactive:
+    sys.exit(main())
+
+info = info(__doc__)
