@@ -63,7 +63,7 @@ dict_keys(['ac', 'academy', 'actor', 'adult', 'ae', 'af', 'africa', 'ag', 'agenc
 >>>
 ```
 
-## constants/logic work
+## roscomsvoboda/logic work
 ```bash
 (3.11.0) $ make run roscomsvoboda
 ```
