@@ -4,6 +4,7 @@
 __all__ = 'parse', 'parse_proxies'
 
 import requests as _requests
+from bs4 import BeautifulSoup
 
 if is_script := __name__ == '__main__':
     import sys as _sys; from os.path import dirname as _dn  # noqa: E401, E702
@@ -13,7 +14,6 @@ if is_script := __name__ == '__main__':
 from parsers.datatypes import HTML as _HTML
 from parsers.exceptions import raise_notfound as _raise_notfound
 from parsers.constants import Constant as _Constant
-from parsers.rawdata_handlers import make_soup as _make_soup
 from parsers.settings import Configuration as _Configuration
 from parsers.storage.files import save_to_file as _save_to_file
 
@@ -36,7 +36,7 @@ def _setdefault_configs(cfg: _Configuration) -> _Configuration:
 def _parse_table(page: _HTML, parser: str, tag='table'):
     """Return fetched IPs, ports from table > ResultSet[tr] > 1st,2nd td."""
     proxies = []
-    soup = _make_soup(page, parser)
+    soup = BeautifulSoup(page, parser)
     table = soup.find(tag)
     try:
         rows = table.find_all('tr')  # pyright: ignore [reportOptionalMemberAccess]

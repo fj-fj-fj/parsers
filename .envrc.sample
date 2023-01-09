@@ -3,6 +3,9 @@ export PROJECT_DIR=$(pwd)
 export PROJECT_NAME="$(basename $PROJECT_DIR)"
 export VENV="~/.pyenv/versions/.$PROJECT_NAME"
 
+# Start scripts without ./
+export PATH="$PATH:."
+
 # Activate virtal environment without pyenv
 # . .venv/bin/activate && echo '.venv activated successfully'
 

@@ -2,6 +2,3 @@
 .venv
 .vscode
 .git
-parsers/coinmarketcap/images
-parsers/gibdd_news/parsed_data
-parsers/zvk/data

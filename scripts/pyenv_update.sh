@@ -13,18 +13,18 @@ pyenv_doctor="$(pyenv root)/plugins/pyenv-doctor"
 # pyenv-which-ext: Plugin to automatically lookup system commands
 pyenv_which_ext="$(pyenv root)/plugins/pyenv-which-ext"
 
-[ -d $pyenv_venv ] || git clone https://github.com/pyenv/pyenv-virtualenv.git $pyenv_venv
-[ -d $pyenv_update ] || git clone https://github.com/pyenv/pyenv-update.git $pyenv_update
-[ -d $pyenv_doctor ] || git clone https://github.com/pyenv/pyenv-doctor.git $pyenv_doctor
-[ -d $pyenv_which_ext ] || git clone https://github.com/pyenv/pyenv-which-ext.git $pyenv_which_ext
+[ -d "$pyenv_venv" ] || git clone https://github.com/pyenv/pyenv-virtualenv.git "$pyenv_venv"
+[ -d "$pyenv_update" ] || git clone https://github.com/pyenv/pyenv-update.git "$pyenv_update"
+[ -d "$pyenv_doctor" ] || git clone https://github.com/pyenv/pyenv-doctor.git "$pyenv_doctor"
+[ -d "$pyenv_which_ext" ] || git clone https://github.com/pyenv/pyenv-which-ext.git "$pyenv_which_ext"
 
 pyenv update
-pyenv install $(PYTHON_VERSION):latest
+pyenv install "$(PYTHON_VERSION)":latest
 
-rm -rf $VENV
+rm -rf "$VENV"
 pyenv virtualenv "$VENV_BASENAME"
 pyenv local "$VENV_BASENAME"
 
-$VENV/bin/python -m test
-$VENV/bin/python -m pip install --upgrade pip
-$VENV/bin/pip install -r requirements.txt
+"$VENV"/bin/python -m test
+"$VENV"/bin/python -m pip install --upgrade pip
+"$VENV"/bin/pip install -r requirements.txt
