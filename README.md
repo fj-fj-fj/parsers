@@ -12,9 +12,13 @@ Wrapper for generating parser templates
 
 ## How it works
 ```bash
-(3.11.0) $ # Create a parser template
+(3.11.0) $ # 1. Create a parser template
 (3.11.0) $ create_parser <parser-name>
-(3.11.0) $ # Start repl and find the data extraction logic
+(3.11.0) $ #   it's OK if parser's name matches the resource's name:
+(3.11.0) $ #     https://<parser-name>.com
+(3.11.0) $ #   in any case, check the correctness of the url
+(3.11.0) $ #   in parsers/user_parsers/<parser_name>/constants.py
+(3.11.0) $ # 2. Start repl and find the data extraction logic
 (3.11.0) $ make irun <parser-name>
 ```
 ```python
@@ -68,4 +72,16 @@ F -.-> I("parsers.handlers.HandleData(data, fail, status_code)")
 
 G -.->|"if data is HTML (str)"| Y("PlainStorage()")
 G -.->|"if data is json (dict|list)"| Z("JsonStorage()")
+```
+
+#
+## Install
+```bash
+git clone git@github.com:fj-fj-fj/parsers.git && cd !$
+```
+
+### delete unused (examples, old)
+###### <i style="gray">du -sh parsers/_prehistoric_parsers/ (3.1M)<i>
+```bash
+rm -rf parsers/_prehistoric_parsers/ parsers/user_parsers/*
 ```
