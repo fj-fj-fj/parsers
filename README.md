@@ -64,11 +64,11 @@ A["parsers.user_parsers.&lt;user-defined-dir&gt;</user-defined-dir>.parser.py"] 
 A -->|constants.constant_locals.URL as url <br> constants.constant_locals.PARSED_DIR as pd <br> sample instance as sp| C("parsers.handlers.Parser(url, pd, sp)")
 C --> D("parsers.handlers.Handler(url, pd)")
 D -->|"parser.request() handler"| E("parsers.handlers.RequestHandler()")
-D ---->|"parser.parse() handler"| F("parsers.hanldlers.DataHandler()")
+D ---->|"parser.parse() handler"| F("parsers.handlers.DataHandler()")
 D ---->|"parser.save() handler"| G("parsers.storage.files.ContextStorage()")
 
 E -.-> H("requests.Response()")
-F -.-> I("parsers.handlers.HandleData(data, fail, status_code)")
+F -.-> I("parsers.handlers.HandledData(data, fail, status_code)")
 
 G -.->|"if data is HTML (str)"| Y("PlainStorage()")
 G -.->|"if data is json (dict|list)"| Z("JsonStorage()")
@@ -81,7 +81,6 @@ git clone git@github.com:fj-fj-fj/parsers.git && cd !$
 ```
 
 ### delete unused (examples, old)
-###### <i style="gray">du -sh parsers/_prehistoric_parsers/ (3.1M)<i>
 ```bash
 rm -rf parsers/_prehistoric_parsers/ parsers/user_parsers/*
 ```

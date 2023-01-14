@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env -S python -i
 """The 'core' module contains proxy parsers and checkers."""
 
 from typing import Callable as _Callable
@@ -11,10 +11,10 @@ if is_script := __name__ == '__main__':
         global fix_path; del fix_path  # noqa: E702
     fix_path()
 
-from parsers.request.proxy.checker import check
-from parsers.request.proxy.checker import check_proxies
-from parsers.request.proxy.parser import parse
-from parsers.request.proxy.parser import parse_proxies
+from parsers._prehistoric_parsers.proxy.checker import check
+from parsers._prehistoric_parsers.proxy.checker import check_proxies
+from parsers._prehistoric_parsers.proxy.parser import parse
+from parsers._prehistoric_parsers.proxy.parser import parse_proxies
 
 
 class ProxyCheckerMixin:
@@ -43,7 +43,7 @@ class Request:
         self.proxy = Proxy()
 
 
-# $PROJECT_DIR/parsers/request/proxy/__init__.py
+# py -i $PROJECT_DIR/parsers/_prehistoric_parsers/proxy/core.py
 if __name__ == '__main__':
     from inspect import signature as _signature
     from types import FunctionType as _FunctionType

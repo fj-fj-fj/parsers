@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 if is_script := __name__ == '__main__':
     import sys as _sys; from os.path import dirname as _dn  # noqa: E401, E702
     # Append $PROJECT_DIR to use imports below
-    _sys.path.append(_dn(_dn(__file__)))
+    _sys.path.append(_dn(_dn(_dn(_dn(__file__)))))
 
 from parsers.datatypes import HTML as _HTML
 from parsers.exceptions import raise_notfound as _raise_notfound
@@ -56,7 +56,6 @@ def parse(func=parse_proxies, configs: _Configuration = None, output=True) -> No
     from pydoc import pager
     pager('\n'.join(func(configs, output=output)))
 
-
-# $PROJECT_DIR/parsers/request/proxy/parser.py --parse
-if is_script and _Constant.CLI.PARSE in _sys.argv:  # pyright: ignore [reportUnboundVariable]
+# $PROJECT_DIR/parsers/_prehistoric_parsers/proxy/parser.py --parse
+if is_script and _Constant.CLI.PARSE.value in _sys.argv:  # pyright: ignore [reportUnboundVariable]
     parse()
