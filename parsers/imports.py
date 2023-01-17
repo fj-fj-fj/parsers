@@ -2,6 +2,7 @@
 __all__ = (
     'ModuleDocstring',
     'check_reinit_states',
+    'debugcls',
     'display_repl_code',
     'importcore',
     'refresh',
@@ -14,12 +15,17 @@ import importlib as _importlib
 import os as _os
 import re as _re
 import sys as _sys
+import typing as _t
+import warnings as _warnings
 from functools import wraps as _wraps
-from typing import Callable as _Callable
 from types import ModuleType as _ModuleType
 
 from parsers.datatypes import Sample as _Sample
-from parsers.handlers import Parser as _Parser
+
+
+def _import_warning_dialog(smth_not_found) -> None:
+    _warnings.warn(f'{smth_not_found.__name__!r} is not found', category=ImportWarning)
+
 
 try:
     import snoop
@@ -35,7 +41,19 @@ except ModuleNotFoundError:
         @_wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
+        _import_warning_dialog(snoop)
         return wrapper
+
+try:
+    from parsers.debug import debugcls
+except ImportError:
+    def debugcls(*args, **kwargs):
+        """Dummy decorator for `debugcls` (if it does't exist).
+
+        `debugcls` is a class decorator (for methods and/or properties)
+        """
+        _import_warning_dialog(debugcls)
+        return args[0]
 
 
 def select_parser() -> _ModuleType:
@@ -93,7 +111,10 @@ class ModuleDocstring:
     __repr__ = __call__
 
 
-def shortcuts(fn: _Callable, nb: _Callable, pa: _Parser, ss: _Sample) -> _Callable:
+_Parser: _t.TypeAlias = object
+
+
+def shortcuts(fn: _t.Callable, nb: _t.Callable, pa: _Parser, ss: _Sample) -> _t.Callable:
     """Updates globals() of the `module` namespace
 
     Shortcuts:
@@ -173,7 +194,7 @@ def refresh(pkg: _ModuleType = None, _prefix='parsers.'):  # noqa: max-complexit
             count += 1
         print(f'  └── {count} modules successfully reloaded\n')
 
-    def refresh_user_parser_package() -> _Callable:
+    def refresh_user_parser_package() -> _t.Callable:
 
         def find_pkg_by_name(pattern=r'^.*\.user_parsers\..*%s$'):
             """find <package> by basename or fullname module or package"""

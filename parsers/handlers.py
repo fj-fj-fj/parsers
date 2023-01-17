@@ -12,10 +12,10 @@ from requests import Response as _Response
 from requests.exceptions import JSONDecodeError as _JSONDecodeError
 
 from parsers.constants import Constant as _Constant
-from parsers.debug import debugcls as _debugcls
 from parsers.datatypes import Content as _Content
 from parsers.datatypes import ResponseLike as _ResponseLike
 from parsers.datatypes import Sample as _Sample
+from parsers.imports import debugcls as _debugcls
 from parsers.storage.files import ContextStorage as _ContextStorage
 from parsers.storage.files import File as _File
 
