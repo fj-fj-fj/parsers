@@ -12,6 +12,7 @@ from requests import Response as _Response
 from requests.exceptions import JSONDecodeError as _JSONDecodeError
 
 from parsers.constants import Constant as _Constant
+from parsers.debug import debugcls as _debugcls
 from parsers.datatypes import Content as _Content
 from parsers.datatypes import ResponseLike as _ResponseLike
 from parsers.datatypes import Sample as _Sample
@@ -41,6 +42,7 @@ class HandledData(_t.NamedTuple):
         return data
 
 
+@_debugcls
 class RequestHandler:
 
     def __init__(self):
@@ -92,6 +94,7 @@ class RequestHandler:
         return 'application/json' in self.ct
 
 
+@_debugcls
 class DataHandler:
 
     def __init__(self):
@@ -164,6 +167,7 @@ class DataHandler:
         return self.final_data
 
 
+@_debugcls
 class Handler:
     """Manager for RequestHandler, DataHandler, ContextStorage.
 
@@ -256,6 +260,7 @@ class Handler:
         )
 
 
+@_debugcls
 class Parser:
     """Provides the parsing process core functionality.
 

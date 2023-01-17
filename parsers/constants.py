@@ -48,6 +48,7 @@ class _NameSpace(_t.NamedTuple):
 
 class _Directories(_NameSpace):
     PARSED_DATA: _t.Final = F'{_PROJECT_DIR}/data/'
+    LOG: _t.Final = F'{_PROJECT_DIR}/log/'
     PARSERS: _t.Final = F'{_PROJECT_DIR}/parsers/'
     USER_PARSERS: _t.Final = F'{_PROJECT_DIR}/parsers/user_parsers/'
 
@@ -63,6 +64,10 @@ class _Files(_NameSpace):
     # xpath general file
     SAMPLE: _t.Final = F'{_PROJECT_DIR}/samples.txt'
     NOTES: _t.Final = F'{_PROJECT_DIR}/notes.txt'
+    # log files
+    DEBUG_OUT = F'{_PROJECT_DIR}/log/out.log'
+    DEBUG_ERR = F'{_PROJECT_DIR}/log/err.log'
+    DEBUG_ALL = F'{_PROJECT_DIR}/log/all.log'
 
 
 class _Prompt(_NameSpace):

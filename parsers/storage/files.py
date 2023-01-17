@@ -182,7 +182,7 @@ class TeeFile:
 
     def __init__(
         self,
-        *files: _t.Sequence[_TextIOWrapper],
+        *files: _TextIOWrapper | _t.IO[_t.Any],
         optional_handler: object = None,
         # exclude filenames from optional processing
         exclude_optional_handling='<stderr><stdout>',
