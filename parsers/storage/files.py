@@ -4,6 +4,7 @@ __all__ = (
     'ContextStorage',
     'JsonStorage',
     'PlainStorage',
+    'TeeFile',
     'exit_handler',
     'pyclean',
     'save_to_file',
@@ -174,3 +175,32 @@ def pyclean() -> None:
         p.unlink()
     for p in pathlib.Path('.').rglob('__pycache__'):
         p.rmdir()
+
+
+class TeeFile:
+    """Output to multiple files"""
+
+    def __init__(
+        self,
+        *files: _t.Sequence[_TextIOWrapper],
+        optional_handler: object = None,
+        # exclude filenames from optional processing
+        exclude_optional_handling='<stderr><stdout>',
+    ):
+        """`optional_handler`: additional text processing"""
+        self.exclude = exclude_optional_handling
+        self.handler = optional_handler
+        self.files = files
+
+    def write(self, text) -> _n_chars:
+        def handled(text):
+            if self.handler is not None and fh.name not in self.exclude:
+                return self.handler(text)
+        self.n_chars = 0
+        for fh in self.files:
+            self.n_chars += fh.write(handled(text) or text)
+        return self.n_chars
+
+    def flush(self) -> None:
+        for fh in self.files:
+            fh.flush()
