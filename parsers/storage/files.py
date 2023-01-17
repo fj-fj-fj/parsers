@@ -20,6 +20,10 @@ from parsers.datatypes import Content as _Content
 from parsers.datatypes import OpenMode as _OpenMode
 
 
+# return file.write(...)
+_n_chars: _t.TypeAlias = int
+
+
 def exit_handler(func: _t.Callable, file='./notes.json', mode=_OpenMode.WRITE) -> None:
     """Save `func` return data to `file` with `mode`"""
     if _os.stat(file).st_size > 0:
@@ -31,7 +35,7 @@ def exit_handler(func: _t.Callable, file='./notes.json', mode=_OpenMode.WRITE) -
         )
 
 
-def save_to_file(data: str, file: str, mode=_OpenMode.WRITE) -> int:
+def save_to_file(data: str, file: str, mode=_OpenMode.WRITE) -> _n_chars:
     _os.makedirs(_os.path.dirname(file), exist_ok=True)
     with open(file, mode) as f:
         return f.write(data)
@@ -114,7 +118,7 @@ class PlainStorage(_FileMixin):
     def __init__(self, parsed_dir: str = None):
         self.parsed_dir = parsed_dir or self.PARSED_DIR
 
-    def save(self, data: str, *, step: int, mode=_OpenMode.WRITE, suffix=None) -> int:
+    def save(self, data: str, *, step: int, mode=_OpenMode.WRITE, suffix=None) -> _n_chars:
         self.data = data
         self.define_file(step=step, suffix=suffix)
         with open(self.file, mode) as plain_storage_fh:
@@ -133,7 +137,7 @@ class JsonStorage(_FileMixin):
     def __init__(self, parsed_dir: str = None):
         self.parsed_dir = parsed_dir or self.PARSED_DIR
 
-    def save(self, data: _Content.JSON, *, step: int, mode=_OpenMode.WRITE, suffix=None) -> int:
+    def save(self, data: _Content.JSON, *, step: int, mode=_OpenMode.WRITE, suffix=None) -> _n_chars:
         self.data = data
         self.define_file(step=step, suffix=suffix)
         with open(self.file, mode) as json_storage_fh:
