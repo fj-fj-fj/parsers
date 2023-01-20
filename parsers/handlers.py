@@ -16,6 +16,7 @@ from parsers.datatypes import Content as _Content
 from parsers.datatypes import ResponseLike as _ResponseLike
 from parsers.datatypes import Sample as _Sample
 from parsers.imports import debugcls as _debugcls
+from parsers.request.response_stubs import NoAutoResponse as _NoAutoResponse
 from parsers.storage.files import ContextStorage as _ContextStorage
 from parsers.storage.files import File as _File
 
@@ -45,11 +46,11 @@ class HandledData(_t.NamedTuple):
 @_debugcls
 class RequestHandler:
 
-    def __init__(self):
+    def __init__(self, *, get=_requests.get):
         self._server_response = None
         self._previous_responses = []
+        self.get: _t.Callable = get
         self.url: str = None
-        # self.ct: str = None
 
     @property
     def response(self) -> _Response:
@@ -61,9 +62,14 @@ class RequestHandler:
         """Save previous response if it was and return new"""
         if self._server_response is not None:
             self._previous_responses.append(self._server_response)
-        self.server_response = _requests.get(self.validate(url or self.url))
-        self.ct = self.server_response.headers.get('Content-Type', '')
+
+        self._validated_url = self.validate(url or self.url)
+        self.server_response = self._make_response(self.get(self._validated_url))
+
         return self.server_response
+
+    def _make_response(self, __r) -> _Response:
+        return __r if isinstance(__r, _Response) else _NoAutoResponse(__r)
 
     @property
     def server_response(self):
