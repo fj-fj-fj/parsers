@@ -54,7 +54,12 @@ class RequestHandler:
     @property
     def response(self) -> _Response:
         """Make request and return response"""
-        return self._make_request()
+        try:
+            return self._make_request()
+        except TypeError:
+            # _make_request has been dynamically replaced
+            # by another one with a required URL
+            return self._make_request(self.url)
 
     def _make_request(self, url: str = None):
         """Save previous response if it was and return new"""
