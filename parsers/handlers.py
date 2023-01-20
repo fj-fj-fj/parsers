@@ -49,17 +49,13 @@ class RequestHandler:
         self._server_response = None
         self._previous_responses = []
         self.url: str = None
-        self.ct: str = None
+        # self.ct: str = None
 
     @property
     def response(self) -> _Response:
         """Make request and return response"""
-        try:
-            return self._make_request()
-        except TypeError:
-            # _make_request has been dynamically replaced
-            # by another one with a required URL
-            return self._make_request(self.url)
+        assert self.url is not None
+        return self._make_request(self.url)
 
     def _make_request(self, url: str = None):
         """Save previous response if it was and return new"""
@@ -90,13 +86,6 @@ class RequestHandler:
             url if '{}' not in url else
             url.format(input(f" {url.format('{ ? }')!r}\n\tfill placehoder: "))
         )
-
-    @property
-    def content_data_type(self) -> _t.Literal['json', 'str']:
-        return 'json' if self.is_json() else 'str'
-
-    def is_json(self) -> bool:
-        return 'application/json' in self.ct
 
 
 @_debugcls
