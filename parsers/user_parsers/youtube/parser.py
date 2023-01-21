@@ -1,25 +1,6 @@
 #!/usr/bin/env python
 # mypy: ignore-errors
-"""
-Usage:
-
-    First start writing CSS selectors
-    ---------------------------------
-
-    >>> parser.go
-    >>> soup.select(<any selector>)
-    >>> ss.add(<correct selector>)
-    >>> # ... See more EXAMPLE.md
-    >>> ss.save()
-    >>> q()
-
-    Now that you have a list of samples, just run this parser
-    ---------------------------------------------------------
-
-    Find parsed data in /mnt/c/dev/fj-fj-fj/parsers/data/<parser>
-    They are yours.
-
-"""
+""""""
 import sys
 from pydoc import pager
 
@@ -40,6 +21,10 @@ URL = constloc.URL or input(Constant.PROMPT.ENTER_URL_OR_FALSE)
 samples = Sample(file=constloc.SAMPLE_FILE)
 parser = Parser(URL, constloc.PARSED_DIR, samples)
 
+# Use PlayList instead of requests.get
+from pytube import Playlist
+parser.handler._request_handler.get = Playlist
+
 
 # @snoop
 def main(display=constloc.PRINT_TO_STDOUT) -> EXIT_CODE:
@@ -58,4 +43,4 @@ def main(display=constloc.PRINT_TO_STDOUT) -> EXIT_CODE:
 if is_script and not sys.flags.interactive:
     sys.exit(main())
 
-info = info(__doc__)
+# info = info(__doc__)

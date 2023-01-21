@@ -18,9 +18,13 @@ if 301 not in range(200, 400):
     URL = _base.URL.HTTPBIN_ORG
 # ========================================================
 
+PARAMS = '/playlist?list='
+# who(1st, 2nd name)_about_nvidoes
+AK_PYTHON_12 = 'PLlb7e2G7aSpQhNphPSpcO4daaRPeVstku'
+
 constant_locals = _namespace(
     base=_base,
-    URL=URL,
+    URL=URL + PARAMS + AK_PYTHON_12,
     PARSED_DIR=PARSED_DIR,
     PRINT_TO_STDOUT=PRINT_TO_STDOUT,
     SAMPLE_FILE=SAMPLE_FILE,
