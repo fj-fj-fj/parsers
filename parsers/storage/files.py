@@ -23,6 +23,7 @@ from parsers.datatypes import OpenMode as _OpenMode
 
 # return file.write(...)
 _n_chars: _t.TypeAlias = int
+_int_as_str: _t.TypeAlias = str
 
 
 def exit_handler(func: _t.Callable, file='./notes.json', mode=_OpenMode.APPEND) -> None:
@@ -101,12 +102,24 @@ class _FileMixin:
         if _os.path.exists(self.file):
             last_file = self._files[-1]
             n = _os.path.basename(last_file)[0]
-            n_plus_one = str(self._count_files() + 1)
+            n_plus_one = self.increment(self._count_files())
+            assert isinstance(n_plus_one, str)
             self.file = last_file.replace(n, n_plus_one)
 
     def _count_files(self) -> int:
         self._files = _glob.glob(f'{self.parsed_dir}/*{self.SUFFIX_DEFAULT}')
         return len(self._files)
+
+    @staticmethod
+    def increment(number: int, *, step=1, return_str=True) -> int | _int_as_str:
+        if not isinstance(number, int):
+            raise ValueError(f'{number=} must be integer.')
+        if step < 1:
+            raise ValueError(f'{step=} must be positive.')
+
+        def inner_increment():
+            return str(number + step) if return_str else number + step
+        return inner_increment()
 
 
 class PlainStorage(_FileMixin):
