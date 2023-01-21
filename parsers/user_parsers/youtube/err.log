@@ -1,0 +1,146 @@
+Calling 'Parser.__init__(<parsers.handlers.Parser object at 0x7f6f5c955b10>, 'https://youtube.com/playlist?list=PLlb7e2G7aSpQhNphPSpcO4daaRPeVstku', '/mnt/c/dev/fj-fj-fj/parsers/data/youtube', [])'
+
+Calling 'Handler.__init__(<parsers.handlers.Handler object at 0x7f6f5c96c2d0>, url='https://youtube.com/playlist?list=PLlb7e2G7aSpQhNphPSpcO4daaRPeVstku', parsed_dir='/mnt/c/dev/fj-fj-fj/parsers/data/youtube')'
+
+Calling 'RequestHandler.__init__(<parsers.handlers.RequestHandler object at 0x7f6f5c96ca90>)'
+
+Finished 'RequestHandler.__init__' in 0.00001 secs
+'RequestHandler.__init__' works with ('_server_response', '_previous_responses', 'url', 'ct')
+   'RequestHandler.__init__' returned 'ct' with result='None'
+
+
+Calling 'DataHandler.__init__(<parsers.handlers.DataHandler object at 0x7f6f5d69ed90>)'
+
+Finished 'DataHandler.__init__' in 0.00000 secs
+'DataHandler.__init__' works with ('_soup', 'json', 'is_json', 'handled_data', 'samples', 'sample_handler', '_parsed', 'final_data')
+   'DataHandler.__init__' returned 'final_data' with result='None'
+
+
+Finished 'Handler.__init__' in 0.00052 secs
+'Handler.__init__' works with ('parsed_dir', 'url', 'sample_handler', 'RequestHandler', '_request_handler', 'DataHandler', '_data_handler', '_ContextStorage', '_context_storage')
+   'Handler.__init__' returned '_context_storage' with result='None'
+
+
+Finished 'Parser.__init__' in 0.00078 secs
+'Parser.__init__' works with ('Handler', 'handler', 'less', '_pprint', 'pp', '_defaultdict', 'float', '_called', 'parsed', 'samples', 'logic')
+   'Parser.__init__' returned 'logic' with result='None'
+
+
+Calling 'Parser.request(<parsers.handlers.Parser object at 0x7f6f5c955b10>)'
+
+Calling 'Handler.save(<parsers.handlers.Handler object at 0x7f6f5c96c2d0>)'
+
+Finished 'Handler.save' in 0.01090 secs
+'Handler.save' works with ('_context_storage', 'map', '_data_handler', 'is_json', 'current', 'parsed_dir', 'save', 'current_data', 'step')
+   'Handler.save' returned 'step' with result='4'
+
+
+Finished 'Parser.request' in 0.01159 secs
+'Parser.request' works with ('handler', 'url', 'response', '_', 'Parser', 'request', '_time', '_called')
+   'Parser.request' returned '_called' with result='['https://www.youtube.com/watch?v=-py9GXvJk6A', 'https://www.youtube.com/watch?v=VrShEItN0Jc', 'https://www.youtube.com/watch?v=rkjg71GJPvA', 'https://www.youtube.com/watch?v=VY95vgOROo8', 'https://www.youtube.com/watch?v=kmdA7zJS9gw', 'https://www.youtube.com/watch?v=2pttEjdYJuo', 'https://www.youtube.com/watch?v=a6UtrJ4Xh-Y', 'https://www.youtube.com/watch?v=Xxuy1zFCMhc', 'https://www.youtube.com/watch?v=x6JZmBK2I8Y', 'https://www.youtube.com/watch?v=czqYT7103Eo', 'https://www.youtube.com/watch?v=VomXaukdWxo', 'https://www.youtube.com/watch?v=ISo-L-0xsoI']'
+
+
+Traceback (most recent call last):
+File "<stdin>", line 1, in <module>
+NameError: name 'shortcut' is not defined. Did you mean: 'shortcuts'?
+Calling 'Parser.parse(<parsers.handlers.Parser object at 0x7f6f5c955b10>)'
+
+Calling 'Parser._preparse(<parsers.handlers.Parser object at 0x7f6f5c955b10>)'
+
+Finished 'Parser._preparse' in 0.00260 secs
+'Parser._preparse' works with ('samples', 'handler', 'logic', 'sample_handler')
+   'Parser._preparse' returned 'sample_handler' with result='None'
+
+
+Calling 'Handler._prepare(<parsers.handlers.Handler object at 0x7f6f5c96c2d0>)'
+
+Calling 'Handler._select_rawdata_object(<parsers.handlers.Handler object at 0x7f6f5c96c2d0>)'
+
+Calling 'Handler._select_rawdata_object(<parsers.handlers.Handler object at 0x7f6f5c96c2d0>)'
+
+Calling 'Handler._select_rawdata_object(<parsers.handlers.Handler object at 0x7f6f5c96c2d0>)'
+
+Calling 'Handler._select_rawdata_object(<parsers.handlers.Handler object at 0x7f6f5c96c2d0>)'
+
+
+Traceback (most recent call last):
+File "<stdin>", line 1, in <module>
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 52, in __call__
+    return self.handle(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 63, in handle
+    self._print_runtime(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 82, in _print_runtime
+    self.excecute_wrapped(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 108, in excecute_wrapped
+    self._ = self._m_or_p(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/handlers.py", line 343, in parse
+    self._ = Parser.parse._ = self.handler.data
+                              ^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/handlers.py", line 218, in data
+    self._prepare()
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 52, in __call__
+    return self.handle(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 63, in handle
+    self._print_runtime(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 82, in _print_runtime
+    self.excecute_wrapped(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 108, in excecute_wrapped
+    self._ = self._m_or_p(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/handlers.py", line 227, in _prepare
+    self._data_handler.raw = self._select_rawdata_object()
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 52, in __call__
+    return self.handle(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 63, in handle
+    self._print_runtime(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 82, in _print_runtime
+    self.excecute_wrapped(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 108, in excecute_wrapped
+    self._ = self._m_or_p(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/handlers.py", line 237, in _select_rawdata_object
+    return self._select_rawdata_object()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 52, in __call__
+    return self.handle(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 63, in handle
+    self._print_runtime(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 82, in _print_runtime
+    self.excecute_wrapped(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 108, in excecute_wrapped
+    self._ = self._m_or_p(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/handlers.py", line 237, in _select_rawdata_object
+    return self._select_rawdata_object()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 52, in __call__
+    return self.handle(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 63, in handle
+    self._print_runtime(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 82, in _print_runtime
+    self.excecute_wrapped(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 108, in excecute_wrapped
+    self._ = self._m_or_p(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/handlers.py", line 237, in _select_rawdata_object
+    return self._select_rawdata_object()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 52, in __call__
+    return self.handle(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 63, in handle
+    self._print_runtime(*args, **kwargs)
+File "/mnt/c/dev/fj-fj-fj/parsers/parsers/debug.py", line 82, in _print_runtime
+
+KeyboardInterrupt
+
+KeyboardInterrupt
+
+FIXMEEEEEEEEEEEE
