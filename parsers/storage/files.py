@@ -25,10 +25,8 @@ from parsers.datatypes import OpenMode as _OpenMode
 _n_chars: _t.TypeAlias = int
 
 
-def exit_handler(func: _t.Callable, file='./notes.json', mode=_OpenMode.WRITE) -> None:
+def exit_handler(func: _t.Callable, file='./notes.json', mode=_OpenMode.APPEND) -> None:
     """Save `func` return data to `file` with `mode`"""
-    if _os.stat(file).st_size > 0:
-        mode = {'y': 'w', 'n': 'a'}[input(f'Rewrite {_os.path.relpath(file)} [Y/n]: ').strip()]
     with open(file, mode) as fh, open(_os.devnull, _OpenMode.WRITE) as devnull:
         print(
             valid_json_data := str(func()).replace("'", '"'),
