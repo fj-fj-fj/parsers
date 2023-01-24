@@ -15,6 +15,7 @@ from parsers.constants import Constant as _Constant
 from parsers.datatypes import Content as _Content
 from parsers.datatypes import ResponseLike as _ResponseLike
 from parsers.datatypes import Sample as _Sample
+from parsers.datatypes import fetch_values_by_keys as _fetch_values_by_keys
 from parsers.imports import debugcls as _debugcls
 from parsers.request.response_stubs import NoAutoResponse as _NoAutoResponse
 from parsers.storage.files import ContextStorage as _ContextStorage
@@ -101,10 +102,12 @@ class DataHandler:
         self._soup: _BeautifulSoup = None
         self.json: _Content.JSON = None
         self.is_json = False
-        self.handled_data = None
+        # self.handled_data = None
         self.samples = None
         self.sample_handler = None
-        self._parsed = []
+
+        self.response: _ResponseLike = None
+        self._prefinal = []
         self.final_data = None
 
     @property
@@ -120,6 +123,7 @@ class DataHandler:
     @raw.setter
     def raw(self, response: _ResponseLike) -> None:
         """Set raw data(json|soup) from `response`"""
+        self.response = response
         try:
             self.json = response.json()
             self.is_json = True
@@ -144,26 +148,47 @@ class DataHandler:
         """Return final data or intermediate (json|soup).
 
         For final data samples and/or sample handler must be created.
-        Note: cook soup with select only (not select_one)
+        Note: cook soup with bs4.select() only (not select_one)
         """
+        # Was called: RequestHandler
+        # There is json or soup
         if not self.samples and not self.sample_handler:
             return self.json or self.soup
 
-        assert self.sample_handler is not None
-
+        # Was called: RequestHandler
+        # There is soup or HTML page
         if self.json is self.samples is self.sample_handler is None:
             self.final_data = self.raw
-            return self.final_data
-        elif self.json and self.sample_handler:
-            self.final_data = self.sample_handler(self.json)
-            return self.final_data
 
-        # create [list[sample_result] for sample in samples]
-        for sample in self.samples:
-            self._parsed.append([s.text for s in self.soup.select(sample)])
-        # GOTO: select or select_one
-        self.final_data = self.sample_handler(self._parsed)
-        self.is_json = True
+        # Was called: RequestHandler, DataHandler
+        # There is json, sample_handler, samples are empty
+        if self.samples is None and self.json and self.sample_handler:
+            self.final_data = self.sample_handler(self.json)
+
+        # Was called: RequestHandler, DataHandler
+        # There is json, sample_handler and samples (attrs or keypath)
+        elif self.samples and self.json and self.sample_handler:
+            self.final_data = self.sample_handler(
+                _fetch_values_by_keys(
+                    keypath=self.samples,
+                    # if samples contain keypath(s)
+                    data=self.json,
+                    # if samples contain attribute(s)
+                    obj=self.response,
+                )
+            )
+        # Was called: RequestHandler, DataHandler
+        # There is soup, sample_handler and samples (css or xpath)
+        elif self.samples and self.soup and self.sample_handler:
+            for sample in self.samples:
+                self._prefinal.append([s.text for s in self.soup.select(sample)])
+            self.final_data = self.sample_handler(self._prefinal)
+            self.is_json = True  # ?
+
+        else:
+            print(f'{self.samples=}, {self.sample_handler=}, {self.is_json=}')
+            raise NotImplemented
+
         return self.final_data
 
 
@@ -211,7 +236,6 @@ class Handler:
     @property
     def data(self) -> HandledData:
         self._prepare()
-        self.save()
         return HandledData(
             data=self._data_handler.data,
             fail=not bool(self._request_handler.server_response),
@@ -222,6 +246,7 @@ class Handler:
         self._data_handler.raw = self._select_rawdata_object()
         self._data_handler.samples = self.samples
         self._data_handler.sample_handler = self.sample_handler
+        self.save()
 
     def _select_rawdata_object(self) -> _ResponseLike:
         if (response := self._request_handler.server_response) is not None:

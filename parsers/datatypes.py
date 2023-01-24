@@ -6,9 +6,16 @@ __all__ = (
     'HTML',
     'Json',
     'Content',
+    'HashableSequence',
+    'KeypathStr',
+    'KeyAttrValue',
     # Content handlers
+    'AttrPathHandler',
+    'KeyPathHandler',
+    'KeyAttrFinder',
     'MakeSoupCallable',
     'ResponseLike',
+    'fetch_values_by_keys',
     # Files
     'OpenMode',
     # Samples
@@ -20,18 +27,23 @@ __all__ = (
     'classproperty',
     # Metaclasses
     'NoSetter',
+    # other
+    'is_instance',
 )
 
 import typing as _t
 from enum import StrEnum as _StrEnum
+from dataclasses import dataclass as _dataclass
 
 from bs4 import BeautifulSoup as _BeautifulSoup
+
+from parsers.exceptions import EmptyError
 
 EXIT_CODE: _t.Final = int
 
 HTML: _t.TypeAlias = str
-_Json: _t.TypeAlias = object
-Json: _t.TypeAlias = dict[str, _Json] | list[_Json] | str | int | float | bool | None
+_Json: _t.TypeAlias = object | str | int | float | bool | None
+Json: _t.TypeAlias = dict[str, _Json] | list[_Json]
 
 
 class NoSetter(type):
@@ -97,7 +109,7 @@ class Sample(list):
         with open(self.file, mode) as fh:
             return [line.strip() for line in fh.readlines()]
 
-    # GOTO: __add__ (validate selector)
+    # GOTO: __add__ (validate key_)
 
     @_t.final
     @property
@@ -118,3 +130,136 @@ class ResponseLike(_t.Protocol):
     @property
     def text(self) -> str:
         ...
+
+
+def is_instance(obj, *supers, but_not=...):
+    return (False, True)[isinstance(obj, *supers) and not isinstance(obj, but_not)]
+
+
+class KeypathStr(str):
+    """String as 'A<separator>B<separator>C'"""
+
+    def __init__(self, keypath: str, sep='.'):
+        assert sep in keypath, (keypath, sep)
+        super().__init__()
+
+
+@_dataclass
+class KeyAttrValue:
+    key_value: list | None
+    attr_value: list | None
+
+
+HashableSequence: _t.TypeAlias = str | _t.Sequence[str]
+
+
+class KeyPathHandler(dict):
+    """Return last key value or None.
+
+    >>> data = {"foo": {"bar": {"baz": ['egg', 'spam', 'lol']}}}
+    >>> KeyPathHandler(data).get('foo.bar.baz')
+    ['egg', 'spam', 'lol']
+
+    >>> data = {"foo": {"bar": 666}}
+    >>> KeyPathHandler(data).get(keypath='foo bar', sep=' ')
+    [666]
+
+    >>> KeyPathHandler().get("spam")
+    >>> # None
+
+    >>> data = {"foo": {"bar": {"x": 666}}}
+    >>> KeyPathHandler(data).get('x')
+    >>> # None
+
+    """
+    def get(self, keypath: HashableSequence, default=None, *, sep='.') -> list | None:
+        if not self:
+            return default
+        if isinstance(keypath, (str, KeypathStr)):
+            keypath = keypath.split(sep)
+
+        dict_copy = self.copy()
+        for key in keypath:
+            value = dict_copy.get(key, default)
+            if value is None:
+                return default
+            if isinstance(value, _t.Sequence):
+                return list(value) or default
+            elif isinstance(value, dict):
+                dict_copy = value
+            else:
+                return [value]
+        return default
+
+
+class AttrPathHandler:
+    """
+    >>> AttrPathHandler().get(keys='foo.get', obj=AttrPathHandler)
+    [<function AttrPathHandler.get at 0x...>]
+    >>> >>> AttrPathHandler().get(keys='json', obj=AttrPathHandler)
+    >>> # None
+
+    """
+    def get(self, keypath: HashableSequence, *, obj: object, sep='.') -> list | None:
+        if isinstance(keypath, (str, KeypathStr)):
+            keypath = keypath.split(sep)
+        return [
+            getattr(obj, attr) for attr in keypath
+            if hasattr(obj, attr)
+        ] or None
+
+
+class KeyAttrFinder:
+    """Value finder in `data` and `obj` by `keypath`.
+
+    >>> data = {"foo": {"bar": ['egg', 'spam',]}}
+    >>> KeyAttrFinder(data=data, obj=...)('foo.bar')
+    KeyAttrValue(key_value=None, attr_value=None)
+
+    >>> KeyAttrFinder(data=data, obj=...)('nonne')
+    KeyAttrValue(key_value=['egg', 'spam'], attr_value=None)
+
+    """
+    def __init__(self, *, data: Json = None, obj: object = None, sep='.'):
+        data = self.ensure_consistent_type(data)
+
+        # To map value by keypath(s)
+        self.keypath_handler = KeyPathHandler(data)
+        # To map value by attribute(s)
+        self.attrpath_handler = AttrPathHandler()
+
+        self.data = data
+        self.obj = obj
+        # keypath separator for: a.b.c -> [a, b, c]
+        self.sep = sep
+
+    def __call__(self, keypath, *, sep=None) -> KeyAttrValue:
+        assert self.obj is not None, self.__dict__
+
+        if isinstance(keypath, (str, KeypathStr)):
+            keypath = keypath.split(sep or self.sep)
+
+        return KeyAttrValue(
+            self.keypath_handler.get(keypath, sep=sep or self.sep),
+            self.attrpath_handler.get(keypath, obj=self.obj, sep=sep or self.sep)
+        )
+
+    @staticmethod
+    def ensure_consistent_type(maybe_dict) -> _t.Mapping:
+        """Return `maybe_dict` or {'data': `maybe_dict`}"""
+        return maybe_dict if isinstance(maybe_dict, _t.Mapping) else {'data': maybe_dict}
+
+
+def fetch_values_by_keys(*, data: Json, obj: object, keypath: HashableSequence) -> KeyAttrValue:
+    """Return values from `data` and `obj` by `keypath`.
+
+    >>> data={"foo": {"bar": {"get": ['egg']}}}
+
+    >>> fetch_values_by_keys(data=data, keypath='boo.bar.get', obj=dict)
+    KeyAttrValue(key_value=['egg'], attr_value=[<method 'get' of 'dict' objects>])
+
+    >>> fetch_values_by_keys(data=data, keypath=['sick'], obj=...)
+    KeyAttrValue(key_value=None, attr_value=None)
+
+    """
+    return KeyAttrFinder(data=data, obj=obj)(keypath=keypath)
