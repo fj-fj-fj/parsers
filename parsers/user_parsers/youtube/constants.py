@@ -19,13 +19,22 @@ if 301 not in range(200, 400):
 # ========================================================
 
 PARAMS = '/playlist?list='
+
 # who(1st, 2nd name)_about_nvidoes
 AK_PYTHON_12 = 'PLlb7e2G7aSpQhNphPSpcO4daaRPeVstku'
+DK_LINUX_12 = 'PLHHm04DXWzeKZycf_ZuBgxWdVBnrjE_mj'
+DK_BASICS_12 = 'PLHHm04DXWzeKuhdGFHSEWDpdgoYpjPptR'
+AS_NETWORKS_56 = 'PLtPJ9lKvJ4oiNMvYbOzCmWy6cRzYAh9B1'
+# PLAYLIST_ID = AK_PYTHON_12
+# PLAYLIST_ID = DK_LINUX_12
+# PLAYLIST_ID = DK_BASICS_12
+PLAYLIST_ID = AS_NETWORKS_56
 
 constant_locals = _namespace(
     base=_base,
-    URL=URL + PARAMS + AK_PYTHON_12,
+    URL=URL + PARAMS + PLAYLIST_ID,
     PARSED_DIR=PARSED_DIR,
     PRINT_TO_STDOUT=PRINT_TO_STDOUT,
     SAMPLE_FILE=SAMPLE_FILE,
+    PLAYLIST_ID=PLAYLIST_ID
 )

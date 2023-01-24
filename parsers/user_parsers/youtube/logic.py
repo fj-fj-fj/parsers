@@ -1,18 +1,25 @@
-"""Module contains sample processing logic.
+from pytube import Playlist
 
-Example:
+from parsers.datatypes import KeyAttrValue
+from .constants import PARSED_DIR as GRANDPARENT, PLAYLIST_ID as PARENT_NAME
 
-    >>> def main(samples):
-    ...    return [f'{ip}:{port}' for ip,port in zip(*samples)]
-    ...
-    >>> ips = ['140.82.121.4', '140.82.121.4']
-    >>> ports = ['80', '443']
-    >>> main([ips, ports])
-    ['140.82.121.4:80', '140.82.121.4:443']
-
-"""
-from typing import Any
+DOWNLOAD_DIR = GRANDPARENT + '/' + PARENT_NAME
 
 
-def main(samples: list[Any]) -> list[Any]:
+def _main(playlist: Playlist, dir=DOWNLOAD_DIR) -> None:
+    """https://pytube.io/en/latest/api.html#playlist-object"""
+    for video in playlist.videos:
+        video.streams.filter(
+            type='video',
+            progressive=True,
+            file_extension='mp4',
+        ).order_by('resolution')\
+            .desc()\
+            .first()\
+            .download(dir)  # pyright: ignore [reportOptionalMemberAccess]
+
+
+def main(samples: KeyAttrValue) -> None:
     """Handle samples. (API)"""
+    playlist, = samples.attr_value
+    _main(playlist=playlist)

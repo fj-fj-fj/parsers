@@ -8,7 +8,7 @@ make run youtube
 
 ## Move downloaded to smth
 ```bash
-# replace destination dir in ./playlists
-# and run script to move
-./mv_to_d.sh
+# See ./playlists
+# Run script <N from ./playlists>
+./mv_to_d.sh <N>
 ```
