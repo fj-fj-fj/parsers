@@ -14,12 +14,14 @@ from ...handlers import Parser
 from ...imports import ModuleDocstring as info, snoop
 
 from .logic import main as sample_handler
+from .logic import main as WhatToDownload
 from .constants import constant_locals as constloc
 
 URL = constloc.URL or input(Constant.PROMPT.ENTER_URL_OR_FALSE)
 
 samples = Sample(file=constloc.SAMPLE_FILE)
 parser = Parser(URL, constloc.PARSED_DIR, samples)
+sample_handler = sample_handler()
 
 # Use PlayList instead of requests.get
 from pytube import Playlist

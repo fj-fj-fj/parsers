@@ -1,6 +1,6 @@
 # Youtube playlist downloader
 
-Sometimes great videos become unavailable.<br>
+Sometimes great audio/video(s) become unavailable.<br>
 May the best of them be saved.
 
 #
@@ -29,7 +29,7 @@ Run script
 ```bash
 pip install pytube
 ```
-To convert downloaded audio to .mp3
+To convert downloaded audio to mp3
 ```bash
 pip install ffmpy
 ```

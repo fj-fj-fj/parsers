@@ -16,4 +16,7 @@ mkdir --parent "$DESTINATION_DIR"
 mv "$SOURCES"/* "$DESTINATION_DIR"
 echo 'https://www.youtube.com/playlist?list='"$PLAYLIST_ID" > "$DESTINATION_DIR"/url.txt
 
+rmdir "$SOURCES"
 ls "$DESTINATION_DIR"
+
+echo -e '\a'
