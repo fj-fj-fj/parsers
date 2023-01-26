@@ -150,6 +150,10 @@ class KeyAttrValue:
     attr_value: list | None
 
 
+class _JsonArrayAsDict(_t.TypedDict, total=False):
+    data: list[_Json]
+
+
 HashableSequence: _t.TypeAlias = str | _t.Sequence[str]
 
 
@@ -245,9 +249,9 @@ class KeyAttrFinder:
         )
 
     @staticmethod
-    def ensure_consistent_type(maybe_dict) -> _t.Mapping:
+    def ensure_consistent_type(maybe_dict) -> dict | _JsonArrayAsDict:
         """Return `maybe_dict` or {'data': `maybe_dict`}"""
-        return maybe_dict if isinstance(maybe_dict, _t.Mapping) else {'data': maybe_dict}
+        return maybe_dict if isinstance(maybe_dict, dict) else {'data': maybe_dict}
 
 
 def fetch_values_by_keys(*, data: Json, obj: object, keypath: HashableSequence) -> KeyAttrValue:
