@@ -13,19 +13,27 @@ from ...datatypes import EXIT_CODE, Sample
 from ...handlers import Parser
 from ...imports import ModuleDocstring as info, snoop
 
-from .logic import main as sample_handler
-from .logic import main as WhatToDownload
 from .constants import constant_locals as constloc
+from .logic import main as sample_handler, simple
 
 URL = constloc.URL or input(Constant.PROMPT.ENTER_URL_OR_FALSE)
 
 samples = Sample(file=constloc.SAMPLE_FILE)
 parser = Parser(URL, constloc.PARSED_DIR, samples)
-sample_handler = sample_handler()
 
-# Use PlayList instead of requests.get
-from pytube import Playlist
-parser.handler._request_handler.get = Playlist
+
+class use:
+    """Use PlayList or Youtube instead of requests.get"""
+    from pytube import YouTube as yt
+    from pytube import Playlist as pl
+
+# Check .logic and select sample_handler
+# - download playlist (videos/audios):
+sample_handler = sample_handler()
+parser.handler.request_handler.get = use.pl
+# - download one video:
+# sample_handler = simple
+# parser.handler.request_handler.get = use.yt
 
 
 # @snoop

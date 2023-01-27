@@ -1,18 +1,22 @@
 """
-Download handlers:
+Download sources:
+    def simple(obj: KeyAttrValue | YouTube, dir) -> str
+        ...
     def download_video(playlist: Playlist, dir, max_retries=5) -> str
-
+        ...
     def download_audio_mp4(playlist: Playlist, dir) -> str
-
+        ...
     def download_audio_mp3(playlist: Playlist, dir) -> str
+        ...
 
 Sample handler:
     def main.<locals>.inner_main(samples: KeyAttrValue) -> str
-
+        ...
+    def simple(obj: KeyAttrValue | YouTube, dir) -> str
+        ...
 
 main(fkey: WhatToDownload | int = WhatToDownload.video_mp4) -> SampleHandlerFunc
-
-See main.__doc__ and main.<locals>.inner_main.__doc__
+    See main.__doc__ and main.<locals>.inner_main.__doc__
 
 """
 # mypy: disable-error-code=attr-defined
@@ -24,7 +28,7 @@ import typing as _t
 from enum import Enum, auto
 
 # https://pytube.io/en/latest/api.html#playlist-object
-from pytube import Playlist
+from pytube import Playlist, YouTube
 # https://ffmpy.readthedocs.io/en/latest/
 try:
     import ffmpy
@@ -48,6 +52,7 @@ def download_videos(playlist: Playlist, dir=DOWNLOAD_DIR, max_retries=5) -> str:
     for number, video in enumerate(playlist.videos, 1):
         video.streams.filter(
             type='video',
+            # https://ottverse.com/mpeg-dash-video-streaming-the-complete-guide/
             progressive=True,
             file_extension='mp4',
         ).order_by('resolution')\
@@ -92,6 +97,25 @@ def download_audio_mp3(playlist: Playlist, dir=DOWNLOAD_DIR) -> str:
     return get_post_process_info(playlist, 'audio')
 
 
+def simple(obj: KeyAttrValue | YouTube, dir=GRANDPARENT) -> str:
+    """Download Youtube video (mp4).
+
+        >>> from pytube import YouTube as yt
+        >>> path = simple(yt('https://www.youtube.com/shorts/v742rQOimgY'))
+        >>> assert path is simple.dir  # Check downloaded there
+        >>> simple.yt.author
+        >>> 'Диджитализируй!'
+        >>> simple.yt.title
+        >>> 'Всё так!'  # да
+
+    """
+    # attr_value: list[<pytube.__main__.YouTube object: videoId=v742rQOimgY>]
+    yt, = obj.attr_value if isinstance(obj, KeyAttrValue) else [obj]
+    simple.yt, simple.dir = yt, dir
+    assert isinstance(yt, YouTube), (yt, vars(yt))
+    return yt.streams.get_highest_resolution().download(dir)  # pyright: ignore
+
+
 def get_post_process_info(playlist: Playlist, content='unknown') -> str:
     return (
         f'{len(playlist)} {content}(s) successfullly downloaded '
@@ -132,7 +156,7 @@ def hms_time(secs: float) -> str:
 
 
 class WhatToDownload(Enum):
-    video_mp4 = auto()
+    playlist = auto()
     audio_mp4 = auto()
     audio_mp3 = auto()
 
@@ -141,7 +165,7 @@ fmap = {1: download_videos, 2: download_audio_mp4, 3: download_audio_mp3}
 # mapf = lambda f_number: lambda sample: fmap[f_number](*sample.attr_value)
 
 
-def main(fkey: WhatToDownload | int = WhatToDownload.video_mp4) -> SampleHandlerFunc:
+def main(fkey: WhatToDownload | int = WhatToDownload.playlist) -> SampleHandlerFunc:
     """Choose what to download:
 
     `main(1)` -> `SampleHandlerFunc` (to download mp4 videos)

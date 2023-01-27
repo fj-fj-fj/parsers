@@ -29,15 +29,17 @@ AK_PYTHON_12 = 'PLlb7e2G7aSpQhNphPSpcO4daaRPeVstku'
 DK_LINUX_12 = 'PLHHm04DXWzeKZycf_ZuBgxWdVBnrjE_mj'
 DK_BASICS_12 = 'PLHHm04DXWzeKuhdGFHSEWDpdgoYpjPptR'
 AS_NETWORKS_56 = 'PLtPJ9lKvJ4oiNMvYbOzCmWy6cRzYAh9B1'
-_test = 'PL6plRXMq5RADf1Jore6YlgX9tIKau9PIY'
 # PLAYLIST_ID = AK_PYTHON_12
 # PLAYLIST_ID = DK_LINUX_12
 # PLAYLIST_ID = DK_BASICS_12
-PLAYLIST_ID = AS_NETWORKS_56
-# PLAYLIST_ID = _test
+# PLAYLIST_ID = AS_NETWORKS_56
+
+_test = 'PL6plRXMq5RADf1Jore6YlgX9tIKau9PIY'
+PLAYLIST_ID = _test
 
 constant_locals = _namespace(
     base=_base,
+    # URL='https://www.youtube.com/shorts/v742rQOimgY',
     URL=URL + PARAMS + PLAYLIST_ID,
     PLAYLIST_ID=PLAYLIST_ID,
     PARSED_DIR=PARSED_DIR,
