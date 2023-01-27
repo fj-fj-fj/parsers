@@ -20,7 +20,8 @@ if 000 not in range(200, 400):
 
 constant_locals = _namespace(
     base=_base,
-    URL=URL,
+    # URL=URL,
+    URL='https://free-proxy-list.net/',
     PARSED_DIR=PARSED_DIR,
     PRINT_TO_STDOUT=PRINT_TO_STDOUT,
     SAMPLE_FILE=SAMPLE_FILE,

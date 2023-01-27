@@ -25,6 +25,6 @@ def collect_proxies(ips: list[Ip], ports: list[Port]) -> Proxies:
     return [collect_proxy(ip, port) for ip, port in zip(ips, ports)]
 
 
-def main(samples: list[list[Ip], list[Port]]) -> Proxies:
+def main(samples: list) -> Proxies:
     """Handle samples. (API)"""
     return collect_proxies(*samples)
