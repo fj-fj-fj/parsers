@@ -24,7 +24,7 @@ BIN_DIR := $$VENV/bin
 #01 -------------- base ----------------
 # make run <PARSER_NAME>
 irun:
-	@$(BIN_DIR)/python -i . $(word 2, $(MAKECMDGOALS))
+	@$(BIN_DIR)/python -i -Wall . $(word 2, $(MAKECMDGOALS))
 
 run:
 	@$(BIN_DIR)/python . $(word 2, $(MAKECMDGOALS))
@@ -87,6 +87,9 @@ diff:
 	@$@ -u $(word 2, $(MAKECMDGOALS)) $(word 3, $(MAKECMDGOALS)) \
 	| perl /usr/share/doc/git/contrib/diff-highlight/diff-highlight
 
+lsvscfiles:
+	ls -a ~/.vscode-server/extensions/ms-python.python-20[2-9][0-9].[0-9][0-9].[0-9]/pythonFiles/
+
 #2 -------------------------- Data --------------------------
 
 head:
@@ -132,20 +135,23 @@ versions: # Display the versions of Chrome, Chromedriver, Selenium
 #` ---------------------- Configuration ----------------------
 
 #`1 ------------ XServer --------------
+
 check_xserver_process_exist:
 	@powershell.exe get-process vcxsrv -ErrorAction SilentlyContinue \
 	&& echo "success!" || { echo "failure!"; exit 1; }
 
-NOHUP := $(PWD)/src/config/nohup.out
-XLAUNCH_CONFIG := '"$(PWD)/src/config/config.xlaunch"'
+# open XLaunch: Multiple windows -> Start no client -> Check 'Disable access control' -> Finish
+XLAUNCH_CONFIG := '"$(PWD)/log/config.xlaunch"'
 PROGRAM_DATA := /mnt/c/Progra~1
 XLAUNCH := '"$(PROGRAM_DATA)/VcXsrv/xlaunch.exe"'
 PARAMS := '-run', $(XLAUNCH_CONFIG)
+NOHUP := $(PWD)/log/nohup.out
 
 run_xlaunch:
 	@nohup python3 -c "__import__('subprocess').call([$(XLAUNCH), $(PARAMS)])" > $(NOHUP) 2>&1 &
 	@sleep 1; ps -o cmd | tail -4 | head -1
 
+# NOTE: start terminal as admin
 xlaunch:
 	make check_xserver_process_exist || make run_xlaunch
 
