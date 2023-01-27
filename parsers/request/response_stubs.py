@@ -29,28 +29,29 @@ class NoAutoResponse(_Response):
         self.__r = __r
         if isinstance(__r, _Sequence):
             self._content = json.dumps(list(__r)).encode()
-            self.__dtype = _Sequence.__name__
+            self.__content_type = _Sequence.__name__
         elif isinstance(__r, _Mapping):
             self._content = json.dumps(dict(__r)).encode()
-            self.__dtype = _Mapping.__name__
+            self.__content_type = _Mapping.__name__
         else:
-            self._content = __r.__str__().encode()
-            if isinstance(__r, str):
-                self.__dtype = str.__name__
-            elif isinstance(__r, int):
-                self.__dtype = int.__name__
-            elif isinstance(__r, float):
-                self.__dtype = float.__name__
-            else:
-                assert False, f'{self.__r}, {dir(self.__r)}'
+            # Indicate __r requires non-text and non-json logic
+            self._content = None
+            self.__content_type = self.__r.__class__.__name__
 
-        self._ok = self._content and True or False
+        # FIXME: check status_code
+        self._ok = isinstance(self._content, str)
 
     def __repr__(self):
+        return self._make_repr()
+
+    def _make_repr(self) -> str:
         cls = self.__r.__class__.__name__
-        type = self.__dtype
-        len = self.__r.__len__()
-        return f"<{cls} [{type=}, {len=}]>"
+        type = self.__content_type
+        try:
+            len = self.__r.__len__()
+            return f"<{cls} [{type=}, {len=}]>"
+        except AttributeError:
+            return repr(self.__r)
 
     @property
     def ok(self) -> bool:
