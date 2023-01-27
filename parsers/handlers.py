@@ -1,5 +1,6 @@
 # flake8: noqa W503
 # mypy: disable-error-code=attr-defined
+import sys as _sys
 import typing as _t
 from pprint import pprint as _pprint
 from pydoc import pager as _pager
@@ -16,6 +17,8 @@ from parsers.datatypes import Content as _Content
 from parsers.datatypes import ResponseLike as _ResponseLike
 from parsers.datatypes import Sample as _Sample
 from parsers.datatypes import fetch_values_by_keys as _fetch_values_by_keys
+from parsers.datatypes import KeyAttrValue as _KeyAttrValue
+from parsers.format.colors import Colors as _Colors
 from parsers.imports import debugcls as _debugcls
 from parsers.request.response_stubs import NoAutoResponse as _NoAutoResponse
 from parsers.storage.files import ContextStorage as _ContextStorage
@@ -47,149 +50,165 @@ class HandledData(_t.NamedTuple):
 @_debugcls
 class RequestHandler:
 
-    def __init__(self, *, get=_requests.get):
-        self._server_response = None
-        self._previous_responses = []
-        self.get: _t.Callable = get
-        self.url: str = None
+    def __init__(self, *, get=_requests.get, url: str = None):
+        # Response or NoAutoResponse
+        self.server_response: _ResponseLike = None
+        # Initial response object
+        self.__r  = None
+        self._previous_responses: list[_ResponseLike] = []
+        # requests.get or like
+        self.get = get
+        # No-validated url
+        self.url = url
+        self._validated_url: str = None
 
     @property
     def response(self) -> _Response:
-        """Make request and return response"""
+        """Make request and return response or raise if not url"""
         assert self.url is not None
         return self._make_request(self.url)
 
     def _make_request(self, url: str = None):
-        """Save previous response if it was and return new"""
-        if self._server_response is not None:
-            self._previous_responses.append(self._server_response)
+        """Make request with saving previous response if it was"""
+        if self.server_response is not None:
+            self._previous_responses.append(self.server_response)
 
         self._validated_url = self.validate(url or self.url)
-        self.server_response = self._make_response(self.get(self._validated_url))
-
+        self.__r = self.get(self._validated_url)
+        self.server_response = self._make_response(self.__r)
         return self.server_response
 
     def _make_response(self, __r) -> _Response:
+        """If `request.get` has been changed, `NoAutoResponse` will be used"""
         return __r if isinstance(__r, _Response) else _NoAutoResponse(__r)
 
-    @property
-    def server_response(self):
-        return self._server_response
-
-    @server_response.setter
-    def server_response(self, response: _Response) -> None:
-        self._server_response = response
-
-    @server_response.deleter
-    def server_response(self) -> None:
-        """Set previous response if it was. Set None if not"""
-        if self._previous_responses:
-            self._server_response = self._previous_responses.pop()
-        self._server_response = None
-
     def validate(self, url: str) -> str:
+        """assert the URL schema is valid.
+
+        input() will be called if exist an empty braces in the URL.
+        """
         assert (f:=url.startswith)('https://') or f('http://'), f'invalid {url=}'
-        return (
-            url if '{}' not in url else
-            url.format(input(f" {url.format('{ ? }')!r}\n\tfill placehoder: "))
-        )
+        empty_braces = f'{_Colors.RED}{{?}}{_Colors.NC}'
+        prompt = f'{_Colors.RED}(Fix URL){_Colors.NC} >>> '
+        fixurl_dialog = f'{url.format(empty_braces)}\n{prompt}'
+        return url if '{}' not in url else url.format(input(fixurl_dialog))
+
+    @property
+    def isdefalut_response(self) -> bool:
+        """requests.Response or not"""
+        return self.__r.__class__.__name__ == _Response.__name__
+
+    @property
+    def get_default_response(self):
+        return self.__r
 
 
 @_debugcls
 class DataHandler:
 
     def __init__(self):
-        self._soup: _BeautifulSoup = None
+        # Direct access to data
+        self.raw_content: _Content.HTML = None
         self.json: _Content.JSON = None
-        self.is_json = False
-        # self.handled_data = None
-        self.samples = None
-        self.sample_handler = None
-
-        self.response: _ResponseLike = None
-        self._prefinal = []
+        self._soup: _BeautifulSoup = None
+        self._soup_text = []
         self.final_data = None
+        # Access to data by 'text' or 'json()'
+        self.response_obj: _ResponseLike = None
+        # Access to data by 'key_value' or 'attr_value'
+        # TODO: merge HandledData with KeyAttrFinder ish
+        self.key_attr_value: _KeyAttrValue = None
 
-    @property
-    def step(self) -> _t.Literal[2, 1, 0]:
-        """0: raw (page), 1: parsed (soup|json), 2: final"""
-        return 2 if self.final_data else 1 if self._soup or self.json else 0
+        # Data processing logic by samples
+        self.sample_handler = None
+        # Data processing criteria
+        self.samples = None
+
+        # flags
+        self.is_json = None
+
+    def clean_up(self) -> None:
+        """Clear containers, set other attributes to None"""
+        self.raw_content = self._soup = self.json = self.final_data =\
+        self.response_obj = self.key_attr_value = self.sample_handler =\
+        self.is_json = self.samples = self._soup_text.clear()
 
     @property
     def raw(self) -> _Content.UNION_SOUP_JSON | None:
         """Return parsed data (self.soup if exists else self.json)"""
-        return self._soup or self.json
+        return self._soup or self.json or self.raw_content
 
     @raw.setter
-    def raw(self, response: _ResponseLike) -> None:
-        """Set raw data(json|soup) from `response`"""
-        self.response = response
+    def raw(self, response_obj: _ResponseLike) -> None:
+        """Clean up and try to make json or soup from `response_obj`"""
+        self.clean_up()
+        self.response_obj = response_obj
+        self.raw_content = response_obj.text
         try:
-            self.json = response.json()
+            self.json = response_obj.json()
             self.is_json = True
         except _JSONDecodeError:
+            # raw_content is an empty str or None
+            if not self.raw_content:
+                return
+            # Make soup
+            self.soup = self.raw_content
             self.is_json = False
-            self.soup = response.text
 
     @property
-    def soup(self) -> _BeautifulSoup:
+    def soup(self) -> _BeautifulSoup | None:
         return self._soup
 
     @soup.setter
-    def soup(self, raw: str) -> None:
-        """Make soup from `raw` with `Constant.PARSE.PARSER`"""
-        self._soup = _BeautifulSoup(raw, _Constant.PARSE.PARSER)
+    def soup(self, markup: str | _t.IO) -> None:
+        """Make soup from `markup` with `Constant.PARSE.PARSER`"""
+        self._soup = _BeautifulSoup(markup, _Constant.PARSE.PARSER)
 
     @property
     def data(self):
-        return self.prepare()
+        """Return any: `final_data`, `json`, `soup`, `raw_content`"""
+        return self.raw if _sys.flags.interactive else self._prepare()
 
-    def prepare(self) -> _Content.UNION_HTML_SOUP_JSON:
-        """Return final data or intermediate (json|soup).
+    def _prepare(self) -> _Content.UNION_HTML_SOUP_JSON:
+        """Process `sample_handler` and return `final_data`"""
+        # State: soup
+        # Process with samples (css or xpath)
+        if self.soup and self.samples and self.sample_handler:
+            for sample in self.samples:
+                self._soup_text.append([s.text for s in self.soup.select(sample)])
+            self.final_data = self.sample_handler(self._soup_text)
+            self.is_json = isinstance(self.final_data, (list, dict))
 
-        For final data samples and/or sample handler must be created.
-        Note: cook soup with bs4.select() only (not select_one)
-        """
-        # Was called: RequestHandler
-        # There is json or soup
-        if not self.samples and not self.sample_handler:
-            return self.json or self.soup
-
-        # Was called: RequestHandler
-        # There is soup or HTML page
-        if self.json is self.samples is self.sample_handler is None:
-            self.final_data = self.raw
-
-        # Was called: RequestHandler, DataHandler
-        # There is json, sample_handler, samples are empty
-        if self.samples is None and self.json and self.sample_handler:
+        # State: json as list
+        # Process directly (without samples)
+        # TODO: samples is a groupby criteria ish
+        elif not self.samples and self.json and self.sample_handler:
             self.final_data = self.sample_handler(self.json)
 
-        # Was called: RequestHandler, DataHandler
-        # There is json, sample_handler and samples (attrs or keypath)
-        elif self.samples and self.json and self.sample_handler:
-            self.final_data = self.sample_handler(
-                _fetch_values_by_keys(
-                    keypath=self.samples,
-                    # if samples contain keypath(s)
-                    data=self.json,
-                    # if samples contain attribute(s)
-                    obj=self.response,
-                )
-            )
-        # Was called: RequestHandler, DataHandler
-        # There is soup, sample_handler and samples (css or xpath)
-        elif self.samples and self.soup and self.sample_handler:
-            for sample in self.samples:
-                self._prefinal.append([s.text for s in self.soup.select(sample)])
-            self.final_data = self.sample_handler(self._prefinal)
-            self.is_json = True  # ?
+        # State: json as dict or Response is not requests.Response
+        # Process with samples throw fetch_values_by_keys()
+        # TODO: if json is None fetch attr_value else key_value ish
+        elif self.samples and self.sample_handler:
+            self.key_attr_value = self.find_samples()
+            self.final_data = self.sample_handler(self.key_attr_value)
 
         else:
-            print(f'{self.samples=}, {self.sample_handler=}, {self.is_json=}')
-            raise NotImplemented
-
+            assert False, self.__dict__
         return self.final_data
+
+    def find_samples(self) -> _KeyAttrValue:
+        return _fetch_values_by_keys(
+            keypath=self.samples,
+            # if samples contain keypath(s)
+            data=self.json,
+            # if samples contain attribute(s)
+            obj=self.response_obj,
+        )
+
+    @property
+    def step(self) -> _t.Literal[2, 1, 0]:
+        """Return 2 if final_data, 1 if _soup or json, 0"""
+        return 2 if self.final_data else 1 if self._soup or self.json else 0
 
 
 @_debugcls
@@ -199,7 +218,7 @@ class Handler:
     Base API:
         response (property):
             (with RequestHandler) return server response
-        data (property):
+        parsed (property):
             (with DataHandler) return HandledData
         save()
             (with ContextStorage) return int saved chars
@@ -209,9 +228,9 @@ class Handler:
         self.parsed_dir = parsed_dir
         self.url = url
         self.sample_handler = None
-        self._request_handler = RequestHandler()
-        self._data_handler = DataHandler()
-        self._context_storage = _ContextStorage()
+        self.request_handler = RequestHandler()
+        self.data_handler = DataHandler()
+        self.context_storage = _ContextStorage()
 
     @property
     def samples(self) -> list[str]:
@@ -228,33 +247,45 @@ class Handler:
 
     @property
     def response(self) -> _Response:
-        self._request_handler.url = self.url
-        res = self._request_handler.response
+        self.request_handler.url = self.url
+        res = self.request_handler.response
         self.save()
         return res
 
     @property
-    def data(self) -> HandledData:
+    def parsed(self) -> HandledData:
         self._prepare()
         return HandledData(
-            data=self._data_handler.data,
-            fail=not bool(self._request_handler.server_response),
-            status_code=0,
+            data=self.data_handler.data,
+            fail=not bool(self.request_handler.server_response),
+            status_code=0,  # TODO
         )
 
     def _prepare(self) -> None:
-        self._data_handler.raw = self._select_rawdata_object()
-        self._data_handler.samples = self.samples
-        self._data_handler.sample_handler = self.sample_handler
-        self.save()
+        # TODO: text property and json() for not-default response ish
+        self.data_handler.raw = self.get_response_or_read_file()
+        self.data_handler.samples = self.samples
+        self.data_handler.sample_handler = self.sample_handler
+        self.save()  # HTML or json
 
-    def _select_rawdata_object(self) -> _ResponseLike:
-        if (response := self._request_handler.server_response) is not None:
+    def get_response_or_read_file(self) -> _ResponseLike:
+        if (response := self.request_handler.server_response) is not None:
             return response
+        # Parse data from file
         elif (file := _File.check(self.parsed_dir)) is not None:
             return file
-        self._request_handler.url = self.url
-        return self._select_rawdata_object()
+        assert False, self.__dict__
+
+    def save(self) -> int:
+        """Save current data with current storage"""
+        return (
+            # Manager storage
+            self.context_storage
+                .map(datatype=self.current_storage)
+            # Worker storage
+                .current(parsed_dir=self.parsed_dir)
+                .save(data=self.current_data, step=self.data_handler.step)
+        )  # Implemented workers: PlainStorage, JsonStorage
 
     @property
     def saved(self) -> _Content.UNION_HTML_SOUP_JSON:
@@ -262,26 +293,19 @@ class Handler:
         self.save()
         return self.current_data
 
-    def save(self) -> int:
-        """Save current data with current storage"""
-        return (
-            # Manager storage
-            self._context_storage
-                .map(datatype=('str', 'json')[self._data_handler.is_json])
-            # Worker storage
-                .current(parsed_dir=self.parsed_dir)
-                .save(data=self.current_data, step=self._data_handler.step)
-        )
+    @property
+    def current_storage(self):
+        return ('str', 'json')[bool(self.data_handler.is_json)]
 
     @property
-    def current_data(self) -> _Content.UNION_HTML_JSON | _t.Literal['None']:
-        """Return final|parsed|HTML data or str(None)"""
+    def current_data(self) -> _Content.UNION_HTML_JSON | str:
+        """Return any: final_data, soup, json, response.text, response name"""
         return (
-            self._data_handler.final_data
-            or self._data_handler.json
-            or (soup := self._data_handler.soup) and str(soup)
-            or (resp := self._request_handler.server_response) and resp.text
-            or str(resp)
+            self.data_handler.final_data
+            or self.data_handler.json
+            or (soup := self.data_handler.soup) and str(soup)
+            or (resp := self.request_handler.server_response) and resp.text
+            or resp.__class__.__name__
         )
 
 
@@ -321,7 +345,7 @@ class Parser:
         `handler`:
             Initialized Handler with spesified `url`, `parsed_dir`
         `samples`:
-            Initialized Sample (empty if the mode is interactive)
+            Initialized Sample
         `logic()`:
             Sample handler function. None by default.
 
@@ -360,7 +384,7 @@ class Parser:
     def parse(self) -> HandledData:
         """Extract data and return (json or soup) or page"""
         self._preparse()
-        self._ = Parser.parse._ = self.handler.data
+        self._ = Parser.parse._ = self.handler.parsed
         self._called['parse'] = _time()
         return Parser.parse._
 
