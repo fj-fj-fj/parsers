@@ -20,6 +20,7 @@ from parsers.datatypes import fetch_values_by_keys as _fetch_values_by_keys
 from parsers.datatypes import KeyAttrValue as _KeyAttrValue
 from parsers.format.colors import Colors as _Colors
 from parsers.imports import debugcls as _debugcls
+from parsers.imports import warn_object_not_found as _warn_object_not_found
 from parsers.request.response_stubs import NoAutoResponse as _NoAutoResponse
 from parsers.storage.files import ContextStorage as _ContextStorage
 from parsers.storage.files import File as _File
@@ -106,7 +107,8 @@ class RequestHandler:
 @_debugcls
 class DataHandler:
 
-    def __init__(self):
+    def __init__(self, markup_parser=_Constant.PARSE.PARSERS.FASTEST):
+        self.markup_parser = markup_parser
         # Direct access to data
         self.raw_content: _Content.HTML = None
         self.json: _Content.JSON = None
@@ -161,8 +163,17 @@ class DataHandler:
 
     @soup.setter
     def soup(self, markup: str | _t.IO) -> None:
-        """Make soup from `markup` with `Constant.PARSE.PARSER`"""
-        self._soup = _BeautifulSoup(markup, _Constant.PARSE.PARSER)
+        """Make `BeautifulSoup` from `markup` with `self.markup_parser`"""
+        self._soup = _BeautifulSoup(markup, self.get_markup_parser())
+
+    def get_markup_parser(self) -> str:  # current or built-in
+        """Try to return `self.markup_parser` or setup (and return) builtin"""
+        try:
+            self.markup_parser = __import__(self.markup_parser).__name__
+        except ModuleNotFoundError:
+            _warn_object_not_found(self.markup_parser)
+            self.markup_parser = _Constant.PARSE.PARSERS.BUILTIN
+        return self.markup_parser
 
     @property
     def data(self):

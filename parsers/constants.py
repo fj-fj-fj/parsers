@@ -80,11 +80,27 @@ class _MagicNumbers(_NameSpace):
     DEFAULT_READ_TIMEOUT: _t.Final = 27.67
 
 
-class _ParsingConstants(_NameSpace):
-    PARSER: _t.Final = 'lxml'
-    # FOR: https://free-proxy-list.net/
-    SELECT_IP = 'td:nth-of-type(1)'
-    SELECT_PORT = 'td:nth-of-type(2)'
+class _MarkupParser(_NameSpace):
+    """
+    HTML_PARSER = 'html.parser'
+        https://docs.python.org/3/library/html.parser.html
+    LXML = 'lxml'
+        https://github.com/html5lib/html5lib-python
+    HTML5LIB = 'html5lib'
+        https://github.com/lxml/lxml
+
+    """
+    HTML_PARSER = 'html.parser'
+    LXML = 'lxml'  # pip install
+    HTML5LIB = 'html5lib'  # pip install
+
+    BUILTIN = HTML_PARSER
+    FASTEST = LXML
+
+
+class _Scpap(_NameSpace):
+    PARSERS: _t.Final = _MarkupParser()
+    PARSER: _t.Final = PARSERS.BUILTIN
 
 
 class _UniformResourceLocator(_NameSpace):
@@ -138,7 +154,7 @@ class _ConstantStorage(_DirAttributesMixin):
     def URL(cls): return _UniformResourceLocator()  # noqa: E704
 
     @_classproperty
-    def PARSE(cls): return _ParsingConstants()      # noqa: E704
+    def PARSE(cls): return _Scpap()      # noqa: E704
 
     @_classproperty
     def PROMPT(cls): return _Prompt()               # noqa: E704

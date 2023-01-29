@@ -17,6 +17,9 @@ from parsers.constants import Constant as _Constant
 from parsers.settings import Configuration as _Configuration
 from parsers.storage.files import save_to_file as _save_to_file
 
+SELECT_IP = 'td:nth-of-type(1)'
+SELECT_PORT = 'td:nth-of-type(2)'
+
 
 def parse_proxies(cfg: _Configuration = _Configuration(), output=False):
     """Make request on `cfg`.url, parse response and return parsed proxies."""
@@ -44,8 +47,8 @@ def _parse_table(page: _HTML, parser: str, tag='table'):
         raise _raise_notfound(tag) from AE
     else:
         for td in rows:
-            ip = td.select_one(_Constant.PARSE.SELECT_IP)
-            port = td.select_one(_Constant.PARSE.SELECT_PORT)
+            ip = td.select_one(SELECT_IP)
+            port = td.select_one(SELECT_PORT)
             if ip and port:
                 proxies.append(f'{ip.text}:{port.text}')
     return proxies

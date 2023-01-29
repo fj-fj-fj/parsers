@@ -5,6 +5,7 @@ __all__ = (
     'debugcls',
     'display_repl_code',
     'importcore',
+    'warn_object_not_found',
     'refresh',
     'select_parser',
     'shortcuts',
@@ -21,10 +22,16 @@ from functools import wraps as _wraps
 from types import ModuleType as _ModuleType
 
 from parsers.datatypes import Sample as _Sample
+from parsers.format.colors import Colors as _Colors
 
 
-def _import_warning_dialog(smth_not_found) -> None:
-    _warnings.warn(f'{smth_not_found.__name__!r} is not found', category=ImportWarning)
+def warn_object_not_found(__obj: object) -> None:
+    _warnings.warn(
+        f'\n\t{_Colors.RED}'
+        f"{getattr(__obj, '__name__', __obj)!r}"
+        f'{_Colors.NC} is not found\v',
+        category=ImportWarning
+    )
 
 
 try:
@@ -41,7 +48,7 @@ except ModuleNotFoundError:
         @_wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
-        _import_warning_dialog(snoop)
+        warn_object_not_found(snoop)
         return wrapper
 
 try:
@@ -52,7 +59,7 @@ except ImportError:
 
         `debugcls` is a class decorator (for methods and/or properties)
         """
-        _import_warning_dialog(debugcls)
+        warn_object_not_found(debugcls)
         return args[0]
 
 
