@@ -56,10 +56,10 @@ class RequestHandler:
         self.server_response: _ResponseLike = None
         # Initial response object
         self.__r  = None
+        # # Keep previous responses
         self._previous_responses: list[_ResponseLike] = []
         # requests.get or like
         self.get = get
-        # No-validated url
         self.url = url
         self._validated_url: str = None
 
@@ -70,29 +70,34 @@ class RequestHandler:
         return self._make_request(self.url)
 
     def _make_request(self, url: str = None):
-        """Make request with saving previous response if it was"""
-        if self.server_response is not None:
-            self._previous_responses.append(self.server_response)
-
+        """Send a GET request to the web server"""
+        self._keep_previous_response()
         self._validated_url = self.validate(url or self.url)
+        # TODO: catch HTMLError, URLError
         self.__r = self.get(self._validated_url)
         self.server_response = self._make_response(self.__r)
         return self.server_response
 
-    def _make_response(self, __r) -> _Response:
-        """If `request.get` has been changed, `NoAutoResponse` will be used"""
+    def _keep_previous_response(self) -> None:
+        """Check previous response exists to save it"""
+        if self.server_response is not None:
+            self._previous_responses.append(self.server_response)
+
+    def _make_response(self, __r) -> _ResponseLike:
+        """If `self.get` is not default, `NoAutoResponse` will be returned"""
         return __r if isinstance(__r, _Response) else _NoAutoResponse(__r)
 
     def validate(self, url: str) -> str:
-        """assert the URL schema is valid.
+        """assert the URL scheme is valid.
 
         input() will be called if exist an empty braces in the URL.
         """
         assert (f:=url.startswith)('https://') or f('http://'), f'invalid {url=}'
+        # TODO: str subclass, override __format__ (add color spec) ish
         empty_braces = f'{_Colors.RED}{{?}}{_Colors.NC}'
         prompt = f'{_Colors.RED}(Fix URL){_Colors.NC} >>> '
-        fixurl_dialog = f'{url.format(empty_braces)}\n{prompt}'
-        return url if '{}' not in url else url.format(input(fixurl_dialog))
+        incorrect_url_dialog = f'{url.format(empty_braces)}\n{prompt}'
+        return url if '{}' not in url else url.format(input(incorrect_url_dialog))
 
     @property
     def isdefalut_response(self) -> bool:
@@ -137,7 +142,7 @@ class DataHandler:
 
     @property
     def raw(self) -> _Content.UNION_SOUP_JSON | None:
-        """Return parsed data (self.soup if exists else self.json)"""
+        """Return the 1st true: `_soup`, `json`, `raw_content`"""
         return self._soup or self.json or self.raw_content
 
     @raw.setter
@@ -176,15 +181,16 @@ class DataHandler:
         return self.markup_parser
 
     @property
-    def data(self):
-        """Return any: `final_data`, `json`, `soup`, `raw_content`"""
+    def data(self) -> _Content.UNION_HTML_SOUP_JSON:
+        """Return the 1st true: `final_data`, `json`, `soup`, `raw_content`"""
         return self.raw if _sys.flags.interactive else self._prepare()
 
-    def _prepare(self) -> _Content.UNION_HTML_SOUP_JSON:
+    def _prepare(self):
         """Process `sample_handler` and return `final_data`"""
         # State: soup
         # Process with samples (css or xpath)
         if self.soup and self.samples and self.sample_handler:
+            # TODO: pass it into logic.py
             for sample in self.samples:
                 self._soup_text.append([s.text for s in self.soup.select(sample)])
             self.final_data = self.sample_handler(self._soup_text)
@@ -218,7 +224,7 @@ class DataHandler:
 
     @property
     def step(self) -> _t.Literal[2, 1, 0]:
-        """Return 2 if final_data, 1 if _soup or json, 0"""
+        """Map {final_data: 2, _soup or json: 1, raw_data: 0}"""
         return 2 if self.final_data else 1 if self._soup or self.json else 0
 
 
@@ -260,7 +266,7 @@ class Handler:
     def response(self) -> _Response:
         self.request_handler.url = self.url
         res = self.request_handler.response
-        self.save()
+        self.save()  # raw_content
         return res
 
     @property
@@ -274,10 +280,12 @@ class Handler:
 
     def _prepare(self) -> None:
         # TODO: text property and json() for not-default response ish
+        # Extract data from response
         self.data_handler.raw = self.get_response_or_read_file()
+        # Pass logic and criteria to process data
         self.data_handler.samples = self.samples
         self.data_handler.sample_handler = self.sample_handler
-        self.save()  # HTML or json
+        self.save()  # intermediate (_soup or json)
 
     def get_response_or_read_file(self) -> _ResponseLike:
         if (response := self.request_handler.server_response) is not None:
@@ -297,12 +305,6 @@ class Handler:
                 .current(parsed_dir=self.parsed_dir)
                 .save(data=self.current_data, step=self.data_handler.step)
         )  # Implemented workers: PlainStorage, JsonStorage
-
-    @property
-    def saved(self) -> _Content.UNION_HTML_SOUP_JSON:
-        """Save and return current data"""
-        self.save()
-        return self.current_data
 
     @property
     def current_storage(self):
