@@ -9,8 +9,15 @@ __all__ = (
 
 from typing import NoReturn as _NoReturn
 
+
 class BaseError(Exception):
     """Base shell for all errors."""
+
+    @staticmethod
+    def set_tracebacklimit(limit):
+        import sys
+        sys.tracebacklimit = limit
+        BaseError.tracebacklimit = limit
 
 
 class ElementNotFoundError(BaseError):
@@ -23,6 +30,14 @@ class DataNotFoundError(BaseError):
 
 class ParameterValueError(BaseError):
     """Got an unexpected argument value."""
+
+
+class EmptyError(BaseError):
+    """Object cannot be empty."""
+
+
+class URLError(BaseError):
+    """URL is invalid"""
 
 
 def raise_notfound(tag: str) -> _NoReturn:
