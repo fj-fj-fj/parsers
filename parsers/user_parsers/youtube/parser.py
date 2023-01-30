@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 # mypy: ignore-errors
-""""""
+"""
+Select sample handler
+    See .logic.__doc__
+
+Select GET request maker
+    See use.__doc__
+
+"""
 import sys
 from pydoc import pager
+
+from pytube.exceptions import RegexMatchError
 
 if is_script := __name__ == '__main__':
     __package__ = 'parsers.user_parsers.youtube'
@@ -14,6 +23,7 @@ from ...handlers import Parser
 from ...imports import ModuleDocstring as info, snoop
 
 from .constants import constant_locals as constloc
+from .logic import WhatToDownload
 from .logic import main as sample_handler, simple
 
 URL = constloc.URL or input(Constant.PROMPT.ENTER_URL_OR_FALSE)
@@ -27,13 +37,24 @@ class use:
     from pytube import YouTube as yt
     from pytube import Playlist as pl
 
-# Check .logic and select sample_handler
-# - download playlist (videos/audios):
-sample_handler = sample_handler()
-parser.handler.request_handler.get = use.pl
-# - download one video:
+
+# # -*- GET request playlist:
+# parser.handler.request_handler.get = use.pl
+#
+# # -*- GET request one video:
+parser.handler.request_handler.get = use.yt
+
+# # -*-  Download one video:
 # sample_handler = simple
-# parser.handler.request_handler.get = use.yt
+#
+# # -*-  Download playlist (videos):
+# sample_handler = sample_handler()
+#
+# # -*- Download one audio mp4:
+# sample_handler = sample_handler(WhatToDownload.audio_mp4)
+#
+# # -*- Download one audio mp3:
+sample_handler = sample_handler(WhatToDownload.audio_mp3)
 
 
 # @snoop
@@ -44,10 +65,19 @@ def main(display=constloc.PRINT_TO_STDOUT) -> EXIT_CODE:
     Return exit code.
     """
     parser.logic = sample_handler
-    parsed = parser.go
-    if display and not parsed.fail:
-        pager(str(parsed.data))
-    return parsed.status_code
+    try:
+        parsed = parser.go
+    except RegexMatchError as _:
+        from parsers.exceptions import URLError
+        from parsers.format.colors import Colors
+        raise URLError(
+            f'\v\t{Colors.RED}{constloc.URL}{Colors.NC}{{'
+            f'{Colors.YELLOW}params={constloc.PARAMS}{Colors.NC}?}}'
+        ) from _
+    else:
+        if display and not parsed.fail:
+            pager(str(parsed.data))
+        return parsed.status_code
 
 
 if is_script and not sys.flags.interactive:

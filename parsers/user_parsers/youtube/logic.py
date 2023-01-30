@@ -1,15 +1,17 @@
 """
-Download sources:
+DownloadHandler functions:
+```
     def simple(obj: KeyAttrValue | YouTube, dir) -> str
         ...
     def download_video(playlist: Playlist, dir, max_retries=5) -> str
         ...
-    def download_audio_mp4(playlist: Playlist, dir) -> str
+    def download_audio_mp4(playlist: Playlist, *, dir, max_retries) -> None
         ...
-    def download_audio_mp3(playlist: Playlist, dir) -> str
+    def download_audio_mp3(playlist: Playlist, *, dir, max_retries) -> None
         ...
-
-Sample handler:
+```
+Sample handlers:
+```
     def main.<locals>.inner_main(samples: KeyAttrValue) -> str
         ...
     def simple(obj: KeyAttrValue | YouTube, dir) -> str
@@ -17,6 +19,10 @@ Sample handler:
 
 main(fkey: WhatToDownload | int = WhatToDownload.video_mp4) -> SampleHandlerFunc
     See main.__doc__ and main.<locals>.inner_main.__doc__
+```
+
+fmap:   dictionary specifying one or more integers as keys with
+        their corresponding DownloadHandler functions as values
 
 """
 # mypy: disable-error-code=attr-defined
@@ -24,8 +30,10 @@ import functools
 import json
 import os
 import time
+import subprocess
 import typing as _t
 from enum import Enum, auto
+from inspect import getfullargspec
 
 # https://pytube.io/en/latest/api.html#playlist-object
 from pytube import Playlist, YouTube
@@ -33,21 +41,23 @@ from pytube import Playlist, YouTube
 try:
     import ffmpy
 except ModuleNotFoundError:
-    pass
+    from parsers.imports import warn_object_not_found
+    warn_object_not_found('ffmpy')
 
 from parsers.datatypes import KeyAttrValue
+from parsers.format.colors import Colors
 
-from .constants import PARSED_DIR as GRANDPARENT, PLAYLIST_ID as PARENT_NAME
-from .constants import PLAYLISTS as PLAYLISTS_JSON, MOVE_SCRIPT, PLAYLIST_ID
+from .constants import constant_locals as const
 
 SampleHandlerFunc = _t.Callable[[KeyAttrValue], str]
-DownloadHandler = _t.Callable
+DownloadHandler = _t.Callable[[Playlist | YouTube], str | None]
 fmap: dict[int, DownloadHandler]
 
-DOWNLOAD_DIR = GRANDPARENT + '/' + PARENT_NAME
+SAVED_PLAYLIST_DIR = const.PARSED_DIR + '/' + const.PLAYLIST_ID
+SAVED_VIDEO_DIR = const.PARSED_DIR + '/' + const.VIDEO_ID
 
 
-def download_videos(playlist: Playlist, dir=DOWNLOAD_DIR, max_retries=5) -> str:
+def download_videos(playlist: Playlist, dir=SAVED_PLAYLIST_DIR, max_retries=5) -> str:
     """Download YouTube playlist in mp4 format"""
     for number, video in enumerate(playlist.videos, 1):
         video.streams.filter(
@@ -66,38 +76,37 @@ def download_videos(playlist: Playlist, dir=DOWNLOAD_DIR, max_retries=5) -> str:
     return get_post_process_info(playlist, 'video')
 
 
-def download_audio_mp4(playlist: Playlist, dir=DOWNLOAD_DIR) -> str:
-    """Download the YouTube playlist in mp4 but the only audio format"""
-    for video in playlist.videos:
-        audio = video.streams.get_audio_only()
-        audio.download(dir)  # pyright: ignore [reportOptionalMemberAccess]
-    return get_post_process_info(playlist, 'audio')
+def get_post_process_info(playlist: Playlist, content='unknown') -> str:
+    """Return message information after downloading playlist"""
+    return (
+        f'{len(playlist)} {content}(s) successfullly downloaded '
+        f'from {playlist.playlist_url}\n'
+    ) + ls_downloaded() + remind_optional_move()
 
 
-def download_audio_mp3(playlist: Playlist, dir=DOWNLOAD_DIR) -> str:
-    """Download the YouTube playlist in mp4 but the only audio format.
-
-    Install ffmpy to convert the mp4 to mp3
-        - `pip install ffmpy`
-        - or uncomment parsers/user_parsers/youtube/requirements.txt
-
-    """
-    for video in playlist.videos:
-        audio = video.streams.get_audio_only()
-        audio.download(dir)  # pyright: ignore [reportOptionalMemberAccess]
-        video_title = video.title
-        new_filename = f'{video_title}.mp3'
-        default_filename = f'{video_title}.mp4'
-        print(f'Convert {default_filename} to {new_filename}')
-        ff = ffmpy.FFmpeg(
-            inputs={default_filename: None},
-            outputs={new_filename: None}
-        )
-        ff.run()
-    return get_post_process_info(playlist, 'audio')
+def ls_downloaded(dir=SAVED_PLAYLIST_DIR) -> str:
+    return '\n\t'.join(os.listdir(dir))
 
 
-def simple(obj: KeyAttrValue | YouTube, dir=GRANDPARENT) -> str:
+def remind_optional_move(
+    playlist_id=const.PLAYLIST_ID,
+    move_script=const.MOVE_SCRIPT,
+    playlists=const.PLAYLISTS
+) -> str:
+    """Return message hint to move resources"""
+    with open(playlists) as fh:
+        j = json.loads(fh.read())
+
+    playlist_key = key_by_value(j, playlist_id)
+    destination_dir = j.get(f'{playlist_key}_mv_to')
+    return (
+        f"\nMove sources to {destination_dir} (with 'jq'):\n"
+        f'\t{os.path.relpath(move_script)} {playlist_key}'
+        if playlist_key and destination_dir else ''
+    )
+
+
+def simple(obj: KeyAttrValue | YouTube, dir=const.PARSED_DIR) -> str:
     """Download Youtube video (mp4).
 
         >>> from pytube import YouTube as yt
@@ -116,32 +125,97 @@ def simple(obj: KeyAttrValue | YouTube, dir=GRANDPARENT) -> str:
     return yt.streams.get_highest_resolution().download(dir)  # pyright: ignore
 
 
-def get_post_process_info(playlist: Playlist, content='unknown') -> str:
-    return (
-        f'{len(playlist)} {content}(s) successfullly downloaded '
-        f'from {playlist.playlist_url}\n'
-    ) + list_downloaded() + remind_optional_move()
+def download_audio(
+    pytube_obj: Playlist | YouTube,
+    convert_mp3: bool,
+    dir: str = None,
+    max_retries: int = 10,
+) -> None:
+    """Download audio from YouTube to `dir`.
+
+    `convert_mp3`:
+        a flag to start `ffmpeg` video converter
+
+    """
+    dir = dir or SAVED_PLAYLIST_DIR if isinstance(pytube_obj, Playlist) else SAVED_VIDEO_DIR
+    for video in (
+        pytube_obj.videos
+        if isinstance(pytube_obj, Playlist)
+        else [pytube_obj]
+    ):
+        audio = video.streams.get_audio_only()
+        audio.download(dir, max_retries=max_retries)  # pyright: ignore
+        if convert_mp3:
+            convert_to_mp3(f'{dir}/', video.title)
 
 
-def list_downloaded(dir=DOWNLOAD_DIR) -> str:
-    return '\n\t'.join(os.listdir(dir))
+def update_kwdefaults(func: DownloadHandler) -> _t.Callable:
+    """Return nested function object with `func` kwargs in __kwdefaults__
+
+    The nested function returns `func(*args, **kwargs)`
+    `func`: Co-execute `download_audio` function.
+
+    ```
+    assert inspect.fullargspec(func).kwonlydefaults is not None, '''
+
+        The decorated function must have required keyword-only arguments:
+        'dir' and 'max_retries', that will be overwritten when passed
+        parameters with the same names have values.'''
+
+    >>> @update_kwdefaults
+    ... def download_all_youtube(pytube_obj, *, dir=..., max_retries=...):
+    ...    ...                            #  ^
+
+    ```
+    """
+    @functools.wraps(func)
+    def inner_scip_key_if_value_none(*args, **kwargs):
+        fullargspec = getfullargspec(func)
+        kwonlydefaults = fullargspec.kwonlydefaults
+        assert isinstance(kwonlydefaults, dict), (fullargspec, 'REREAD DOCSTRING')
+        # 2-tuple containg args and updated kwargs of the func (rr: for repl reuse)
+        inner_scip_key_if_value_none.rr = args, {**kwonlydefaults, **kwargs}
+        inner_scip_key_if_value_none.__kwdefaults__ = kwargs
+        return func(*args, **kwargs)
+
+    return inner_scip_key_if_value_none
 
 
-def remind_optional_move(
-    playlist_id=PLAYLIST_ID,
-    move_script=MOVE_SCRIPT,
-    playlists=PLAYLISTS_JSON
-) -> str:
-    with open(playlists) as fh:
-        j = json.loads(fh.read())
+@update_kwdefaults
+def download_audio_mp4(putube_obj, *, dir=None, max_retries=None) -> None:
+    """Co-ex `download_audio` to download the audio(s) from YouTube in mp4 format"""
+    optianal_kwargs = download_audio_mp4.__kwdefaults__
+    return download_audio(putube_obj, convert_mp3=False, **optianal_kwargs)
 
-    playlist_key = key_by_value(j, playlist_id)
-    destination_dir = j.get(f'{playlist_key}_mv_to')
-    return (
-        f"\nMove sources to {destination_dir} (with 'jq'):\n"
-        f'\t{os.path.relpath(move_script)} {playlist_key}'
-        if playlist_key and destination_dir else ''
+
+@update_kwdefaults
+def download_audio_mp3(putube_obj, *, dir=None, max_retries=None) -> None:
+    """Co-ex `download_audio` to download the audio(s) from YouTube in mp3 format.
+
+    Requires ffmpy to convert the mp4 to mp3!
+        - `pip install ffmpy`
+        - or uncomment parsers/user_parsers/youtube/requirements.txt
+
+    """
+    optianal_kwargs = download_audio_mp3.__kwdefaults__
+    return download_audio(putube_obj, convert_mp3=True, **optianal_kwargs)
+
+
+def convert_to_mp3(dir, basename: str, quiet=True) -> None:
+    """ffmpeg -i `basename`.mp4 `basename`.mp3"""
+    new_filename = f'{basename}.mp3'
+    default_filename = f'{basename}.mp4'
+    print(
+        f'Converting {Colors.YELLOW}{default_filename}{Colors.NC}'
+        f' to {Colors.YELLOW}{new_filename}{Colors.NC}...',
+        end='\t'
     )
+    ff = ffmpy.FFmpeg(
+        inputs={dir + default_filename: None},
+        outputs={dir + new_filename: None},
+    )
+    ff.run (stdout=subprocess.DEVNULL) if not quiet else ()  # noqa: E211
+    print(f'{Colors.BLUE}[converted]{Colors.NC}')
 
 
 def key_by_value(mapping: dict, value: _t.Any) -> _t.Hashable | None:
@@ -218,6 +292,7 @@ def main(fkey: WhatToDownload | int = WhatToDownload.playlist) -> SampleHandlerF
     # Interactive mode access
     inner_main.fmap = fmap
     inner_main.fkey = fkey
+    # Will be run fmap[key or fkey]
     inner_main.key = 0
     inner_main.help = functools.partial(
         print,
