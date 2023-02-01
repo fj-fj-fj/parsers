@@ -3,7 +3,7 @@
 # and a directory for saving data.
 #
 # $PROJECT_DIR/data/$1/
-# └──  [1..n]_response.{json or html}
+# └──  ...
 #      * files will be created each time a response is received
 #
 # $PROJECT_DIR/parsers/user_parsers/$1/
@@ -151,6 +151,8 @@ from .parser import samples
 
 note = lambda: vars(note)  # noqa: E731
 
+# Display parsers.__doc__ if not DEBUG
+info *= bool(__import__('os').getenv('DEBUG'))
 
 from parsers.imports import shortcuts
 shortcuts = shortcuts(fn=main, nb=note, pa=parser, ss=samples)
@@ -169,7 +171,7 @@ _URL = URL = 'https://$DIR_NAME.com'
 $(#                                ^ (Cursor column position)
 # The script will end by opening the <code editor> at this point.
 
-exec 3>&1)
+exec 9>&1)
 # Directory for storing final data
 PARSED_DIR = F'{_base.DIR.PARSED_DATA}$DIR_NAME'
 # File to store samples for extracting raw data
@@ -184,7 +186,7 @@ if $(
     curl \
     --silent \
     --write-out "%{http_code}" \
-    --output >(cat >&3) \
+    --output >(cat >&9) \
     https://"$DIR_NAME".com
 ) not in range(200, 400):
     URL = _base.URL.HTTPBIN_ORG
@@ -200,24 +202,27 @@ constant_locals = _namespace(
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/logic.py
-"""Module contains sample processing logic.
+"""Process \`Sample\` here."""
+import typing as _t
 
-Example:
+from parsers.datatypes import Json
+from parsers.datatypes import KeyAttrValue
 
-    >>> def main(samples):
-    ...    return [f'{ip}:{port}' for ip,port in zip(*samples)]
-    ...
-    >>> ips = ['140.82.121.4', '140.82.121.4']
-    >>> ports = ['80', '443']
-    >>> main([ips, ports])
-    ['140.82.121.4:80', '140.82.121.4:443']
-
-"""
-from typing import Any
+OptionalFinalData: _t._Alias = Json | None
 
 
-def main(samples: list[Any]) -> list[Any]:
-    """Handle samples. (API)"""
+def main(samples: _t.Iterable | KeyAttrValue) -> OptionalFinalData:
+    """Handle samples (API).
+
+    \`samples\` (Iterable):
+        json as list or list of selectors (XPath, CSS, etc)
+
+    \`samples\` (KeyAttrValue):
+        json as dict or Response is not requests.Response
+
+    if data saving is implemented, returns None
+
+    """
 EOT
 
 cat <<EOT >> "$PARSER_TEMPLATE"/parser.py
