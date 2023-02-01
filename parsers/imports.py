@@ -22,6 +22,7 @@ from functools import wraps as _wraps
 from types import ModuleType as _ModuleType
 
 from parsers.datatypes import Sample as _Sample
+from parsers.exceptions import ParameterValueError as _ParameterValueError
 from parsers.format.colors import Colors as _Colors
 
 
@@ -109,13 +110,31 @@ def check_reinit_states() -> bool:
 
 class ModuleDocstring:
 
-    def __init__(self, docstring: str):
-        self.docstring = docstring
+    def __init__(self, docstring: str = None):
+        self.__doc__ = self.doc = docstring
 
     def __call__(self) -> str:
-        return print(self.docstring) or ''
+        # Display doc, but not empty string if doc is empty
+        return print(self.doc) if self.doc else '' or ''
+
+    def __mul__(self, n: bool | _t.Literal[0, 1]) -> _t.Self:  # type: ignore [valid-type]
+        self.doc *= ModuleDocstring.number(n)
+        return self
+
+    def __imul__(self, n: bool | _t.Literal[0, 1]) -> _t.Self:  # type: ignore [valid-type]
+        return self.__mul__(n)
 
     __repr__ = __call__
+
+
+    @staticmethod
+    def number(n: int) -> int:
+        """Return 1 replaced by 0 or 0 by 1"""
+        if not isinstance(n, int):
+            raise _ParameterValueError(f'{n=} must be integer')
+        if not 0 <= n <= 1:
+            raise _ParameterValueError(f'{n=} must by 0 or 1')
+        return ~n
 
 
 _Parser: _t.TypeAlias = object
