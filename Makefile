@@ -1,47 +1,41 @@
-# Makefile search <Ctlr+F>
-# ------------------------
-# Parsers -------- # + 0
-#  base .......... # + 01
-#  proxy ......... # + 02
-# Scripts -------- # + 1
-#  ./scripts/* ... # + 11
-#  makescripts ... # + 12
-# Data ----------- # + 2
-# Linting -------- # + 3
-# Information ---- # + 4
-# Updaing -------- # + 5
-# Clean ---------- # + 6
-# Configuration -- #`
-#  XServer ....... #` + 1
-#  makeconf ...... #` + 2
+ifndef VERBOSE
+MAKEFLAGS += --no-print-directory
+endif
 
-
+# export VENV=VENV_NAME ?
 BIN_DIR := $$VENV/bin
 
 
-#0 ------------------------- Parsers -------------------------
+# ------------ venv-pip --------------
+create-venv: $(eval SHELL:=/bin/bash)
+	@[[ -d $(VENV) ]] && echo "$(VENV) already exists" \
+	|| (echo 'Creating virtual evnironment ...'; python3 -m venv $(VENV))
 
-#01 -------------- base ----------------
-# make run <PARSER_NAME>
+pip-install: $(eval SHELL:=/bin/bash)
+	@(echo 'Updating pip ...'; $$VENV/bin/pip install -U pip) \
+	&& (echo 'Installing requirements ...'; $$VENV/bin/pip install -r requirements.txt)
+
+install: create-venv pip-install
+
+
+# ------------- run ---------------
 irun:
 	@$(BIN_DIR)/python -i -Wall . $(word 2, $(MAKECMDGOALS))
 
 run:
 	@$(BIN_DIR)/python . $(word 2, $(MAKECMDGOALS))
 
-#02 -------------- proxy ----------------
-px: PARSER := $(PWD)/parsers/request/proxy/core.py
-px: parse
+wrun:
+	@$(BIN_DIR)/python -Wall . $(word 2, $(MAKECMDGOALS))
+
+# Run parser directly
+# px: PARSER := ./parsers/user_parsers/{}.py
+# px: parse
+# parse:
+# 	@time -vo $(shell dirname $(PARSER))/.time.log "$(BIN_DIR)/python" -i "$(PARSER)"
 
 
-parse:
-	@time -vo $(shell dirname $(PARSER))/.time.log "$(BIN_DIR)/python" -i "$(PARSER)"
-
-
-#1 ------------------------- Scripts -------------------------
-
-#11 --------- ./scrits/* ------------
-
+# ------------ template --------------
 # Passing arguments to "make create_template" or "make new"
 ifeq ($(filter $(new) $(create_template), $(firstword $(MAKECMDGOALS))),)
   # use the rest as arguments for "new"
@@ -58,6 +52,8 @@ create_template:
 #   make -- new --help
 new: create_template
 
+
+# ------------ traceback --------------
 # Usage:
 #   make trace <PARSER>
 #    - to generate traceback markdown file if fail
@@ -73,32 +69,8 @@ birdseye:
 r: birdseye run
 t: birdseye trace
 
-#12 --------- makescripts ------------
 
-# Press <Ctrl+D> to close stdin
-note:
-	python -c "import sys;\
-	f=open(sys.argv[1],'a');\
-	f.write(''.join([i for i in sys.stdin]));\
-	f.close()" NOTE.tmp
-
-
-diff:
-	@$@ -u $(word 2, $(MAKECMDGOALS)) $(word 3, $(MAKECMDGOALS)) \
-	| perl /usr/share/doc/git/contrib/diff-highlight/diff-highlight
-
-lsvscfiles:
-	ls -a ~/.vscode-server/extensions/ms-python.python-20[2-9][0-9].[0-9][0-9].[0-9]/pythonFiles/
-
-#2 -------------------------- Data --------------------------
-
-head:
-	echo ./data/$(word 3, $(MAKECMDGOALS))
-	@$@ $(word 2, $(MAKECMDGOALS)) ./data/$(word 3, $(MAKECMDGOALS))/response.* | code -
-
-
-#3 -------------------------- Linting -------------------------
-
+# ------------ check --------------
 flake8:
 	@$(BIN_DIR)/$@
 
@@ -111,31 +83,39 @@ check:
 shellcheck:
 	$@ ./scripts/*
 
+versions: # Display the versions of Chrome, Chromedriver, Selenium
+	@/usr/bin/google-chrome --version
+	@"$(PWD)/parsers/request/driver/chrome/chromedriver" --version
+	@printf 'Selenium '; "$(BIN_DIR)"/python -c "print(__import__('selenium').__version__)"
 
-#4 --------------------------- files --------------------------
 
+# ------------ files --------------
 cloc:
 	$@ --exclude-list-file=.clocignore .
 
 recompile:
 	@$(BIN_DIR)/python -m recompile ./parsers -q
 
+# Press <Ctrl+D> to close stdin
+note:
+	python -c "import sys;\
+	f=open(sys.argv[1],'a');\
+	f.write(''.join([i for i in sys.stdin]));\
+	f.close()" NOTE.tmp
 
-#5 ------------------------- Updating -------------------------
+diff:
+	@$@ -u $(word 2, $(MAKECMDGOALS)) $(word 3, $(MAKECMDGOALS)) \
+	| perl /usr/share/doc/git/contrib/diff-highlight/diff-highlight
 
-versions: # Display the versions of Chrome, Chromedriver, Selenium
-	@/usr/bin/google-chrome --version
-	@"$(PWD)/src/driver/chrome/chromedriver" --version
-	@printf 'Selenium '; $(PYTHON) -c "print(__import__('selenium').__version__)"
+lsvscfiles:
+	ls -a ~/.vscode-server/extensions/ms-python.python-20[2-9][0-9].[0-9][0-9].[0-9]/pythonFiles/
+
+head:
+	echo ./data/$(word 3, $(MAKECMDGOALS))
+	@$@ $(word 2, $(MAKECMDGOALS)) ./data/$(word 3, $(MAKECMDGOALS))/response.* | code -
 
 
-#6 -------------------------- Clean --------------------------
-
-
-#` ---------------------- Configuration ----------------------
-
-#`1 ------------ XServer --------------
-
+# ------------ XServer --------------
 check_xserver_process_exist:
 	@powershell.exe get-process vcxsrv -ErrorAction SilentlyContinue \
 	&& echo "success!" || { echo "failure!"; exit 1; }
@@ -154,8 +134,3 @@ run_xlaunch:
 # NOTE: start terminal as admin
 xlaunch:
 	make check_xserver_process_exist || make run_xlaunch
-
-#`2 ------------ makeconf --------------
-ifndef VERBOSE
-MAKEFLAGS += --no-print-directory
-endif
