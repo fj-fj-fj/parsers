@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 __all__ = [
+    'BadResponse',
     'BaseError',
-    'ElementNotFoundError',
     'DataNotFoundError',
+    'ElementNotFoundError',
+    'EmptyError',
     'ParameterValueError',
+    'URLError',
     'makeassert',
     'raise_notfound',
 ]
-
 import typing as _t
+from http.client import IncompleteRead
 
 
 def makeassert(loperand, operator: str, roperand, message=None):
@@ -33,7 +36,7 @@ def makeassert(loperand, operator: str, roperand, message=None):
 
 
 class BaseError(Exception):
-    """Base shell for all errors."""
+    """Base shell for all errors"""
 
     @staticmethod
     def set_tracebacklimit(limit):
@@ -43,23 +46,27 @@ class BaseError(Exception):
 
 
 class ElementNotFoundError(BaseError):
-    """Has no HTML element."""
+    """Has no HTML element"""
 
 
 class DataNotFoundError(BaseError):
-    """Raw data does not exist."""
+    """Raw data does not exist"""
 
 
 class ParameterValueError(BaseError):
-    """Got an unexpected argument value."""
+    """Got an unexpected argument value"""
 
 
 class EmptyError(BaseError):
-    """Object cannot be empty."""
+    """Object cannot be empty"""
 
 
 class URLError(BaseError):
     """URL is invalid"""
+
+
+class BadResponse(IncompleteRead):
+    """xxx bytes read, xx more expected"""
 
 
 def raise_notfound(tag: str) -> _t.NoReturn:
