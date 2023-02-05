@@ -1,13 +1,35 @@
 #!/usr/bin/env python
-__all__ = (
+__all__ = [
     'BaseError',
     'ElementNotFoundError',
     'DataNotFoundError',
     'ParameterValueError',
+    'makeassert',
     'raise_notfound',
-)
+]
 
-from typing import NoReturn as _NoReturn
+import typing as _t
+
+
+def makeassert(loperand, operator: str, roperand, message=None):
+    """
+    assert `loperand` `operator` `roperand`,
+    `message` or `makeassert.message` or (`loperand`, `operator`, `roperand`)
+
+        >>> makeassert(1, 'is', 0)
+        Traceback ...
+        AssertionError: (1, 'is', 0)
+
+        >>> makeassert.message = 'DRY err'
+        >>> makeassert(1, 'is', 0,)
+        Traceback ...
+        AssertionError: 'DRY err'
+
+        >>> assert makeassert(1, 'is', 1) is None
+
+    """
+    message = message or getattr(makeassert, 'message', (loperand, operator, roperand))
+    exec(f'assert {loperand!r} {operator} {roperand!r}, {message!r}')
 
 
 class BaseError(Exception):
@@ -40,7 +62,7 @@ class URLError(BaseError):
     """URL is invalid"""
 
 
-def raise_notfound(tag: str) -> _NoReturn:
+def raise_notfound(tag: str) -> _t.NoReturn:
     """Raise <tag>NotFoundError."""
     raise _notfound_factory(tag)
 

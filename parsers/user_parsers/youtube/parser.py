@@ -80,6 +80,16 @@ def main(display=constloc.PRINT_TO_STDOUT) -> EXIT_CODE:
         return parsed.status_code
 
 
+if __debug__:
+    from parsers.exceptions import makeassert
+
+    # Check compatibility settings
+    if parser.handler.request_handler.get == use.pl:
+        makeassert(constloc.PARAMS_PLAYLIST, 'in', constloc.PARAMS)
+        makeassert(sample_handler.__name__,'!=', simple.__name__)
+    if parser.handler.request_handler.get == use.yt:
+        makeassert(constloc.PARAMS_PLAYLIST, 'not in', constloc.PARAMS)
+
 if is_script and not sys.flags.interactive:
     sys.exit(main())
 
