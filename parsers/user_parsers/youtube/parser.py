@@ -1,11 +1,19 @@
 #!/usr/bin/env python
+# flake8: noqa E262
 # mypy: ignore-errors
 """
-Select sample handler
-    See .logic.__doc__
+To download a single video, uncomment it:
+    # parser.handler.request_handler.get = use.yt
+    # sample_handler = simple
 
-Select GET request maker
-    See use.__doc__
+To download the playlist, find and uncomment this:
+    # parser.handler.request_handler.get = use.pl
+    # sample_handler = sample_handler()
+
+To download audio:
+    # sample_handler = sample_handler(WhatToDownload.audio_mp4)
+    or
+    # sample_handler = sample_handler(WhatToDownload.audio_mp3)
 
 """
 import sys
@@ -38,26 +46,18 @@ class use:
     from pytube import Playlist as pl
 
 
-# # -*- GET request playlist:
-# parser.handler.request_handler.get = use.pl
-#
-# # -*- GET request one video:
-parser.handler.request_handler.get = use.yt
+# # Make request with:
+# parser.handler.request_handler.get = use.pl  #                   <<--- check
+# parser.handler.request_handler.get = use.yt  #                   <<--- check
+# TODO: sys.argv[pl or yt, sample_handler.fkey]
 
-# # -*-  Download one video:
-# sample_handler = simple
-#
-# # -*-  Download playlist (videos):
-# sample_handler = sample_handler()
-#
-# # -*- Download one audio mp4:
-# sample_handler = sample_handler(WhatToDownload.audio_mp4)
-#
-# # -*- Download one audio mp3:
-sample_handler = sample_handler(WhatToDownload.audio_mp3)
+# # Handle samples with:
+# sample_handler = simple  #                                       <<--- check
+# sample_handler = sample_handler()  #                             <<--- check
+# sample_handler = sample_handler(WhatToDownload.audio_mp4)  #     <<--- check
+# sample_handler = sample_handler(WhatToDownload.audio_mp3)  #     <<--- check
 
 
-# @snoop
 def main(display=constloc.PRINT_TO_STDOUT) -> EXIT_CODE:
     """Parse and save.
 
@@ -67,30 +67,34 @@ def main(display=constloc.PRINT_TO_STDOUT) -> EXIT_CODE:
     parser.logic = sample_handler
     try:
         parsed = parser.go
-    except RegexMatchError as _:
+    except RegexMatchError as rme:
         from parsers.exceptions import URLError
         from parsers.format.colors import Colors
         raise URLError(
-            f'\v\t{Colors.RED}{constloc.URL}{Colors.NC}{{'
-            f'{Colors.YELLOW}params={constloc.PARAMS}{Colors.NC}?}}'
-        ) from _
+            f'\v\t{Colors.RED}{constloc.URL}{Colors.NC}{{ ? }}'
+        ) from rme
     else:
         if display and not parsed.fail:
             pager(str(parsed.data))
-        return parsed.status_code
+    return parsed.status_code
 
 
 if __debug__:
     from parsers.exceptions import makeassert
 
-    # Check compatibility settings
+    # Comment/uncomment checking
     if parser.handler.request_handler.get == use.pl:
+        # fail if '/playlist?list=' not in target URL
         makeassert(constloc.PARAMS_PLAYLIST, 'in', constloc.PARAMS)
-        makeassert(sample_handler.__name__,'!=', simple.__name__)
+        # fail if trying to download playlist with `simple`
+        makeassert(sample_handler.__name__, '!=', simple.__name__)
     if parser.handler.request_handler.get == use.yt:
+        # fail if '/playlist?list=' in target URL
         makeassert(constloc.PARAMS_PLAYLIST, 'not in', constloc.PARAMS)
+        # fail if sample_handler(fkey=WhatToDownload.playlist)
+        makeassert(sample_handler.__dict__.get('fkey'), '!=', 1)
 
 if is_script and not sys.flags.interactive:
     sys.exit(main())
 
-# info = info(__doc__)
+info = info(__doc__)
