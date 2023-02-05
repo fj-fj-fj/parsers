@@ -194,7 +194,6 @@ class DataHandler:
             for sample in self.samples:
                 self._soup_text.append([s.text for s in self.soup.select(sample)])
             self.final_data = self.sample_handler(self._soup_text)
-            self.is_json = isinstance(self.final_data, (list, dict))
 
         # State: json as list
         # Process directly (without samples)
@@ -211,6 +210,8 @@ class DataHandler:
 
         else:
             assert False, self.__dict__
+
+        self.is_json = isinstance(self.final_data, (list, dict))
         return self.final_data
 
     def find_samples(self) -> _KeyAttrValue:
@@ -333,11 +334,11 @@ class Parser:
         `go`: property
             Encapsulate the Parser primary behavior
         `request(url=None)`:
-            Return Response or its-like object
+            Return Response or ResponseLike
         `parse()`:
             Extract data and return (json or soup) or page
         `less(text: str)`:
-            `pydoc.pager` to emulate 'less' in repl
+            `pydoc.pager` to emulate 'less' in REPL
         `pp`:
             pprint.pprint
         `save()`:
