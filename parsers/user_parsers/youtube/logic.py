@@ -1,3 +1,4 @@
+# mypy: disable-error-code=attr-defined
 """
 DownloadHandler functions:
 ```
@@ -25,12 +26,10 @@ fmap:   dictionary specifying one or more integers as keys with
         their corresponding DownloadHandler functions as values
 
 """
-# mypy: disable-error-code=attr-defined
 import functools
 import json
 import os
 import time
-import subprocess
 import typing as _t
 from enum import Enum, auto
 from inspect import getfullargspec
@@ -45,12 +44,15 @@ except ModuleNotFoundError:
     warn_object_not_found('ffmpy')
 
 from parsers.datatypes import KeyAttrValue
+from parsers.exceptions import BadResponse
 from parsers.format.colors import Colors
 
 from .constants import constant_locals as const
 
 SampleHandlerFunc = _t.Callable[[KeyAttrValue], str]
-DownloadHandler = _t.Callable[[Playlist | YouTube], str | None]
+TrackName: _t.TypeAlias = str
+DownloadHandler = _t.Callable  # [[Any,
+# DefaultNamedArg(Any, 'dir'), DefaultNamedArg(Any, 'max_retries')], List[str]]
 fmap: dict[int, DownloadHandler]
 
 SAVED_PLAYLIST_DIR = const.PARSED_DIR + '/' + const.PLAYLIST_ID
@@ -128,25 +130,39 @@ def simple(obj: KeyAttrValue | YouTube, dir=const.PARSED_DIR) -> str:
 def download_audio(
     pytube_obj: Playlist | YouTube,
     convert_mp3: bool,
+    word_separator: str = '_',
     dir: str = None,
     max_retries: int = 10,
-) -> None:
+) -> list[TrackName]:
     """Download audio from YouTube to `dir`.
 
     `convert_mp3`:
         a flag to start `ffmpeg` video converter
 
     """
-    dir = dir or SAVED_PLAYLIST_DIR if isinstance(pytube_obj, Playlist) else SAVED_VIDEO_DIR
-    for video in (
-        pytube_obj.videos
-        if isinstance(pytube_obj, Playlist)
-        else [pytube_obj]
-    ):
-        audio = video.streams.get_audio_only()
-        audio.download(dir, max_retries=max_retries)  # pyright: ignore
+    is_playlist = isinstance(pytube_obj, Playlist)
+    dir = dir or SAVED_PLAYLIST_DIR if is_playlist else SAVED_VIDEO_DIR
+    downloaded_track_names = []
+    for video in (pytube_obj.videos if is_playlist else [pytube_obj]):
+
+        request_problem = True
+        while request_problem:
+            try:
+                audio = video.streams.get_audio_only()
+                request_problem = False
+            except BadResponse as e:
+                print(e, f'\n{Colors.YELLOW}sleep 10s...{Colors.NC}')
+                time.sleep(10)
+
+        track_name = video.title.replace(' ', word_separator) + '.mp4'
+        audio.download(dir, filename=track_name, max_retries=max_retries)  # pyright: ignore
+
         if convert_mp3:
-            convert_to_mp3(f'{dir}/', video.title)
+            track_name = convert_to_mp3(f'{dir}/', track_name)
+            downloaded_track_names.append(f'{dir}/{track_name}')
+        else:
+            downloaded_track_names.append(f'{dir}/{track_name}')
+    return downloaded_track_names
 
 
 def update_kwdefaults(func: DownloadHandler) -> _t.Callable:
@@ -165,7 +181,6 @@ def update_kwdefaults(func: DownloadHandler) -> _t.Callable:
     >>> @update_kwdefaults
     ... def download_all_youtube(pytube_obj, *, dir=..., max_retries=...):
     ...    ...                            #  ^
-
     ```
     """
     @functools.wraps(func)
@@ -173,7 +188,7 @@ def update_kwdefaults(func: DownloadHandler) -> _t.Callable:
         fullargspec = getfullargspec(func)
         kwonlydefaults = fullargspec.kwonlydefaults
         assert isinstance(kwonlydefaults, dict), (fullargspec, 'REREAD DOCSTRING')
-        # 2-tuple containg args and updated kwargs of the func (rr: for repl reuse)
+        # 2-tuple contaning args and updated kwargs of the func (rr: for repl reuse)
         inner_scip_key_if_value_none.rr = args, {**kwonlydefaults, **kwargs}
         inner_scip_key_if_value_none.__kwdefaults__ = kwargs
         return func(*args, **kwargs)
@@ -182,14 +197,14 @@ def update_kwdefaults(func: DownloadHandler) -> _t.Callable:
 
 
 @update_kwdefaults
-def download_audio_mp4(putube_obj, *, dir=None, max_retries=None) -> None:
+def download_audio_mp4(pytube_obj, *, dir=None, max_retries=None) -> list[TrackName]:
     """Co-ex `download_audio` to download the audio(s) from YouTube in mp4 format"""
     optianal_kwargs = download_audio_mp4.__kwdefaults__
-    return download_audio(putube_obj, convert_mp3=False, **optianal_kwargs)
+    return download_audio(pytube_obj, convert_mp3=False, **optianal_kwargs)
 
 
 @update_kwdefaults
-def download_audio_mp3(putube_obj, *, dir=None, max_retries=None) -> None:
+def download_audio_mp3(pytube_obj, *, dir=None, max_retries=None) -> list[TrackName]:
     """Co-ex `download_audio` to download the audio(s) from YouTube in mp3 format.
 
     Requires ffmpy to convert the mp4 to mp3!
@@ -198,24 +213,26 @@ def download_audio_mp3(putube_obj, *, dir=None, max_retries=None) -> None:
 
     """
     optianal_kwargs = download_audio_mp3.__kwdefaults__
-    return download_audio(putube_obj, convert_mp3=True, **optianal_kwargs)
+    return download_audio(pytube_obj, convert_mp3=True, **optianal_kwargs)
 
 
-def convert_to_mp3(dir, basename: str, quiet=True) -> None:
+def convert_to_mp3(dir, basename: str) -> str:
     """ffmpeg -i `basename`.mp4 `basename`.mp3"""
-    new_filename = f'{basename}.mp3'
-    default_filename = f'{basename}.mp4'
-    print(
-        f'Converting {Colors.YELLOW}{default_filename}{Colors.NC}'
-        f' to {Colors.YELLOW}{new_filename}{Colors.NC}...',
-        end='\t'
-    )
-    ff = ffmpy.FFmpeg(
-        inputs={dir + default_filename: None},
-        outputs={dir + new_filename: None},
-    )
-    ff.run (stdout=subprocess.DEVNULL) if not quiet else ()  # noqa: E211
-    print(f'{Colors.BLUE}[converted]{Colors.NC}')
+    new_filename = basename.replace('.mp4', '.mp3')
+    try:
+        print(
+            f'Converting {Colors.YELLOW}{basename}{Colors.NC}'
+            f' to {Colors.YELLOW}{new_filename}{Colors.NC}...',
+            end='\t'
+        )
+        ffmpy.FFmpeg(
+            inputs={dir + basename: None},
+            outputs={dir + new_filename: None},
+        ).run()
+        print(f'{Colors.BLUE}[converted]{Colors.NC}')
+    except ffmpy.FFRuntimeError as e:
+        print(e)
+    return new_filename
 
 
 def key_by_value(mapping: dict, value: _t.Any) -> _t.Hashable | None:
