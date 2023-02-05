@@ -28,8 +28,8 @@ from parsers.storage.files import File as _File
 
 class HandledData(_t.NamedTuple):
     data: _Content.UNION_HTML_SOUP_JSON
-    fail: bool
-    status_code: int
+    fail: str = None
+    status_code: int = int(bool(fail))
 
     def __repr__(self):
         data, fail, status_code = self.__rdata(), self.fail, self.status_code
@@ -272,11 +272,9 @@ class Handler:
     @property
     def parsed(self) -> HandledData:
         self._prepare()
-        return HandledData(
-            data=self.data_handler.data,
-            fail=not bool(self.request_handler.server_response),
-            status_code=0,  # TODO
-        )
+        # TODO: error = self._prepare()
+        #       pass `error`(str | None) to `HandledData` as `fail`
+        return HandledData(data=self.data_handler.data)
 
     def _prepare(self) -> None:
         # TODO: text property and json() for not-default response ish
