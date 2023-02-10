@@ -5,7 +5,6 @@ __all__ = (
     'JsonStorage',
     'PlainStorage',
     'TeeFile',
-    'exit_handler',
     'pyclean',
     'save_to_file',
 )
@@ -24,15 +23,6 @@ from parsers.datatypes import OpenMode as _OpenMode
 # return file.write(...)
 _n_chars: _t.TypeAlias = int
 _int_as_str: _t.TypeAlias = str
-
-
-def exit_handler(func: _t.Callable, file='./notes.json', mode=_OpenMode.APPEND) -> None:
-    """Save `func` return data to `file` with `mode`"""
-    with open(file, mode) as fh, open(_os.devnull, _OpenMode.WRITE) as devnull:
-        print(
-            valid_json_data := str(func()).replace("'", '"'),
-            file=fh if valid_json_data != r'{}' else devnull
-        )
 
 
 def save_to_file(data: str, file: str, mode=_OpenMode.WRITE) -> _n_chars:

@@ -31,7 +31,7 @@ Files:
 - ./samples.txt
     File that will contain your samples (strings)
     Will be generated after `samples.save()`
-- ./notes.json
+- ./notes.txt
     File that will contain your notes (keys:values)
     Will be generated after REPL exiting
 
@@ -51,6 +51,5 @@ note = lambda: vars(note)  # noqa: E731
 from parsers.imports import shortcuts
 shortcuts = shortcuts(fn=main, nb=note, pa=parser, ss=samples)
 
-import atexit as _atexit
-from parsers.storage.files import exit_handler as _exit_handler
-_atexit.register(_exit_handler, note, file=core.constloc.SAMPLE_FILE.replace('samples', 'notes'))
+from parsers.utils.exit import register_exit_func, save_notes
+register_exit_func(save_notes(note, to=core.constloc.PARSED_DIR))
