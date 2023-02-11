@@ -1,24 +1,66 @@
-export PYTHONSTARTUP="$(pwd)"/.pythonrc
-export PROJECT_DIR=$(pwd)
-export PROJECT_NAME="$(basename $PROJECT_DIR)"
-export VENV="~/.pyenv/versions/.$PROJECT_NAME"
+#!/usr/bin/env bash
+## https://direnv.net/
+## https://github.com/direnv/direnv/
+## base config: ~/.direnvrc
+##
+## ^F '...' and replace with correct one
+## mv .envrc.sample .envrc
+## direnv allow .
 
-# Start scripts without ./
+export DIRENV_WARN_TIMEOUT="15s"
+
+## Scripts without ./
 export PATH="$PATH:."
+## preexec
+# export bash_preexec_imported=imported
+# export __bp_enable_subshells="true"
 
-# Activate virtal environment without pyenv
-# . .venv/bin/activate && echo '.venv activated successfully'
+## Save Makefile, .envrc
+export DEVDIR='/mnt/c/dev'
+# export BUCKAPREPO="$DEVDIR"
+# shellcheck disable=SC2016
+# echo -e "#!/usr/bin/env -S bash\n\ngit -C $BUCKAPREPO "'"$@"' > tmp.g
 
-printf "\e[1;33m"; python3 -V; printf "\e[0m"
-# use 'make versions' to read more
+## ./.direnv/aliases/g
+export_alias g 'grep \
+    --color=auto \
+    --include=*.py \
+    --exclude=*.pyc \
+    --exclude-dir=__pycache__ \
+    --exclude-dir=.mypy_cache \
+    --exclude-dir=.story \
+    -Er $@'
+    # --exclude-dir=.git \
+    # --exclude-dir=.direnv \
+    # --exclude-dir=.vscode \
 
-# Create symlink if not exists to use: parse <parser_name>
+## Create symlink if not exists to use: parse <parser_name>
 if [ ! -L "/usr/local/bin/parse" ]; then
-    sudo ln -s $(pwd)/__main__.py /usr/local/bin/parse
+    sudo ln -s "$(pwd)"/__main__.py /usr/local/bin/parse
 fi
 
-code .
+## -*- Python -*-
+PYTHONSTARTUP="$(pwd)"/.pythonrc
+export PYTHONSTARTUP
+# export PYTHONBREAKPOINT=snoop.snoop
 
-unset PS1
+## -*- Project -*-
+PROJECT_DIR=$(pwd)
+export PROJECT_DIR
+PROJECT_NAME="$(basename "$PROJECT_DIR")"
+export PROJECT_NAME
+# VENV="/home/.../.pyenv/versions/.$PROJECT_NAME"
+# export VENV
+## ./parsers/user_parsers/**/__init__.py, ./parsers/debug.py
+export DEBUG=0
 
-# direnv allow .
+## -*- Project user_parsers -*-
+## ./parsers/user_parsers/merge_checker/constants.py
+# export GITHUB_TOKEN=...
+
+## -*- Display information -*-
+printf "\e[1;33m"; python3 -V; printf "\e[0m"
+[[ -d .git ]] && echo && git status --short --branch && git diff --stat && echo
+
+## Start VSCode
+# code .
