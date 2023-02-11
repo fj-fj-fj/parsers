@@ -9,9 +9,7 @@ Doesn't pretend to be anything, just a way to learn Python
 
 
 ## What is this
-There is both a set of unrelated utilities, and preconfigured customizable functionality.
-
-<br>
+There is both a set of unrelated parsing utilities, and preconfigured customizable functionality.<br>
 Some subset of code can be used as a framework.
 
 ## How it works
@@ -21,13 +19,13 @@ Generate a "blank" project environement
 create_parser parsername
 ```
 - Check if the link is correct.<br>
-_It's ok if the parser name matches SLD like_ 'https://{parsername}.com'. _Whether it happened or not, check the correctness of the URL in_ 'parsers/user_parsers/{parsername}/constants.py'. _Although, [script](scripts/create_parser_template 'This scripts generates {parsername} structures') will probably automatically opens `'VSCode'` or `'Vim'` in this place for you to URL check._
+It's ok if the parser name matches SLD like 'https://{parsername}.com'. Whether it happened or not, check the correctness of the URL in 'parsers/user_parsers/{parsername}/constants.py'. Although, [script](scripts/create_parser_template 'This scripts generates {parsername} structures') will probably automatically opens `VSCode` or `Vim` in this place for you to URL check.
 
-- Find out if you need to add `'samples'`.<br>
-_"Sample" is a criteria for extracting a certain piece of information. It can be one or list of regex, CSS or Xpath selectors, chain of the mapping keys (_`'keypath'`_) or object attributes (_`'attrpath'`_). They will become an argument to_ `sample_handler(samples)` _you implemented in_ 'parsers/user_parsers/{parsername}/logic.py'.
+- Find out if you need to add "samples".<br>
+Sample is a criteria for extracting a certain piece of information. It can be one or list of regex, CSS or Xpath selectors, chain of the mapping keys (_`keypath`_) or object attributes (_`attrpath`_). They will become an argument to `sample_handler(samples)` you implemented in 'parsers/user_parsers/{parsername}/logic.py'.
 
 - `your_parser.main()` starts the `Parser` object.<br>
-`Parser` _has a_ `Handler` _manager for working with other handlers such as_ `RequestHandler` _to make requests,_ `DataHandler` _for extracting data and_ `ContextStorage` _for saving the final data in json format (for now). For any of them, you can inject, redoing part or all to your needs. Good place for this in_ 'parsers/user_parsers/{parsername}/parser.py'.
+`Parser` has a `Handler` manager for working with other handlers such as `RequestHandler` to make requests, `DataHandler` for extracting data and `ContextStorage` for saving the final data in json format (_for now_). For any of them, you can inject, redoing part or all to your needs. Good place for this in 'parsers/user_parsers/{parsername}/parser.py'.
 
 
 #
@@ -49,7 +47,7 @@ export PROJECT_DIR=$(pwd)
 # export PYTHONSTARTUP="$(PROJECT_DIR)"/.pythonrc
 # export DEBUG=1 or skip
 ```
-Install [requirements](requirements.txt '`pip install -r requirements.txt`') to activated virtal env
+Install [requirements](requirements.txt '`pip install -r requirements.txt`') to activated virtual env
 ```bash
 pip install -r requirements.txt
 ```
