@@ -12,7 +12,7 @@ response_json = _Response()
 response_json._content = b'[{"foo": true, "bar": false}]'
 
 response_text = _Response()
-response_text._content = b'foo, bar, egg, spam, lol'
+response_text._content = b'foo, bar, egg, spam'
 
 _ResponseMock = _Response
 

@@ -14,7 +14,7 @@ Some subset of code can be used as a framework.
 
 ## How it works
 
-Generate a "blank" project environement
+Generate a "blank" project environment
 ```bash
 create_parser parsername
 ```

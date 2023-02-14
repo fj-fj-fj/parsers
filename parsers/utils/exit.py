@@ -58,7 +58,7 @@ def register_exit_func(__func: _HANDLER, *, _signals=_EXIT_SIGNALS, **kwds) -> N
     def signal_wrapper(signum=None, frame=None) -> None:
         func_wrapper()
 
-        # os.kill(os.getpid(), signal.SIG*)
+        # os.kill(os.getpid(), signal.<SIGNAL>)
         if signum is not None:
             if signum == _signal.SIGINT:
                 raise KeyboardInterrupt
@@ -87,7 +87,7 @@ def register_exit_func(__func: _HANDLER, *, _signals=_EXIT_SIGNALS, **kwds) -> N
 def save_notes(__func, *, to='', basename='notes.txt', mode='a') -> _HANDLER:
     """Save notes before exiting the program.
 
-    Exaple:
+    Example:
     ```
         # parsers.user_parsers.<parser>.__init__.py
         from parsers.utils.exit import register_exit_func, save_notes

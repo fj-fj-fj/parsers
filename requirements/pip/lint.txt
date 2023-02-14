@@ -2,4 +2,5 @@ flake8==5.0.4
 ipython==8.6.0
 isort==5.10.1
 mypy==0.990
+pyspelling==2.8.1
 types-requests==2.28.11.4

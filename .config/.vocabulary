@@ -1,0 +1,203 @@
+# Dictionary for local code, docstings, comments and third-party
+
+# A
+alexmojaki
+api
+AppleWebKit
+arg
+attr
+AttrPathHandler
+
+# B
+BadResponse
+BaseError
+basename
+baz
+BeautifulSoup
+bla
+bs
+bytecode
+
+# C
+CALLME
+chromedriver
+ConstantStorage
+constloc
+ContextStorage
+classproperty
+CLI
+CSI
+css
+customizable
+
+# D
+DataHandler
+DataNotFoundError
+datatypes
+debugcls
+defaultdict
+dev
+docstring
+docstrings
+DOCTYPE
+
+# E
+ElementNotFoundError
+EmptyError
+env
+envrc
+ESC
+
+# F
+FIXME
+fd
+func
+fullname
+fn
+
+# G
+getattribute
+github
+GOTO
+
+# H
+HandledData
+HashableSequence
+html
+HTMLError
+http
+HTTPBIN
+httpbin
+https
+
+# I
+importcore
+init
+Initializations
+ip
+ips
+ipify
+irun
+isdefalut
+ish
+
+# J
+JSON
+json
+JSONDecodeError
+JsonStorage
+
+# K
+KeyAttrFinder
+KeyAttrValue
+keypath
+KeyPathHandler
+KeypathStr
+KeyStorage
+KHTML
+
+# L
+localhost
+loperand
+LXML
+lxml
+
+# M
+MagicNumber
+makeassert
+Makefile
+MakeSoupCallable
+MarkupParser
+mnt
+mc
+md
+Metaclasses
+ModuleDocstring
+msg
+mv
+
+# N
+namespace
+nb
+NoAutoResponse
+nonne
+# raise_notfound ./parsers/exceptions.py
+notfound
+NotFoundError
+noqa
+NoSetter
+ns
+num
+
+# O
+ok
+OpenMode
+OptionalSampleList
+
+# P
+ParameterValueError
+params
+parsername
+PARSERS
+parsers
+PlainStorage
+preconfigured
+preparse
+py
+pyenv
+pycache
+pyclean
+pythonrc
+PYTHONSTARTUP
+pwd
+
+# R
+rdata
+REFACTORME
+reinit
+REPL
+repl
+repo
+RequestHandler
+ResponseLike
+roperand
+runtime
+rwxrwxrwx
+
+# S
+Sample
+SampleList
+SampleStr
+Selfdebug
+sitefoo
+screenful
+SLD
+sp
+ss
+
+# T
+TeeFile
+td
+tmp
+TODO
+Traceback
+txt
+
+# U
+url
+URLError
+usr
+useragent
+useragents
+util
+utils
+
+# V
+venv
+VENV
+
+# W
+wsl
+
+# X
+xpath

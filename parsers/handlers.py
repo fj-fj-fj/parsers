@@ -355,7 +355,7 @@ class Parser:
         """Pass params to Handler and return nu Parser object.
 
         `handler`:
-            Initialized Handler with spesified `url`, `parsed_dir`
+            Initialized Handler with specified `url`, `parsed_dir`
         `samples`:
             Initialized Sample
         `logic()`:

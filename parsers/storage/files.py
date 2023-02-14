@@ -74,7 +74,7 @@ class _FileMixin:
 
     STEP_STEM_MAP = {0: '1_response', 1: '1_raw_data', 2: '1_final_data'}
     STEP_SUFFIX_MAP = {0: '.html', 1: '.tmp', 2: '.json'}
-    UNKNOWN_STEM = '1_unknow_step'
+    UNKNOWN_STEM = '1_unknown_step'
     REPL_PREFIX = 'repl_'
 
     def define_file(self, step: int, suffix=None) -> None:

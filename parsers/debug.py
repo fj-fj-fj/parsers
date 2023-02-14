@@ -68,7 +68,7 @@ class Debug:
         return self._
 
     def _print_function_signature(self, *args, **kwargs) -> None:
-        self._print_debug_11(f'Debug._print_function_signarure({args=}, {kwargs=})')
+        self._print_debug_11(f'Debug._print_function_signature({args=}, {kwargs=})')
         args_repr = [repr(a) for a in args]
         kwargs_repr = [f'{k}={v!r}' for k, v in kwargs.items()]
         signature = ', '.join(args_repr + kwargs_repr)

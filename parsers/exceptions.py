@@ -93,7 +93,7 @@ def _notfound_factory(prefix, bases=(ElementNotFoundError,)) -> ElementNotFoundE
 
 
 if __name__ == '__main__':
-    # Display imformation about 'exceptions' module
+    # Display information about 'exceptions' module
     # names, docstrings, mro
     information = '\nexception classes:\n'
     information += '-' * len(information)

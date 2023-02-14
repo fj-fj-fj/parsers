@@ -1,0 +1,59 @@
+# https://facelessuser.github.io/pyspelling/
+# https://github.com/facelessuser/pyspelling
+
+spellchecker: aspell
+
+matrix:
+- name: python
+  aspell:
+    lang: en
+    d: en_US
+  sources:
+  - __main__.py
+  - './parsers/**/*.py|!./log/**|!./parsers/{_prehistoric,user}_parsers/**'
+  dictionary:
+    wordlists:
+    - .config/.vocabulary
+    - .config/.vocabulary-python
+    output: log/vocabulary/python.dic
+  pipeline:
+  - pyspelling.filters.python:
+      docstrings: true
+      group_comments: true
+      strings: true
+      string_types: bfur
+  - pyspelling.flow_control.wildcard:
+      allow:
+      - py-comment
+  - pyspelling.filters.context:
+      context_visible_first: true
+      delimiters:
+      # Ignore lint (noqa) and coverage (pragma) as well as shebang (#!)
+      - open: '^(?: *(?:noqa\b|pragma: no cover)|!)'
+        close: '$'
+      # Ignore Python encoding string -*- encoding stuff -*-
+      - open: '^ *-\*-'
+        close: '-\*-$'
+
+- name: markdown
+  sources:
+  - '*.{md,MD,markdown}|!./log/**'
+  aspell:
+    lang: en
+    d: en_US
+  dictionary:
+    wordlists:
+    - .config/.vocabulary
+    - .config/.vocabulary-python
+    output: log/vocabulary/md.dic
+  pipeline:
+  - pyspelling.filters.markdown:
+  - pyspelling.filters.html:
+      comments: false
+      attributes:
+      - title
+      - alt
+      ignores:
+      - code
+      - pre
+  - pyspelling.filters.url:

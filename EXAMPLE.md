@@ -176,7 +176,7 @@ def main(samples: list[list[Ip], list[Port]]) -> Proxies:
 ### Fix url in ./parsers/user_parsers/foo/constants.py
 * in this case it's necessary
 ```diff
-# Delete condition or reasign `URL`
+# Delete condition or reassign `URL`
 if 000 not in range(200, 400):
 -    URL = _base.URL.HTTPBIN_ORG
 +    URL = 'https://free-proxy-list.net'

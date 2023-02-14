@@ -106,11 +106,17 @@ flake8:
 mypy:
 	@$(BIN_DIR)/$@ --namespace-packages --explicit-package-bases --show-error-codes
 
-check:
-	make flake8 mypy
+spell:
+	pyspelling
+
+lint:
+	make flake8 mypy spell
 
 shellcheck:
 	$@ ./scripts/*
+
+check:
+	make check shellcheck
 
 # Display versions of Chrome, Chromedriver, Selenium
 versions:

@@ -90,7 +90,7 @@ OptionalSampleList: _t.TypeAlias = list[SampleStr | None] | None
 
 
 class Sample(list):
-    """Container to hodl parsing samples"""
+    """Container to hold parsing samples"""
 
     def __init__(self, *args: OptionalSampleList, file: str):
         """Init Sample object and touch `file`"""
@@ -122,7 +122,7 @@ class Sample(list):
 
 
 class ResponseLike(_t.Protocol):
-    """Ojbect with `text` property and `json` method"""
+    """Object with `text` property and `json` method"""
 
     def json(self) -> Json:
         ...
@@ -160,9 +160,9 @@ HashableSequence: _t.TypeAlias = str | _t.Sequence[str]
 class KeyPathHandler(dict):
     """Return last key value or None.
 
-    >>> data = {"foo": {"bar": {"baz": ['egg', 'spam', 'lol']}}}
+    >>> data = {"foo": {"bar": {"baz": ['egg', 'spam']}}}
     >>> KeyPathHandler(data).get('foo.bar.baz')
-    ['egg', 'spam', 'lol']
+    ['egg', 'spam']
 
     >>> data = {"foo": {"bar": 666}}
     >>> KeyPathHandler(data).get(keypath='foo bar', sep=' ')
@@ -198,9 +198,9 @@ class KeyPathHandler(dict):
 
 class AttrPathHandler:
     """
-    >>> AttrPathHandler().get(keys='foo.get', obj=AttrPathHandler)
+    >>> AttrPathHandler().get(keypath='foo.get', obj=AttrPathHandler)
     [<function AttrPathHandler.get at 0x...>]
-    >>> >>> AttrPathHandler().get(keys='json', obj=AttrPathHandler)
+    >>> >>> AttrPathHandler().get(keypath='json', obj=AttrPathHandler)
     >>> # None
 
     """

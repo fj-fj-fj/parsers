@@ -39,7 +39,7 @@ try:
     import snoop
 except ModuleNotFoundError:
     def snoop(func):
-        """Dummy decorator for `snoop` (if it does't exist).
+        """Dummy decorator for `snoop` (if it doesn't exist).
 
         `snoop` is a Python debugging tools
             see https://github.com/alexmojaki/snoop
@@ -56,7 +56,7 @@ try:
     from parsers.debug import debugcls
 except ImportError:
     def debugcls(*args, **kwargs):
-        """Dummy decorator for `debugcls` (if it does't exist).
+        """Dummy decorator for `debugcls` (if it doesn't exist).
 
         `debugcls` is a class decorator (for methods and/or properties)
         """
@@ -97,7 +97,7 @@ def importcore(__pkg, alternative_root=None) -> _ModuleType:
 
 
 def display_repl_code(script: _ModuleType) -> None:
-    """Matche REPL code from script.info and print"""
+    """Match REPL code from script.info and print"""
     print(''.join(__import__('re').findall(r"(?=>>>).*?\n", script.info)) or script.info)
 
 
@@ -146,7 +146,7 @@ def shortcuts(fn: _t.Callable, nb: _t.Callable, pa: _Parser, ss: _Sample) -> _t.
     Shortcuts:
         `fn`: main func or your parser
         `nb`: simple dict-like container
-        `pa`: parser for iteractive mode using
+        `pa`: parser for interactive mode using
         `ss`: container to add samples
 
         `sh`: os.system
@@ -162,12 +162,12 @@ def shortcuts(fn: _t.Callable, nb: _t.Callable, pa: _Parser, ss: _Sample) -> _t.
         `ns`
             Three-state flag. Expected True, False or None
         `ns = True`
-            include shortcat `p`: parsers (root name spase)
+            include shortcut `p`: parsers (root name space)
         `ns = False`
             include shortcuts for a root package modules
             `mc`: parsers.constants
             `md`: parsers.datatypes
-            `me`: parsers.exeptions
+            `me`: parsers.exceptions
             `ms`: parsers.settings
         `ns = None`
             without modules
@@ -239,7 +239,7 @@ def refresh(pkg: _ModuleType = None, _prefix='parsers.'):  # noqa: max-complexit
             pkg = m
 
         def reload():
-            """Reloads package or raise ModuleNotFounError"""
+            """Reloads package or raise ModuleNotFoundError"""
             print(f"reloading '{reload.pkg.__name__}'...")
             _importlib.reload(reload.pkg)
             print(f"- '{reload.pkg.__name__}' successfully reloaded\n")
