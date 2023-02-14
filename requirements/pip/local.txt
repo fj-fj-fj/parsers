@@ -1,5 +1,10 @@
 -r ./base.txt
 -r ./lint.txt
 
+# security
+bandit==1.7.4
+safety==2.3.5
+
+# debug
 birdseye==0.9.4
-snoop==0.4.2
+snoop==0.4.3

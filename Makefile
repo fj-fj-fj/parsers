@@ -39,6 +39,9 @@ pip-install: $(eval SHELL:=/bin/bash)
 # Create virtual-env and pip install requirements
 install: create-venv pip-install
 
+pip-update:
+	@$(BIN_DIR)/pip install -U pip && $(BIN_DIR)/pip install -r <(pip freeze) --upgrade
+
 
 ## ------------ template --------------
 # Passing arguments to "make create_template" or "make new"
@@ -101,22 +104,32 @@ t: birdseye trace
 
 ## ------------ check --------------
 flake8:
-	@$(BIN_DIR)/$@
+	@$@ --max-line-length=119 --ignore=E402,F841,F401,E302,E305 --max-complexity=10
 
 mypy:
-	@$(BIN_DIR)/$@ --namespace-packages --explicit-package-bases --show-error-codes
+	@$@ --namespace-packages --explicit-package-bases --show-error-codes
 
 spell:
-	pyspelling
-
-lint:
-	make flake8 mypy spell
+	@pyspelling
 
 shellcheck:
-	$@ ./scripts/*
+	@$@ ./scripts/*
 
-check:
-	make check shellcheck
+.PHONY: lint
+lint:
+	@make -j4 flake8 mypy spell shellcheck
+
+bandit: ## Find common security issues in Python code
+	@$@ --recursive .
+
+safety: ## Check installed dependencies for known vulnerabilities
+	@$@ check -r requirements/pip/local.txt --full-report
+
+.PHONY: security
+security: bandit safety ## Guard with Bandit and Safety
+
+check: ## Check all
+	make lint security
 
 # Display versions of Chrome, Chromedriver, Selenium
 versions:
