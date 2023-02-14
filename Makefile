@@ -139,9 +139,6 @@ versions:
 
 
 ## ------------ files --------------
-cloc:
-	$@ --exclude-list-file=.clocignore .
-
 recompile:
 	@$(BIN_DIR)/python -m recompile ./parsers -q
 
@@ -174,7 +171,7 @@ check_xserver_process_exist:
 	&& echo "success!" || { echo "failure!"; exit 1; }
 
 # open XLaunch: Multiple windows -> Start no client -> Check 'Disable access control' -> Finish
-XLAUNCH_CONFIG := '"$(PWD)/log/config.xlaunch"'
+XLAUNCH_CONFIG := '"$(PWD)/.config/config.xlaunch"'
 PROGRAM_DATA := /mnt/c/Progra~1
 XLAUNCH := '"$(PROGRAM_DATA)/VcXsrv/xlaunch.exe"'
 PARAMS := '-run', $(XLAUNCH_CONFIG)

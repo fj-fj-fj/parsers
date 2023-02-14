@@ -3,20 +3,15 @@
 ## https://github.com/direnv/direnv/
 ## base config: ~/.direnvrc
 ##
-## ^F '...' and replace with correct one
 ## mv .envrc.sample .envrc
 ## direnv allow .
 
 export DIRENV_WARN_TIMEOUT="15s"
 
-## Scripts without ./
 export PATH="$PATH:."
-## preexec
-# export bash_preexec_imported=imported
-# export __bp_enable_subshells="true"
 
-## Save Makefile, .envrc
-export DEVDIR='/mnt/c/dev'
+## Backup: `./tmp.g add *`
+# export DEVDIR='/mnt/c/dev'
 # export BUCKAPREPO="$DEVDIR"
 # shellcheck disable=SC2016
 # echo -e "#!/usr/bin/env -S bash\n\ngit -C $BUCKAPREPO "'"$@"' > tmp.g
@@ -34,13 +29,13 @@ export_alias g 'grep \
     # --exclude-dir=.direnv \
     # --exclude-dir=.vscode \
 
-## Create symlink if not exists to use: parse <parser_name>
+## parse <parser_name>
 if [ ! -L "/usr/local/bin/parse" ]; then
     sudo ln -s "$(pwd)"/__main__.py /usr/local/bin/parse
 fi
 
 ## -*- Python -*-
-PYTHONSTARTUP="$(pwd)"/.pythonrc
+PYTHONSTARTUP="$(pwd)"/.config/.pythonrc
 export PYTHONSTARTUP
 # export PYTHONBREAKPOINT=snoop.snoop
 
@@ -49,7 +44,7 @@ PROJECT_DIR=$(pwd)
 export PROJECT_DIR
 PROJECT_NAME="$(basename "$PROJECT_DIR")"
 export PROJECT_NAME
-# VENV="/home/.../.pyenv/versions/.$PROJECT_NAME"
+# VENV="~/.pyenv/versions/.$PROJECT_NAME"
 # export VENV
 ## ./parsers/user_parsers/**/__init__.py, ./parsers/debug.py
 export DEBUG=0
@@ -58,7 +53,7 @@ export DEBUG=0
 ## ./parsers/user_parsers/merge_checker/constants.py
 # export GITHUB_TOKEN=...
 
-## -*- Display information -*-
+## -*- Display info -*-
 printf "\e[1;33m"; python3 -V; printf "\e[0m"
 [[ -d .git ]] && echo && git status --short --branch && git diff --stat && echo
 
