@@ -121,7 +121,7 @@ When the samples are found and their handler is ready, exit the shell and try to
 make run parsername
 ```
 Read docstrings and comments for the modules you have generated.<br>
-Maybe you should look also [`.envrc.sample`](.envrc.sample '`mv .envrc.sample .envrc`'), [`Makefile`](Makefile '`make help`')
+Maybe you should look also [`.envrc`](.envrc), [`Makefile`](Makefile '`make help`')
 
 
 #
