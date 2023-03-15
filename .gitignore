@@ -1,8 +1,8 @@
 # Created by https://www.gitignore.io
 
 ### OSX ###
-.DS_Store
 .AppleDouble
+.DS_Store
 .LSOverride
 
 # Icon must end with two \r
@@ -16,11 +16,11 @@ Icon
 .Trashes
 
 # Directories potentially created on remote AFP share
+.apdisk
 .AppleDB
 .AppleDesktop
 Network Trash Folder
 Temporary Items
-.apdisk
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -59,26 +59,26 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
+.hypothesis/
 .tox/
 .coverage
 .cache
-nosetests.xml
 coverage.xml
+htmlcov/
+nosetests.xml
 **/cover/**
 !.gitkeep
 *.cover
-.hypothesis/
 
 # Translations
 *.mo
 *.pot
 
-# Flask stuff:
+# Flask stuff
 instance/
 .webassets-cache
 
-# Scrapy stuff:
+# Scrapy stuff
 .scrapy
 
 # Sphinx documentation
@@ -87,10 +87,10 @@ docs/_build/
 # PyBuilder
 target/
 
-# Backup files #
+# Backup files
 *.bak
 
-# PyCharm #
+# PyCharm
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries
@@ -106,20 +106,19 @@ target/
 .idea/
 *.iws /out/
 
-# Sublime Text #
+# Sublime Text
 *.tmlanguage.cache
 *.tmPreferences.cache
 *.stTheme.cache
 *.sublime-workspace
 *.sublime-project
 
-# Visual Studio Code #
+# Visual Studio Code
 .vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
 !.vscode/settings.json
 !.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -142,10 +141,9 @@ celerybeat-schedule.*
 !.envrc.sample
 
 # virtualenv
-.venv
+.venv/
 venv/
-ENV/
-.vscode
+.ENV/
 
 # Spyder project settings
 .spyderproject
@@ -160,19 +158,34 @@ ENV/
 # mypy
 .mypy_cache/
 
-.DS_Store
-*.sqlite3
 media/
+*.sqlite3
 *.db
 *.pid
 
 **/debug_toolbar/**
 staticfiles/admin/**
 
-# local
-data/
+/scripts/*private*
+/scripts/*local*
+
+# Makefiles
+*[Mm]akefile*.*local*
+*[Mm]akefile*.*private*
+*[Mm]akefile*.secret*
+*[Ll]ocal*.mk
+*[Pp]rivate*.mk
+*[Ss]ecret*.mk
+
+**parsed**
 **parsed_data**
 **log/**
-tmp.*
+data/
+
+foo.py
 misc.py
+
+.direnv/
+.history
 nohup.out
+tmp.*

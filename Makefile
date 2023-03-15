@@ -1,26 +1,27 @@
-include ./.config/makefile-settings.mk # INFO SUCCESS ERROR help h makecheck
+include ./.config/makefile-settings.mk
 
-BIN_DIR := $$VENV/bin
+## --------------- help -------------------
+help: ## Display docstring
 
+## ------------ build --------------
+include ./.config/makefile-build.mk
 
-## ------------ venv-install-download --------------
-.PHONY: create-venv pip-install pip-upgrade install install-full pyenv
+install-core: ## Install build dependencies (to build Python from source)
+apt-install-all: ## Install ./requirements/apt/*.txt
+install-pyenv: ## Install pyenv & add config lines to .bashrc
+del-pyenv: ## Delete pyenv from $HOME & (optional) config lines from .bashrc
+create-venv: ## Create v.environment with pyenv (make 'create-venv v=PY_VERSION')
+del-venv: ## Delete v.environment (see 'revenv' rule)
+revenv: ## Return v.environment from the previous 'upgrade-venv'
+upgrade-python: ## Install latest Python version with pyenv
+upgrade-venv: ## Create v.environmet with latest Python (with backup to ~/bak)
+upgrade: ## make upgrade-python upgrade-venv
+pip-install: ## Install requirements.txt
+pip-upgrade: ## Upgrade pip & requirements.txt
+setup: ## Download latest Python, create v.environment, install reqs
+setup-full: ## make install-core setup
 
-create-venv: $(eval SHELL:=/bin/bash) ## Check virtual environment exists or create
-	@ [[ -d $(VENV) ]] && echo "$(VENV) already exists" \
-	|| (echo 'Creating virtual environment ...'; python3 -m venv $(VENV))
-
-pip-install: $(eval SHELL:=/bin/bash) ## Install pip and requirements
-	@(echo 'Updating pip ...'; $$VENV/bin/pip install -U pip) \
-	&& (echo 'Installing requirements ...'; $$VENV/bin/pip install -r requirements.txt)
-
-pip-upgrade: ## Upgrade pip and requirements
-	@$(BIN_DIR)/pip install -U pip && $(BIN_DIR)/pip install -r <(pip freeze) --upgrade
-
-install: create-venv pip-install ## Create virtual-env and pip install requirements
-
-
-## ------------ create-template --------------
+## ------------ template --------------
 .PHONY: create_template new
 
 # Passing arguments to "make create_template" or "make new"
@@ -28,14 +29,13 @@ ifeq ($(filter $(new) $(create_template), $(RULE_NAME)),)
   # use the rest as arguments for "new"
   CREATE_TEMPLATE_ARG := $(ARGS)
   # ...and turn them into do-nothing targets
-#   $(eval $(CREATE_TEMPLATE_ARG):;@:)
+  $(eval $(CREATE_TEMPLATE_ARG):;@:)
 endif
 
 create_template:  ## Create new template
 	@./scripts/create_parser_template $(CREATE_TEMPLATE_ARG)
 
 new: create_template  ## make new PARSER (or make --new --help)
-
 
 ## ------------- parse ---------------
 .PHONY: irun run wrun px
@@ -55,7 +55,6 @@ _px:
 	@time -vo $(shell dirname $(PARSER))/.time.log \
 	"$(BIN_DIR)/python" $(FIRST_ARG) "$(PARSER)"
 
-
 ## ------------ debug --------------
 .PHONY: trace birdseye r test
 
@@ -74,9 +73,12 @@ birdseye:  ## Debug with Birdseye (https://github.com/alexmojaki/birdseye)
 r: birdseye run  ## Start parser with Birdseye
 test: birdseye trace  ## Start parser with Birdseye and `trace`
 
-
 ## ------------ check --------------
-.PHONY: flake 8 mypy pyspelling spell shellcheck lint bandit safety security check ch gitleaks warnings all versions
+.PHONY: flake 8 mypy pyspelling spell shellcheck lint
+.PHONY: bandit safety security gitleaks warnings
+.PHONY: check ch all
+
+makecheck: ## Lint makefile (require Go, checkmake)
 
 flake: ## Check style FILE or recursively (https://github.com/PyCQA/flake8)
 	${INFO} "Flake8 starting..."
@@ -95,7 +97,6 @@ flake: ## Check style FILE or recursively (https://github.com/PyCQA/flake8)
 shellcheck: ## Lint sh/bash scripts (https://github.com/koalaman/shellcheck)
 	${INFO} "Shellcheck starting..."
 	-@ $@ ./scripts/*
-
 
 mypy: ## Check types FILE or recursively (https://github.com/python/mypy)
 	${INFO} "Mypy starting..."
@@ -135,7 +136,7 @@ spell: ## Check FILE with pyspelling
 	&& rm ./log/make-spell.yml dictionary.dic
 
 lint: ## Check recursively whth flake8, shellcheck
-	@make -j3 flake shellcheck
+	@make -j2 flake shellcheck
 
 bandit: ## Find security issues in FILE or recursively (https://github.com/PyCQA/bandit)
 	${INFO} "Bandit starting..."
@@ -175,6 +176,7 @@ warnings: ## Find temporary fixes, possible issues, etc
 	--exclude-dir=data \
 	--exclude-dir=log \
 	--exclude=".vocabulary*" \
+	--exclude=Makefile \
 	--exclude="tmp.*" \
 	--exclude="notes.*" \
 	--exclude="*.md" \
@@ -184,22 +186,23 @@ warnings: ## Find temporary fixes, possible issues, etc
 	--with-filename \
 	--word-regexp \
 	. \
-	--regexp 'fixme\|issue\|problem\|nosec\|refactorme'
+	--regexp '#\s*chmod -w .envrc\|fixme\|issue\|problem\|nosec\|refactorme'
 	@python -c "input(' everything is fine? ')"
 
 check: ## Full check recursively
 	make pyspelling lint mypy security warnings
-
 
 ifeq (ch, $(RULE_NAME))
 	PY_FILE := $(ARGS)
 	$(eval $(PY_FILE):;@true)
 endif
 ch: flake mypy spell bandit $(PY_FILE) ## Full check PY_FILE
-	# @make safety warnings
+	@make safety warnings
 
 all: makecheck shellcheck gitleaks check ## Extra full check recursively
 
+## ------------ versions --------------
+.PHONY: versions
 
 versions: ## Display versions of Chrome, Chromedriver, Selenium
 	@	# Windows Chrome:
@@ -209,7 +212,6 @@ versions: ## Display versions of Chrome, Chromedriver, Selenium
 
 	-${INFO} "$(shell "$(CURDIR)/parsers/request/driver/chrome/chromedriver" --version)"
 	-${INFO} "Selenium $(shell "$(BIN_DIR)"/python -c "print(__import__('selenium').__version__)")"
-
 
 ## ------------ files --------------
 .PHONY: diff note tmp recompile clean
@@ -236,7 +238,6 @@ clean: ## Remove Python cache
 	@find . -name '*~' -exec rm -f {} +
 	@find . -name '__pycache__' -exec rm -fr {} +
 
-
 ## ------------ WSL --------------
 .PHONY: check_xserver_process_exist run_xlaunch xlaunch
 
@@ -258,3 +259,14 @@ run_xlaunch:
 
 xlaunch: ## Start XServer (NOTE: start terminal as admin)
 	make check_xserver_process_exist || make run_xlaunch
+
+
+## ------------ local making --------------
+# Override the project's Makefile tasks in local envirioment.
+#
+#   https://www.gnu.org/software/make/manual/html_node/Overriding-Makefiles.html
+#   There can only be one recipe to be executed for a file.
+#   If more than one rule gives a recipe for the same file,
+#   make uses the last one given and prints an error message.
+-include [Mm]akefile.local
+# .gitignore already contains this.
